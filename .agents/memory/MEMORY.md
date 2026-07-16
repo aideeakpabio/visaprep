@@ -1,0 +1,1 @@
+- [AIM Engine Implementation](aim-engine.md) — Application Intelligence Engine governed by AIM; system prompt structure, output schema, and approved decisions documented here.
