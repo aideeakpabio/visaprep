@@ -190,9 +190,203 @@ Return ONLY valid JSON matching this exact schema. No text before or after the J
 
 Sections must appear in AIM lesson order: Travel Information, Personal Information, Passport Information, Previous U.S. Travel, Travel Companions, U.S. Contact Information, Family Roots & Ties. All seven sections must always appear.`;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MOCK ANALYSIS MODE
+// Temporary flag for UI verification before the OpenAI API key is configured.
+// Set to false to re-enable the real Application Intelligence Engine.
+// ─────────────────────────────────────────────────────────────────────────────
+const MOCK_MODE = true;
+
+const MOCK_ANALYSIS = {
+  applicationProfile:
+    "This application is for a B-2 tourist visa submitted by a Brazilian national. The stated purpose of travel is tourism and visiting friends in New York City for a planned stay of 21 days. The applicant is employed as a civil engineer at a private construction firm in São Paulo and identifies as married with two children. Trip costs are to be covered by the applicant personally.",
+  submissionDate: "March 14, 2025",
+  topPreparationAreas: [
+    "Be prepared to clearly explain the purpose of the visit and why 21 days is the intended length of stay, including your planned itinerary in New York and any other cities you intend to visit.",
+    "Review the details of the friends you listed as U.S. contacts — their names, addresses, and your relationship with them — since this connection will likely be a focal point of the interview.",
+    "Your application lists two previous U.S. visits (2018 and 2021). Be familiar with the purpose, length, and outcome of each visit, as the officer may ask you to walk through your travel history.",
+    "Be ready to discuss your employment — your role, employer name, how long you have worked there, and how you obtained leave approval for this trip.",
+    "Your application indicates you are traveling alone, while your U.S. contacts are personal friends rather than family. Be prepared to explain the nature of those friendships and how you know them.",
+  ],
+  sections: [
+    {
+      lesson: "Travel Information",
+      interviewWeight: "High",
+      memoryRisk: "Moderate–High",
+      keySignals: [
+        "Visa classification: B-2 Tourist",
+        "Purpose of travel: Tourism and visiting friends",
+        "Intended U.S. destination: New York, NY",
+        "Intended length of stay: 21 days",
+        "Address where staying: Friends' residence, Brooklyn, NY",
+        "Who is paying: Applicant (self-funded)",
+      ],
+      insights: [
+        "Your application establishes a clear tourism and social visit purpose. The 21-day stay is relatively specific — be prepared to explain how you structured this duration relative to your itinerary and work leave.",
+        "The stated destination is a single city. If you plan to travel beyond New York during the visit, be familiar with those plans even if they were not reflected in the DS-160.",
+        "Self-funding is consistent with the employment information provided elsewhere in the application. Be able to describe your financial capacity to support this trip if asked.",
+      ],
+      preparationPrompts: [
+        "Review the specific address where you plan to stay and confirm you know its details.",
+        "Be prepared to describe your intended activities in New York — what you planned to see, do, or visit.",
+        "Know the dates of your intended arrival and departure as submitted.",
+      ],
+    },
+    {
+      lesson: "Personal Information",
+      interviewWeight: "Low",
+      memoryRisk: "Low",
+      keySignals: [
+        "Full legal name: As submitted on the DS-160",
+        "Date of birth: As submitted",
+        "Nationality: Brazilian",
+        "Marital status: Married",
+        "National ID: CPF number submitted",
+      ],
+      insights: [
+        "Your personal information is straightforward and internally consistent. No discrepancies were detected between your stated identity and other sections of the application.",
+        "Your marital status (married, two children) is relevant context for the Family section — the relationship between your family situation in Brazil and your travel plans alone may be a natural topic of discussion.",
+      ],
+      preparationPrompts: [
+        "Confirm your full legal name as it appears on your passport and DS-160 match exactly.",
+        "Be familiar with your date of birth and place of birth as submitted.",
+      ],
+    },
+    {
+      lesson: "Passport Information",
+      interviewWeight: "Low",
+      memoryRisk: "Low",
+      keySignals: [
+        "Passport type: Regular/Ordinary",
+        "Issuing country: Brazil",
+        "Passport expiration: November 2029",
+        "Issuing authority: Brazilian Federal Police",
+      ],
+      insights: [
+        "Your passport is valid well beyond the intended travel period. No passport-related observations require additional preparation.",
+        "The passport you plan to present at the interview should be the same one identified in the DS-160.",
+      ],
+      preparationPrompts: [
+        "Confirm you are bringing the same passport to the interview that was listed in the DS-160.",
+        "Check that your passport expiration date gives you at least six months of validity beyond your intended departure from the U.S.",
+      ],
+    },
+    {
+      lesson: "Previous U.S. Travel",
+      interviewWeight: "High",
+      memoryRisk: "High",
+      keySignals: [
+        "Previous visits: 2 (2018, 2021)",
+        "Previous visa: B-2, issued 2017",
+        "No previous visa refusals recorded",
+        "No overstays recorded",
+        "2018 visit: 10 days, tourism",
+        "2021 visit: 14 days, tourism",
+      ],
+      insights: [
+        "Your application reflects two prior U.S. visits on an existing B-2 visa. This history is relevant context — the officer may ask you to walk through each visit, including when you went, how long you stayed, and what you did.",
+        "Both prior visits were tourism. Consistency between your past purposes and your current stated purpose is a natural topic for discussion.",
+        "The 2021 visit was approximately four years ago. Details about that trip may require deliberate review — elapsed time is the primary memory risk here.",
+      ],
+      preparationPrompts: [
+        "Review the dates and approximate durations of your 2018 and 2021 visits.",
+        "Be ready to describe the purpose and general activities of each prior trip.",
+        "Confirm you departed the U.S. on time during both visits and are comfortable stating that clearly.",
+        "Know the expiration date of your previous B-2 visa and whether it is still valid or has expired.",
+      ],
+    },
+    {
+      lesson: "Travel Companions",
+      interviewWeight: "Medium",
+      memoryRisk: "Low",
+      keySignals: ["Traveling alone (no companions listed)"],
+      insights: [
+        "Your application indicates you are traveling alone. This is coherent with a personal tourism trip, and consistent with visiting friends rather than family.",
+        "Traveling alone while married with children is not unusual for a short tourism trip, but the officer may briefly ask about your family's plans during your absence. A straightforward, honest answer is sufficient.",
+      ],
+      preparationPrompts: [
+        "Be prepared to confirm that you are traveling alone and explain why your family is not accompanying you.",
+        "Know whether your spouse and children will remain in Brazil during your trip.",
+      ],
+    },
+    {
+      lesson: "U.S. Contact Information",
+      interviewWeight: "Medium–High",
+      memoryRisk: "Medium",
+      keySignals: [
+        "Contact type: Individual",
+        "Contact relationship: Friend",
+        "Contact location: Brooklyn, New York",
+        "Contact is not a U.S. citizen or permanent resident (per DS-160)",
+      ],
+      insights: [
+        "Your U.S. contact is a personal friend, and you plan to stay at their residence. The officer may ask how you know this person, how long you have been in contact, and the nature of the friendship.",
+        "The contact's address is the same as your intended place of stay. Be familiar with their full name and address as submitted.",
+        "If this contact is also a foreign national residing in the U.S., be prepared to explain their visa or immigration status if you know it — or to say you do not know if that is the case.",
+      ],
+      preparationPrompts: [
+        "Review the full name, address, and relationship of your U.S. contact as submitted on the DS-160.",
+        "Be prepared to describe how you know this person and the history of your friendship.",
+        "Know how you will be communicating with them to coordinate the visit.",
+      ],
+    },
+    {
+      lesson: "Family Roots & Ties",
+      interviewWeight: "High",
+      memoryRisk: "Low–Medium",
+      keySignals: [
+        "Marital status: Married",
+        "Children: 2 (in Brazil)",
+        "Spouse: Residing in Brazil",
+        "Parents: Residing in Brazil",
+        "No immediate family members in the United States",
+        "No other relatives in the United States listed",
+      ],
+      insights: [
+        "Your application reflects a family situation entirely based in Brazil — spouse, children, and parents are all there. This context naturally emerges from the application, and you should be comfortable discussing your family situation briefly and factually.",
+        "No U.S.-based family members are listed. This is consistent with your stated U.S. contact being a friend, not a relative.",
+        "Your two children and employed spouse in Brazil are facts of the application. Do not frame them as 'ties' or evaluate their strength — simply be prepared to describe your family accurately if asked.",
+      ],
+      preparationPrompts: [
+        "Know the names and ages of your children and be able to state their situation in Brazil.",
+        "Be prepared to confirm that your spouse is employed or otherwise settled in Brazil.",
+        "If asked about your family, answer factually and directly — describe the situation as it is.",
+      ],
+    },
+  ],
+  crossSectionObservations: [
+    "The applicant's stated purpose of tourism and visiting friends (Travel Information) is consistent with the U.S. contact being a personal friend with whom the applicant will stay (U.S. Contact Information). The officer may assess whether this relationship and the overall travel plan are coherent.",
+    "Both previous U.S. visits (Previous U.S. Travel) were for tourism, matching the current stated purpose. This pattern of repeat tourism travel may prompt the officer to ask about the applicant's familiarity with the U.S. and the evolution of their relationship with their U.S. contacts over time.",
+    "The applicant is traveling alone (Travel Companions) while married with two children in Brazil (Family Roots & Ties). These facts are internally consistent and coherent — the officer may briefly confirm the family situation, but this is unlikely to be a significant interview topic.",
+    "The applicant's employment as a civil engineer (referenced in Travel Information via self-funding) implies stable income. Be prepared to briefly describe your employment if asked about how you are funding the trip.",
+  ],
+  interviewQuestions: [
+    "What is the purpose of your visit to the United States?",
+    "How long do you plan to stay, and what will you be doing during those 21 days?",
+    "Who are the friends you plan to visit in Brooklyn, and how do you know them?",
+    "Will you be staying at their home for the entire trip?",
+    "You visited the U.S. in 2018 and again in 2021. Can you walk me through those trips?",
+    "What did you do during your 2021 visit?",
+    "Are you currently employed? What is your role and who do you work for?",
+    "Who is traveling with you on this trip?",
+    "Your spouse and children are in Brazil — can you tell me about your family situation there?",
+    "How are you funding this trip?",
+    "Have you ever been denied a U.S. visa or had a visa revoked?",
+  ],
+};
+
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return NextResponse.json(
+        { error: "No file uploaded. Please attach a PDF using the upload form." },
+        { status: 400 }
+      );
+    }
+
     const file = formData.get("file") as File;
 
     if (!file) {
@@ -202,7 +396,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extract text from PDF
+    // Extract text from PDF — always runs, even in mock mode
     const buffer = await file.arrayBuffer();
     const extracted = await extractTextFromPDF(buffer);
 
@@ -215,6 +409,26 @@ export async function POST(request: Request) {
         { status: 422 }
       );
     }
+
+    // ── MOCK MODE ────────────────────────────────────────────────────────────
+    if (MOCK_MODE) {
+      // Construct the prompt exactly as production would, then skip the API call
+      const applicationText = extracted.text.slice(0, 14000);
+      const userMessage = `Here is the extracted text from the DS-160 application:\n\n${applicationText}`;
+      console.log(
+        "[MOCK MODE] Prompt constructed. System prompt length:",
+        SYSTEM_PROMPT.length,
+        "| User message length:",
+        userMessage.length
+      );
+      console.log("[MOCK MODE] Returning mock analysis — OpenAI call skipped.");
+      return NextResponse.json({
+        pages: extracted.pages,
+        analysis: MOCK_ANALYSIS,
+        _mock: true,
+      });
+    }
+    // ── END MOCK MODE ────────────────────────────────────────────────────────
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
