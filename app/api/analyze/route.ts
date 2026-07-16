@@ -203,9 +203,9 @@ const MOCK_ANALYSIS = {
   submissionDate: "March 14, 2025",
   topPreparationAreas: [
     "Be prepared to clearly explain the purpose of the visit and why 21 days is the intended length of stay, including your planned itinerary in New York and any other cities you intend to visit.",
-    "Review the details of the friends you listed as U.S. contacts — their names, addresses, and your relationship with them — since this connection will likely be a focal point of the interview.",
+    "Review the details of the friends you listed as U.S. contacts — their names, addresses, and your relationship with them — since this connection may invite questions during the interview.",
     "Your application lists two previous U.S. visits (2018 and 2021). Be familiar with the purpose, length, and outcome of each visit, as the officer may ask you to walk through your travel history.",
-    "Be ready to discuss your employment — your role, employer name, how long you have worked there, and how you obtained leave approval for this trip.",
+    "Be ready to discuss your employment as listed on your application — your role and employer — and be prepared to explain how you are funding the trip.",
     "Your application indicates you are traveling alone, while your U.S. contacts are personal friends rather than family. Be prepared to explain the nature of those friendships and how you know them.",
   ],
   sections: [
@@ -224,7 +224,7 @@ const MOCK_ANALYSIS = {
       insights: [
         "Your application establishes a clear tourism and social visit purpose. The 21-day stay is relatively specific — be prepared to explain how you structured this duration relative to your itinerary and work leave.",
         "The stated destination is a single city. If you plan to travel beyond New York during the visit, be familiar with those plans even if they were not reflected in the DS-160.",
-        "Self-funding is consistent with the employment information provided elsewhere in the application. Be able to describe your financial capacity to support this trip if asked.",
+        "Your application states that you are funding the trip personally. Be prepared to explain how you are covering the costs if asked.",
       ],
       preparationPrompts: [
         "Review the specific address where you plan to stay and confirm you know its details.",
@@ -302,7 +302,7 @@ const MOCK_ANALYSIS = {
       keySignals: ["Traveling alone (no companions listed)"],
       insights: [
         "Your application indicates you are traveling alone. This is coherent with a personal tourism trip, and consistent with visiting friends rather than family.",
-        "Traveling alone while married with children is not unusual for a short tourism trip, but the officer may briefly ask about your family's plans during your absence. A straightforward, honest answer is sufficient.",
+        "Your application shows you are traveling alone. If asked about your travel arrangements, be prepared to explain your plans clearly and factually.",
       ],
       preparationPrompts: [
         "Be prepared to confirm that you are traveling alone and explain why your family is not accompanying you.",
@@ -345,11 +345,11 @@ const MOCK_ANALYSIS = {
       insights: [
         "Your application reflects a family situation entirely based in Brazil — spouse, children, and parents are all there. This context naturally emerges from the application, and you should be comfortable discussing your family situation briefly and factually.",
         "No U.S.-based family members are listed. This is consistent with your stated U.S. contact being a friend, not a relative.",
-        "Your two children and employed spouse in Brazil are facts of the application. Do not frame them as 'ties' or evaluate their strength — simply be prepared to describe your family accurately if asked.",
+        "Your two children and your spouse's residence in Brazil are facts of the application. Do not frame them as 'ties' or evaluate their strength — simply be prepared to describe your family accurately if asked.",
       ],
       preparationPrompts: [
         "Know the names and ages of your children and be able to state their situation in Brazil.",
-        "Be prepared to confirm that your spouse is employed or otherwise settled in Brazil.",
+        "Be prepared to describe your spouse's situation in Brazil as reflected in your application.",
         "If asked about your family, answer factually and directly — describe the situation as it is.",
       ],
     },
@@ -357,8 +357,8 @@ const MOCK_ANALYSIS = {
   crossSectionObservations: [
     "The applicant's stated purpose of tourism and visiting friends (Travel Information) is consistent with the U.S. contact being a personal friend with whom the applicant will stay (U.S. Contact Information). The officer may assess whether this relationship and the overall travel plan are coherent.",
     "Both previous U.S. visits (Previous U.S. Travel) were for tourism, matching the current stated purpose. This pattern of repeat tourism travel may prompt the officer to ask about the applicant's familiarity with the U.S. and the evolution of their relationship with their U.S. contacts over time.",
-    "The applicant is traveling alone (Travel Companions) while married with two children in Brazil (Family Roots & Ties). These facts are internally consistent and coherent — the officer may briefly confirm the family situation, but this is unlikely to be a significant interview topic.",
-    "The applicant's employment as a civil engineer (referenced in Travel Information via self-funding) implies stable income. Be prepared to briefly describe your employment if asked about how you are funding the trip.",
+    "The applicant is traveling alone (Travel Companions) while married with two children in Brazil (Family Roots & Ties). These facts are internally consistent — the officer may briefly ask about the family situation.",
+    "Your application lists your occupation as civil engineer and states that you are self-funding the trip. Be prepared to discuss your employment and how you are covering trip costs if asked.",
   ],
   interviewQuestions: [
     "What is the purpose of your visit to the United States?",

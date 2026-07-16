@@ -89,7 +89,7 @@ function LessonCard({ section }: { section: Section }) {
           <span className="font-medium text-sm text-gray-900">
             {section.lesson}
           </span>
-          <WeightBadge label={`Interview: ${section.interviewWeight}`} />
+          <WeightBadge label={`Interview Weight: ${section.interviewWeight}`} />
           {missing && (
             <span className="text-xs text-gray-400 italic">
               Insufficient data
@@ -275,7 +275,7 @@ export default function Home() {
           {analysis.topPreparationAreas.length > 0 && (
             <Card>
               <SectionHeading>Top Preparation Areas</SectionHeading>
-              <ol className="space-y-3">
+              <ol className="list-none space-y-3">
                 {analysis.topPreparationAreas.map((area, i) => (
                   <li key={i} className="flex gap-3 text-sm text-gray-700">
                     <span className="shrink-0 font-semibold text-gray-400 w-4">
@@ -295,7 +295,7 @@ export default function Home() {
               <p className="text-xs text-gray-400 mb-3">
                 Based on your submitted application. Prepare to discuss these areas clearly and honestly.
               </p>
-              <ol className="space-y-3">
+              <ol className="list-none space-y-3">
                 {analysis.interviewQuestions.map((q, i) => (
                   <li key={i} className="flex gap-3 text-sm text-gray-700">
                     <span className="shrink-0 font-semibold text-gray-400 w-4">
