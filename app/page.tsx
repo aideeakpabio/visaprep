@@ -22,6 +22,94 @@ interface Analysis {
   interviewQuestions: string[];
 }
 
+// ── American flag (waving, via SVG displacement filter) ───────────────────────
+
+function AmericanFlag() {
+  const W = 360;
+  const H = 190;
+  const stripeH = H / 13;
+  const cantonW = W * 0.4;   // 144
+  const cantonH = stripeH * 7; // ~102
+
+  // 50 stars: 5 rows of 6 + 4 rows of 5
+  const rowsOf6 = [0, 2, 4, 6, 8];
+  const rowsOf5 = [1, 3, 5, 7];
+
+  const starY = (row: number) => (cantonH / 10) * (row + 1);
+  const star6X = (col: number) => (cantonW / 7) * (col + 1);
+  const star5X = (col: number) => (cantonW / 7) * (col + 1.5);
+
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      style={{ width: "100%", height: "auto" }}
+    >
+      <defs>
+        {/* Wave filter: fractal noise drives a displacement map for cloth-like waving */}
+        <filter id="flagWave" x="-6%" y="-6%" width="112%" height="112%">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.022 0.07"
+            numOctaves="2"
+            seed="9"
+            result="noise"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="noise"
+            xChannelSelector="R"
+            yChannelSelector="G"
+            scale="13"
+          />
+        </filter>
+      </defs>
+
+      <g filter="url(#flagWave)">
+        {/* 13 alternating stripes — red on even rows */}
+        {Array.from({ length: 13 }, (_, i) => (
+          <rect
+            key={i}
+            x={0}
+            y={i * stripeH}
+            width={W}
+            height={stripeH + 0.5}
+            fill={i % 2 === 0 ? "#B22234" : "#FFFFFF"}
+          />
+        ))}
+
+        {/* Blue canton (union) */}
+        <rect x={0} y={0} width={cantonW} height={cantonH} fill="#3C3B6E" />
+
+        {/* 50 white stars */}
+        {rowsOf6.map((row) =>
+          [0, 1, 2, 3, 4, 5].map((col) => (
+            <circle
+              key={`r6-${row}-${col}`}
+              cx={star6X(col)}
+              cy={starY(row)}
+              r={3.2}
+              fill="white"
+            />
+          ))
+        )}
+        {rowsOf5.map((row) =>
+          [0, 1, 2, 3, 4].map((col) => (
+            <circle
+              key={`r5-${row}-${col}`}
+              cx={star5X(col)}
+              cy={starY(row)}
+              r={3.2}
+              fill="white"
+            />
+          ))
+        )}
+      </g>
+    </svg>
+  );
+}
+
 // ── Statue of Liberty silhouette ─────────────────────────────────────────────
 
 function LibertySilhouette() {
@@ -31,16 +119,12 @@ function LibertySilhouette() {
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
       aria-hidden="true"
+      style={{ height: "100%", width: "auto" }}
     >
-      {/* Torch flame */}
       <ellipse cx="155" cy="10" rx="7" ry="10" />
-      {/* Torch handle */}
       <rect x="151" y="18" width="8" height="44" rx="3" />
-      {/* Right arm raising torch */}
       <path d="M 106 150 L 116 130 L 132 102 L 148 78 L 151 62 L 159 62 L 156 80 L 140 106 L 124 136 L 112 156 Z" />
-      {/* Crown band */}
       <rect x="60" y="102" width="60" height="13" rx="2" />
-      {/* Crown — 7 radiating spikes */}
       <polygon points="63,102 66,73 69,102" />
       <polygon points="71,102 74,67 77,102" />
       <polygon points="80,102 83,62 86,102" />
@@ -48,27 +132,16 @@ function LibertySilhouette() {
       <polygon points="97,102 100,63 103,102" />
       <polygon points="105,102 108,69 111,102" />
       <polygon points="113,102 116,75 119,102" />
-      {/* Head */}
       <circle cx="90" cy="128" r="15" />
-      {/* Neck */}
       <rect x="84" y="143" width="12" height="13" />
-      {/* Shoulders */}
       <path d="M 60 156 Q 75 150 90 148 Q 105 150 120 156 L 116 170 L 64 170 Z" />
-      {/* Left arm holding tablet */}
       <path d="M 64 156 L 54 163 L 46 188 L 40 218 L 52 222 L 58 194 L 66 170 Z" />
-      {/* Tablet */}
       <rect x="32" y="212" width="24" height="32" rx="3" />
-      {/* Upper robe */}
       <path d="M 64 170 L 116 170 L 121 212 L 59 212 Z" />
-      {/* Main robe body */}
       <path d="M 59 212 L 121 212 L 132 322 L 48 322 Z" />
-      {/* Robe hem — flares at base */}
       <path d="M 44 322 L 136 322 L 144 362 L 36 362 Z" />
-      {/* Pedestal upper step */}
       <rect x="34" y="362" width="112" height="28" />
-      {/* Pedestal lower step */}
       <rect x="20" y="390" width="140" height="22" />
-      {/* Base */}
       <rect x="6" y="412" width="168" height="18" rx="2" />
     </svg>
   );
@@ -236,42 +309,31 @@ export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center bg-white">
 
-      {/* ── Hero area — header + upload ──────────────────────────────────── */}
+      {/* ── Hero — upload / analyzing ────────────────────────────────────── */}
       {!analysis && (
-        <div className="relative overflow-hidden w-full flex flex-col items-center">
+        <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
-          {/* Background: flag stripes at low opacity */}
+          {/* US flag — left background, low opacity */}
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "repeating-linear-gradient(0deg, rgba(178,34,52,0.055) 0px, rgba(178,34,52,0.055) 26px, transparent 26px, transparent 52px)",
-            }}
-          />
+            className="absolute left-0 top-[30%] -translate-y-1/2 pointer-events-none select-none"
+            style={{ width: "36%", maxWidth: 300, opacity: 0.09 }}
+          >
+            <AmericanFlag />
+          </div>
 
-          {/* Background: stars canton dot grid, top-left */}
-          <div
-            className="absolute top-0 left-0 w-48 h-32 pointer-events-none"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle, rgba(15,40,100,0.08) 1.5px, transparent 1.5px)",
-              backgroundSize: "18px 15px",
-            }}
-          />
-
-          {/* Background: Statue of Liberty silhouette, right side */}
+          {/* Statue of Liberty — right background, low opacity */}
           <div
             className="absolute right-0 bottom-0 pointer-events-none select-none"
             style={{
-              height: "92%",
-              color: "rgb(15,40,100)",
-              opacity: 0.06,
+              height: "72%",
+              color: "#1a2f6a",
+              opacity: 0.13,
             }}
           >
             <LibertySilhouette />
           </div>
 
-          {/* Content sits above background elements */}
+          {/* Hero content — z-10 keeps it fully above background elements */}
           <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-12 px-8">
             <h1 className="text-5xl font-bold mb-4">VisaPrep</h1>
             <p className="text-xl mb-3">
@@ -283,56 +345,56 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Upload card */}
-          <div className="relative z-10 w-full max-w-md px-8 pb-14">
-            <label className="border-2 border-dashed rounded-xl p-8 cursor-pointer text-center w-full hover:border-gray-400 transition-colors block bg-white/80">
-              <span className="block mb-3 text-gray-700">
-                Upload your DS-160 application
-              </span>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                className="hidden"
-                onChange={(e) => handleUpload(e.target.files?.[0])}
-              />
-              <span className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium">
-                Choose File
-              </span>
-            </label>
+          {/* Upload widget */}
+          <div className="relative z-10 w-full max-w-md px-8 pb-16">
+            {!analyzing && (
+              <>
+                <label className="border-2 border-dashed rounded-xl p-8 cursor-pointer text-center w-full hover:border-gray-400 transition-colors block bg-white/90">
+                  <span className="block mb-3 text-gray-700">
+                    Upload your DS-160 application
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    className="hidden"
+                    onChange={(e) => handleUpload(e.target.files?.[0])}
+                  />
+                  <span className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium">
+                    Choose File
+                  </span>
+                </label>
 
-            {/* File received */}
-            {fileName && (
-              <p className="mt-4 text-sm text-gray-600 text-center">
-                ✅ Received:{" "}
-                <span className="font-medium">{fileName}</span>
-              </p>
+                {fileName && (
+                  <p className="mt-4 text-sm text-gray-600 text-center">
+                    ✅ Received:{" "}
+                    <span className="font-medium">{fileName}</span>
+                  </p>
+                )}
+              </>
+            )}
+
+            {analyzing && (
+              <div className="text-center text-gray-500 py-4">
+                <p className="text-sm">Analyzing your application…</p>
+                <p className="text-xs mt-1 text-gray-400">
+                  This usually takes 10–20 seconds.
+                </p>
+              </div>
+            )}
+
+            {error && (
+              <div className="mt-4 border border-red-200 rounded-xl p-5 w-full bg-red-50">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* ── Analyzing state ──────────────────────────────────────────────── */}
-      {analyzing && (
-        <div className="mt-8 text-center text-gray-500">
-          <p className="text-sm">Analyzing your application…</p>
-          <p className="text-xs mt-1 text-gray-400">
-            This usually takes 10–20 seconds.
-          </p>
-        </div>
-      )}
-
-      {/* ── Error ────────────────────────────────────────────────────────── */}
-      {error && (
-        <div className="mt-6 border border-red-200 rounded-xl p-5 max-w-xl w-full bg-red-50 mx-8">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
-      )}
-
       {/* ── Results ──────────────────────────────────────────────────────── */}
       {analysis && (
-        <div className="w-full max-w-2xl mt-8 space-y-5 px-8">
+        <div className="w-full max-w-2xl mt-8 space-y-5 px-8 pb-8">
 
-          {/* Upload another */}
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">
               Analyzed:{" "}
@@ -431,7 +493,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Disclaimer */}
           <p className="text-xs text-gray-400 text-center pb-8">
             VisaPrep is a preparation tool. It does not provide legal advice,
             predict visa outcomes, or guarantee any result.
