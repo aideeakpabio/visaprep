@@ -56,6 +56,13 @@ export async function POST(request: Request) {
     const applicationText = extracted.text.slice(0, 12000);
 
     // Analyze with OpenAI
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: "OpenAI API key is not configured. Please add OPENAI_API_KEY to your environment secrets." },
+        { status: 503 }
+      );
+    }
+
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const completion = await client.chat.completions.create({
