@@ -102,9 +102,7 @@ function Card({
   className?: string;
 }) {
   return (
-    <div className={`bg-white border border-gray-100 rounded-xl p-6 shadow-sm ${className}`}>
-      {children}
-    </div>
+    <div className={`border rounded-xl p-6 ${className}`}>{children}</div>
   );
 }
 
@@ -134,7 +132,7 @@ function LessonCard({ section }: { section: Section }) {
     section.insights[0].startsWith("Not enough information");
 
   return (
-    <div className="border border-gray-100 rounded-xl overflow-hidden bg-white">
+    <div className="border rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
@@ -156,8 +154,7 @@ function LessonCard({ section }: { section: Section }) {
       </button>
 
       {open && (
-        <div className="border-t border-gray-100 px-4 pb-4 pt-4 space-y-4 bg-white">
-          {/* Key Signals */}
+        <div className="border-t px-4 pb-4 pt-4 space-y-4 bg-white">
           {section.keySignals.length > 0 && (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
@@ -173,16 +170,12 @@ function LessonCard({ section }: { section: Section }) {
               </ul>
             </div>
           )}
-
-          {/* Insights */}
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
               Application Insights
             </p>
             <BulletList items={section.insights} />
           </div>
-
-          {/* Preparation Prompts */}
           {section.preparationPrompts.length > 0 && (
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
@@ -241,189 +234,111 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col">
+    <main className="min-h-screen flex flex-col items-center bg-white">
 
-      {/* ── Hero — upload / analyzing state ─────────────────────────────── */}
+      {/* ── Hero area — header + upload ──────────────────────────────────── */}
       {!analysis && (
-        <section
-          className="relative overflow-hidden flex-1 flex flex-col items-center justify-center min-h-screen"
-          style={{
-            background:
-              "linear-gradient(155deg, #0A1C3A 0%, #0E2654 45%, #132F6E 100%)",
-          }}
-        >
-          {/* Flag stripe texture — 13 alternating stripes at low opacity */}
+        <div className="relative overflow-hidden w-full flex flex-col items-center">
+
+          {/* Background: flag stripes at low opacity */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
               background:
-                "repeating-linear-gradient(0deg, rgba(185,42,42,0.065) 0px, rgba(185,42,42,0.065) 30px, rgba(255,255,255,0.032) 30px, rgba(255,255,255,0.032) 60px)",
+                "repeating-linear-gradient(0deg, rgba(178,34,52,0.055) 0px, rgba(178,34,52,0.055) 26px, transparent 26px, transparent 52px)",
             }}
           />
 
-          {/* Stars canton — subtle dot grid, top-left */}
+          {/* Background: stars canton dot grid, top-left */}
           <div
-            className="absolute top-0 left-0 w-52 h-36 pointer-events-none"
+            className="absolute top-0 left-0 w-48 h-32 pointer-events-none"
             style={{
               backgroundImage:
-                "radial-gradient(circle, rgba(255,255,255,0.13) 1.5px, transparent 1.5px)",
-              backgroundSize: "20px 17px",
+                "radial-gradient(circle, rgba(15,40,100,0.08) 1.5px, transparent 1.5px)",
+              backgroundSize: "18px 15px",
             }}
           />
 
-          {/* Radial vignette for depth */}
+          {/* Background: Statue of Liberty silhouette, right side */}
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute right-0 bottom-0 pointer-events-none select-none"
             style={{
-              background:
-                "radial-gradient(ellipse at 40% 45%, transparent 35%, rgba(5,12,26,0.55) 100%)",
+              height: "92%",
+              color: "rgb(15,40,100)",
+              opacity: 0.06,
             }}
-          />
-
-          {/* Statue of Liberty silhouette — right side */}
-          <div
-            className="absolute right-0 bottom-0 pointer-events-none select-none text-white"
-            style={{ height: "88%", opacity: 0.075 }}
           >
             <LibertySilhouette />
           </div>
 
-          {/* ── Hero content ── */}
-          <div className="relative z-10 flex flex-col items-center text-center px-8 w-full max-w-2xl mx-auto py-20">
-
-            {/* Wordmark */}
-            <h1 className="text-6xl font-bold text-white tracking-tight mb-5">
-              VisaPrep
-            </h1>
-
-            <p className="text-xl font-light mb-3" style={{ color: "rgba(219,234,254,0.92)" }}>
+          {/* Content sits above background elements */}
+          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-12 px-8">
+            <h1 className="text-5xl font-bold mb-4">VisaPrep</h1>
+            <p className="text-xl mb-3">
               Prepare with clarity. Interview with confidence.
             </p>
-
-            <p
-              className="max-w-md text-sm leading-relaxed mb-12"
-              style={{ color: "rgba(191,219,254,0.52)" }}
-            >
+            <p className="text-gray-600 max-w-xl">
               Your visa application tells your story. VisaPrep helps you
               understand it, so you can explain it clearly and confidently.
             </p>
+          </div>
 
-            {/* Upload card */}
-            {!analyzing && (
-              <>
-                <label
-                  className="cursor-pointer w-full max-w-sm group"
-                  style={{ display: "block" }}
-                >
-                  <div
-                    className="bg-white rounded-2xl p-8 transition-all duration-200 group-hover:shadow-[0_28px_60px_rgba(0,0,0,0.45)]"
-                    style={{ boxShadow: "0 20px 48px rgba(0,0,0,0.38)" }}
-                  >
-                    <p className="text-sm text-gray-500 mb-5 text-center">
-                      Upload your DS-160 application
-                    </p>
-                    <input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      className="hidden"
-                      onChange={(e) => handleUpload(e.target.files?.[0])}
-                    />
-                    <div className="flex justify-center">
-                      <span className="bg-gray-900 text-white px-8 py-3 rounded-xl text-sm font-medium group-hover:bg-gray-700 transition-colors">
-                        Choose File
-                      </span>
-                    </div>
-                  </div>
-                </label>
+          {/* Upload card */}
+          <div className="relative z-10 w-full max-w-md px-8 pb-14">
+            <label className="border-2 border-dashed rounded-xl p-8 cursor-pointer text-center w-full hover:border-gray-400 transition-colors block bg-white/80">
+              <span className="block mb-3 text-gray-700">
+                Upload your DS-160 application
+              </span>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                className="hidden"
+                onChange={(e) => handleUpload(e.target.files?.[0])}
+              />
+              <span className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium">
+                Choose File
+              </span>
+            </label>
 
-                {/* File received confirmation */}
-                {fileName && (
-                  <p
-                    className="mt-4 text-sm"
-                    style={{ color: "rgba(191,219,254,0.6)" }}
-                  >
-                    ✓ Received:{" "}
-                    <span style={{ color: "rgba(219,234,254,0.8)" }} className="font-medium">
-                      {fileName}
-                    </span>
-                  </p>
-                )}
-              </>
-            )}
-
-            {/* Analyzing spinner */}
-            {analyzing && (
-              <div
-                className="rounded-2xl px-10 py-10 w-full max-w-sm text-center"
-                style={{
-                  background: "rgba(255,255,255,0.07)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                <div
-                  className="w-8 h-8 rounded-full mx-auto mb-5 animate-spin"
-                  style={{
-                    border: "2px solid rgba(255,255,255,0.18)",
-                    borderTopColor: "rgba(255,255,255,0.9)",
-                  }}
-                />
-                <p className="text-white text-sm font-medium">
-                  Analyzing your application…
-                </p>
-                <p
-                  className="text-xs mt-2"
-                  style={{ color: "rgba(191,219,254,0.45)" }}
-                >
-                  This usually takes 10–20 seconds.
-                </p>
-              </div>
-            )}
-
-            {/* Error */}
-            {error && (
-              <div
-                className="mt-4 rounded-xl p-5 max-w-sm w-full"
-                style={{
-                  background: "rgba(127,29,29,0.4)",
-                  border: "1px solid rgba(248,113,113,0.2)",
-                }}
-              >
-                <p className="text-sm" style={{ color: "rgba(252,165,165,0.9)" }}>
-                  {error}
-                </p>
-              </div>
+            {/* File received */}
+            {fileName && (
+              <p className="mt-4 text-sm text-gray-600 text-center">
+                ✅ Received:{" "}
+                <span className="font-medium">{fileName}</span>
+              </p>
             )}
           </div>
-        </section>
+        </div>
       )}
 
-      {/* ── Results ─────────────────────────────────────────────────────── */}
+      {/* ── Analyzing state ──────────────────────────────────────────────── */}
+      {analyzing && (
+        <div className="mt-8 text-center text-gray-500">
+          <p className="text-sm">Analyzing your application…</p>
+          <p className="text-xs mt-1 text-gray-400">
+            This usually takes 10–20 seconds.
+          </p>
+        </div>
+      )}
+
+      {/* ── Error ────────────────────────────────────────────────────────── */}
+      {error && (
+        <div className="mt-6 border border-red-200 rounded-xl p-5 max-w-xl w-full bg-red-50 mx-8">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {/* ── Results ──────────────────────────────────────────────────────── */}
       {analysis && (
-        <>
-          {/* Compact branded header */}
-          <header
-            className="px-8 py-5 flex items-center justify-between shrink-0"
-            style={{ background: "#0A1C3A" }}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-white font-bold text-lg tracking-tight">
-                VisaPrep
-              </span>
-              <span style={{ color: "rgba(147,197,253,0.35)" }} className="text-xs">
-                |
-              </span>
-              <span
-                className="text-sm"
-                style={{ color: "rgba(147,197,253,0.55)" }}
-              >
-                Application Analysis
-              </span>
-            </div>
-            <label
-              className="text-sm cursor-pointer transition-colors"
-              style={{ color: "rgba(147,197,253,0.5)" }}
-            >
+        <div className="w-full max-w-2xl mt-8 space-y-5 px-8">
+
+          {/* Upload another */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-gray-500">
+              Analyzed:{" "}
+              <span className="font-medium text-gray-700">{fileName}</span>
+            </p>
+            <label className="text-sm text-gray-500 underline cursor-pointer hover:text-gray-700">
               Upload another
               <input
                 type="file"
@@ -432,111 +347,96 @@ export default function Home() {
                 onChange={(e) => handleUpload(e.target.files?.[0])}
               />
             </label>
-          </header>
+          </div>
 
-          {/* Results body */}
-          <div className="flex-1 px-8 py-8 flex justify-center" style={{ background: "#F8F9FB" }}>
-            <div className="w-full max-w-2xl space-y-5">
-
-              {/* File label */}
-              <p className="text-xs text-gray-400">
-                Analyzed:{" "}
-                <span className="font-medium text-gray-600">{fileName}</span>
+          {/* 1 — Applicant Snapshot */}
+          <Card>
+            <SectionHeading>Applicant Snapshot</SectionHeading>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {analysis.applicationProfile}
+            </p>
+            {analysis.submissionDate && (
+              <p className="mt-3 text-xs text-gray-400">
+                Submission date: {analysis.submissionDate}
               </p>
+            )}
+          </Card>
 
-              {/* 1 — Applicant Snapshot */}
-              <Card>
-                <SectionHeading>Applicant Snapshot</SectionHeading>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {analysis.applicationProfile}
-                </p>
-                {analysis.submissionDate && (
-                  <p className="mt-3 text-xs text-gray-400">
-                    Submission date: {analysis.submissionDate}
-                  </p>
-                )}
-              </Card>
+          {/* 2 — Top Preparation Areas */}
+          {analysis.topPreparationAreas.length > 0 && (
+            <Card>
+              <SectionHeading>Top Preparation Areas</SectionHeading>
+              <ol className="list-none space-y-3">
+                {analysis.topPreparationAreas.map((area, i) => (
+                  <li key={i} className="flex gap-3 text-sm text-gray-700">
+                    <span className="shrink-0 font-semibold text-gray-400 w-4">
+                      {i + 1}.
+                    </span>
+                    <span>{area}</span>
+                  </li>
+                ))}
+              </ol>
+            </Card>
+          )}
 
-              {/* 2 — Top Preparation Areas */}
-              {analysis.topPreparationAreas.length > 0 && (
-                <Card>
-                  <SectionHeading>Top Preparation Areas</SectionHeading>
-                  <ol className="list-none space-y-3">
-                    {analysis.topPreparationAreas.map((area, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-gray-700">
-                        <span className="shrink-0 font-semibold text-gray-400 w-4">
-                          {i + 1}.
-                        </span>
-                        <span>{area}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </Card>
-              )}
+          {/* 3 — Questions to Prepare For */}
+          {analysis.interviewQuestions.length > 0 && (
+            <Card>
+              <SectionHeading>Questions to Prepare For</SectionHeading>
+              <p className="text-xs text-gray-400 mb-3">
+                Based on your submitted application. Prepare to discuss these
+                areas clearly and honestly.
+              </p>
+              <ol className="list-none space-y-3">
+                {analysis.interviewQuestions.map((q, i) => (
+                  <li key={i} className="flex gap-3 text-sm text-gray-700">
+                    <span className="shrink-0 font-semibold text-gray-400 w-4">
+                      {i + 1}.
+                    </span>
+                    <span>{q}</span>
+                  </li>
+                ))}
+              </ol>
+            </Card>
+          )}
 
-              {/* 3 — Questions to Prepare For */}
-              {analysis.interviewQuestions.length > 0 && (
-                <Card>
-                  <SectionHeading>Questions to Prepare For</SectionHeading>
-                  <p className="text-xs text-gray-400 mb-3">
-                    Based on your submitted application. Prepare to discuss
-                    these areas clearly and honestly.
-                  </p>
-                  <ol className="list-none space-y-3">
-                    {analysis.interviewQuestions.map((q, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-gray-700">
-                        <span className="shrink-0 font-semibold text-gray-400 w-4">
-                          {i + 1}.
-                        </span>
-                        <span>{q}</span>
-                      </li>
-                    ))}
-                  </ol>
-                </Card>
-              )}
+          {/* 4 — View Full Analysis (collapsible) */}
+          <div className="border rounded-xl overflow-hidden">
+            <button
+              onClick={() => setShowFull((v) => !v)}
+              className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+            >
+              <span className="font-medium text-sm text-gray-900">
+                View Full Analysis
+              </span>
+              <span className="text-gray-400 text-sm">
+                {showFull ? "▲ Hide" : "▼ Show all sections"}
+              </span>
+            </button>
 
-              {/* 4 — View Full Analysis (collapsible) */}
-              <div className="border border-gray-100 rounded-xl overflow-hidden bg-white shadow-sm">
-                <button
-                  onClick={() => setShowFull((v) => !v)}
-                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-medium text-sm text-gray-900">
-                    View Full Analysis
-                  </span>
-                  <span className="text-gray-400 text-sm">
-                    {showFull ? "▲ Hide" : "▼ Show all sections"}
-                  </span>
-                </button>
-
-                {showFull && (
-                  <div className="border-t border-gray-100 px-4 py-4 space-y-3 bg-gray-50">
-                    {/* Cross-section observations */}
-                    {analysis.crossSectionObservations.length > 0 && (
-                      <div className="border border-gray-100 rounded-xl bg-white p-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                          Cross-Section Observations
-                        </p>
-                        <BulletList items={analysis.crossSectionObservations} />
-                      </div>
-                    )}
-
-                    {/* Lesson cards */}
-                    {analysis.sections.map((section, i) => (
-                      <LessonCard key={i} section={section} />
-                    ))}
+            {showFull && (
+              <div className="border-t px-4 py-4 space-y-3 bg-gray-50">
+                {analysis.crossSectionObservations.length > 0 && (
+                  <div className="border rounded-xl bg-white p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+                      Cross-Section Observations
+                    </p>
+                    <BulletList items={analysis.crossSectionObservations} />
                   </div>
                 )}
+                {analysis.sections.map((section, i) => (
+                  <LessonCard key={i} section={section} />
+                ))}
               </div>
-
-              {/* Disclaimer */}
-              <p className="text-xs text-gray-400 text-center pb-8">
-                VisaPrep is a preparation tool. It does not provide legal
-                advice, predict visa outcomes, or guarantee any result.
-              </p>
-            </div>
+            )}
           </div>
-        </>
+
+          {/* Disclaimer */}
+          <p className="text-xs text-gray-400 text-center pb-8">
+            VisaPrep is a preparation tool. It does not provide legal advice,
+            predict visa outcomes, or guarantee any result.
+          </p>
+        </div>
       )}
     </main>
   );
