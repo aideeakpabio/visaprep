@@ -145,13 +145,13 @@ MISSING SECTION RULE
 If a major AIM section cannot be detected in the extracted text, set that section's insights array to exactly: ["Not enough information was detected in the uploaded document to assess this area."] — and set keySignals and preparationPrompts to empty arrays. Do not invent signals. Do not infer absence as satisfactory. Do not flag absence as an inconsistency.
 
 TOP PREPARATION AREAS
-After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Order by priority, with HIGH Interview Weight sections leading. These should be actionable and specific to what is in this application — not generic advice.
+After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Select based on both Interview Weight AND applicant-specific relevance and specificity. A meaningful, specific observation from a MEDIUM-weight section should take priority over a generic observation from a HIGH-weight section. Order by overall significance to this particular application — not mechanically by section weight. These must be actionable and grounded in what is actually in this application, not generic advice.
 
 CROSS-SECTION OBSERVATIONS
 Identify 2–4 meaningful connections between sections. State these as observations, never as conclusions about the interview outcome.
 
-INTERVIEW QUESTIONS
-Generate the most likely questions a Consular Officer would ask based on this specific application. Prioritize sections rated HIGH (Travel Information, Previous U.S. Travel, Family/Roots/Ties). Do not target a fixed quantity — include all questions that are genuinely likely based on the submitted details. Do not use a generic question bank. Each question must arise from a specific detail present in this application.
+QUESTIONS TO PREPARE FOR
+Generate questions that arise naturally from this applicant's submitted information and that the applicant should be prepared to discuss. Prioritize sections rated HIGH (Travel Information, Previous U.S. Travel, Family/Roots/Ties). Do not target a fixed quantity — include all questions that are meaningfully grounded in the submitted details. Do not use a generic question bank. Each question must arise from a specific detail present in this application. Do not imply certainty about what a Consular Officer will ask.
 
 PROHIBITED LANGUAGE
 Never use: "red flag", "suspicious", "this could hurt", "strong ties", "weak ties", "your application looks good/bad", or any statement predicting approval or refusal.

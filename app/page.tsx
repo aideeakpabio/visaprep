@@ -288,12 +288,12 @@ export default function Home() {
             </Card>
           )}
 
-          {/* 3 — Most Likely Interview Questions */}
+          {/* 3 — Questions to Prepare For */}
           {analysis.interviewQuestions.length > 0 && (
             <Card>
-              <SectionHeading>Most Likely Interview Questions</SectionHeading>
+              <SectionHeading>Questions to Prepare For</SectionHeading>
               <p className="text-xs text-gray-400 mb-3">
-                Generated from your specific application — not a generic question bank.
+                Based on your submitted application. Prepare to discuss these areas clearly and honestly.
               </p>
               <ol className="space-y-3">
                 {analysis.interviewQuestions.map((q, i) => (
