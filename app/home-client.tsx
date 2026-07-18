@@ -17,7 +17,13 @@ function AnalyzingState() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      setStatusIndex((i) => (i + 1) % STATUS_MESSAGES.length);
+      setStatusIndex((i) => {
+        if (i >= STATUS_MESSAGES.length - 1) {
+          clearInterval(id);
+          return i;
+        }
+        return i + 1;
+      });
     }, 3500);
     return () => clearInterval(id);
   }, []);
