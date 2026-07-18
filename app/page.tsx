@@ -22,192 +22,7 @@ interface Analysis {
   interviewQuestions: string[];
 }
 
-// ── American flag — watercolor wash, feathered edges ─────────────────────────
-// Radial gradient mask anchored top-left fades the flag into the white page
-// so there are no hard rectangular boundaries.
-
-function AmericanFlag() {
-  const W = 360;
-  const H = 190;
-  const stripeH = H / 13;
-  const cantonW = W * 0.4;
-  const cantonH = stripeH * 7;
-
-  const rowsOf6 = [0, 2, 4, 6, 8];
-  const rowsOf5 = [1, 3, 5, 7];
-
-  const starY = (row: number) => (cantonH / 10) * (row + 1);
-  const star6X = (col: number) => (cantonW / 7) * (col + 1);
-  const star5X = (col: number) => (cantonW / 7) * (col + 1.5);
-
-  return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-      style={{ width: "100%", height: "auto" }}
-    >
-      <defs>
-        {/* Cloth-wave displacement */}
-        <filter id="flagWave" x="-6%" y="-6%" width="112%" height="112%">
-          <feTurbulence
-            type="fractalNoise"
-            baseFrequency="0.022 0.07"
-            numOctaves="2"
-            seed="9"
-            result="noise"
-          />
-          <feDisplacementMap
-            in="SourceGraphic"
-            in2="noise"
-            xChannelSelector="R"
-            yChannelSelector="G"
-            scale="13"
-          />
-        </filter>
-
-        {/* Soft-edge filter — gentle blur on the rendered flag for a
-            painted/watercolor feel before the mask is applied */}
-        <filter id="flagSoften" x="-4%" y="-4%" width="108%" height="108%">
-          <feGaussianBlur stdDeviation="1.8" result="blurred" />
-          <feComposite in="SourceGraphic" in2="blurred" operator="over" />
-        </filter>
-
-        {/* Radial gradient mask: opaque at top-left origin, dissolving
-            toward the right and bottom so there's no rectangular crop */}
-        <radialGradient
-          id="flagFade"
-          cx="0"
-          cy="0"
-          r="1.35"
-          gradientUnits="objectBoundingBox"
-        >
-          <stop offset="0%"  stopColor="white" stopOpacity="1"   />
-          <stop offset="38%" stopColor="white" stopOpacity="0.9" />
-          <stop offset="68%" stopColor="white" stopOpacity="0.4" />
-          <stop offset="88%" stopColor="white" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="white" stopOpacity="0" />
-        </radialGradient>
-        <mask id="flagMask">
-          <rect x="0" y="0" width={W} height={H} fill="url(#flagFade)" />
-        </mask>
-      </defs>
-
-      {/* Wave + soften applied together; mask clips to feathered shape */}
-      <g filter="url(#flagWave)" mask="url(#flagMask)">
-        {/* 13 alternating stripes */}
-        {Array.from({ length: 13 }, (_, i) => (
-          <rect
-            key={i}
-            x={0}
-            y={i * stripeH}
-            width={W}
-            height={stripeH + 0.5}
-            fill={i % 2 === 0 ? "#B22234" : "#FFFFFF"}
-          />
-        ))}
-
-        {/* Blue canton */}
-        <rect x={0} y={0} width={cantonW} height={cantonH} fill="#3C3B6E" />
-
-        {/* 50 white stars — 5 rows of 6, 4 rows of 5 */}
-        {rowsOf6.map((row) =>
-          [0, 1, 2, 3, 4, 5].map((col) => (
-            <circle
-              key={`r6-${row}-${col}`}
-              cx={star6X(col)}
-              cy={starY(row)}
-              r={3.2}
-              fill="white"
-            />
-          ))
-        )}
-        {rowsOf5.map((row) =>
-          [0, 1, 2, 3, 4].map((col) => (
-            <circle
-              key={`r5-${row}-${col}`}
-              cx={star5X(col)}
-              cy={starY(row)}
-              r={3.2}
-              fill="white"
-            />
-          ))
-        )}
-      </g>
-    </svg>
-  );
-}
-
-// ── Statue of Liberty — soft sketch illustration ──────────────────────────────
-// Matches the flag's visual language: feathered edges, slight blur, same
-// illustration register — decorates without competing with content.
-
-function LibertySilhouette() {
-  return (
-    <svg
-      viewBox="0 0 200 432"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      aria-hidden="true"
-      style={{ height: "100%", width: "auto" }}
-    >
-      <defs>
-        {/* Soft blur gives the silhouette a sketched, slightly diffuse edge */}
-        <filter id="libertySketch" x="-8%" y="-4%" width="116%" height="108%">
-          <feGaussianBlur stdDeviation="2.2" result="blurred" />
-          <feMerge>
-            <feMergeNode in="blurred" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-
-        {/* Gradient mask: fade top and left edges so the statue floats
-            naturally without a hard frame */}
-        <linearGradient id="libertyFadeTop" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="white" stopOpacity="0"   />
-          <stop offset="12%"  stopColor="white" stopOpacity="0.6" />
-          <stop offset="25%"  stopColor="white" stopOpacity="1"   />
-          <stop offset="85%"  stopColor="white" stopOpacity="1"   />
-          <stop offset="100%" stopColor="white" stopOpacity="0.5" />
-        </linearGradient>
-        <linearGradient id="libertyFadeLeft" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"  stopColor="white" stopOpacity="0"   />
-          <stop offset="20%" stopColor="white" stopOpacity="1"   />
-          <stop offset="100%" stopColor="white" stopOpacity="1"  />
-        </linearGradient>
-        <mask id="libertyMask">
-          <rect x="0" y="0" width="200" height="432" fill="url(#libertyFadeTop)" />
-          <rect x="0" y="0" width="200" height="432" fill="url(#libertyFadeLeft)" style={{ mixBlendMode: "multiply" }} />
-        </mask>
-      </defs>
-
-      <g filter="url(#libertySketch)" mask="url(#libertyMask)">
-        <ellipse cx="155" cy="10" rx="7" ry="10" />
-        <rect x="151" y="18" width="8" height="44" rx="3" />
-        <path d="M 106 150 L 116 130 L 132 102 L 148 78 L 151 62 L 159 62 L 156 80 L 140 106 L 124 136 L 112 156 Z" />
-        <rect x="60" y="102" width="60" height="13" rx="2" />
-        <polygon points="63,102 66,73 69,102" />
-        <polygon points="71,102 74,67 77,102" />
-        <polygon points="80,102 83,62 86,102" />
-        <polygon points="88,102 91,59 94,102" />
-        <polygon points="97,102 100,63 103,102" />
-        <polygon points="105,102 108,69 111,102" />
-        <polygon points="113,102 116,75 119,102" />
-        <circle cx="90" cy="128" r="15" />
-        <rect x="84" y="143" width="12" height="13" />
-        <path d="M 60 156 Q 75 150 90 148 Q 105 150 120 156 L 116 170 L 64 170 Z" />
-        <path d="M 64 156 L 54 163 L 46 188 L 40 218 L 52 222 L 58 194 L 66 170 Z" />
-        <rect x="32" y="212" width="24" height="32" rx="3" />
-        <path d="M 64 170 L 116 170 L 121 212 L 59 212 Z" />
-        <path d="M 59 212 L 121 212 L 132 322 L 48 322 Z" />
-        <path d="M 44 322 L 136 322 L 144 362 L 36 362 Z" />
-        <rect x="34" y="362" width="112" height="28" />
-        <rect x="20" y="390" width="140" height="22" />
-        <rect x="6" y="412" width="168" height="18" rx="2" />
-      </g>
-    </svg>
-  );
-}
+// SVG components removed — replaced with real photos (public/flag.jpg, public/statue.jpg)
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
@@ -383,24 +198,30 @@ export default function Home() {
       {!analysis && (
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
-          {/* US flag — top-left, watercolor wash emerging from corner */}
+          {/* US flag — real photo, top-left, 7% opacity */}
           <div
             className="absolute top-0 left-0 pointer-events-none select-none"
-            style={{ width: "32%", maxWidth: 280, opacity: 0.11 }}
+            style={{ width: "32%", maxWidth: 280, opacity: 0.07 }}
           >
-            <AmericanFlag />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/flag.jpg"
+              alt=""
+              style={{ width: "100%", height: "auto", display: "block" }}
+            />
           </div>
 
-          {/* Statue of Liberty — right background, sketch style */}
+          {/* Statue of Liberty — real photo, right background, 8% opacity */}
           <div
             className="absolute right-0 bottom-0 pointer-events-none select-none"
-            style={{
-              height: "72%",
-              color: "#1a2f6a",
-              opacity: 0.13,
-            }}
+            style={{ height: "72%", opacity: 0.08 }}
           >
-            <LibertySilhouette />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/statue.jpg"
+              alt=""
+              style={{ height: "100%", width: "auto", display: "block", objectFit: "contain", objectPosition: "bottom right" }}
+            />
           </div>
 
           {/* Hero content */}
