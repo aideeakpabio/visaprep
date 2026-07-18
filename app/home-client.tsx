@@ -242,13 +242,21 @@ function readSaved(): { analysis: Analysis | null; fileName: string } {
 
 export default function HomeClient() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
-  // Lazy initializers run once on first client render — no useEffect needed,
-  // no hydration mismatch (ssr: false guarantees this only runs in the browser).
-  const [fileName, setFileName] = useState(() => readSaved().fileName);
-  const [analysis, setAnalysis] = useState<Analysis | null>(() => readSaved().analysis);
+  const [fileName, setFileName] = useState("");
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
   const [showFull, setShowFull] = useState(false);
+
+  // Restore from sessionStorage after mount. Initial state is null so SSR and
+  // the first client render both show the upload page — no hydration mismatch.
+  useEffect(() => {
+    const saved = readSaved();
+    if (saved.analysis) {
+      setAnalysis(saved.analysis);
+      setFileName(saved.fileName);
+    }
+  }, []);
 
   async function handleUpload(file: File) {
     setFileName(file.name);

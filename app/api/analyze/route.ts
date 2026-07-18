@@ -524,7 +524,7 @@ Return ONLY valid JSON matching this exact schema. No text before or after the J
     "isLikelyDS160": true,
     "message": null
   },
-  "applicationProfile": "A factual 2–3 sentence summary of the application as submitted.",
+  "applicationProfile": "A factual 2–3 sentence summary written directly to the applicant in second person. Begin with 'You are...' or 'You have applied...' — never 'The applicant' or 'Applicant'. Example: 'You are applying for a B-2 tourist visa to visit the United States for 30 days. You have listed your employer as Acme Ltd and your trip is self-funded.'",
   "submissionDate": "The submission date exactly as it appears in the DS-160, or null if absent.",
   "topPreparationAreas": [
     {
