@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -142,6 +142,8 @@ function LessonCard({ section }: { section: Section }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
+const SESSION_KEY = "visaprep_analysis";
+
 export default function Home() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
@@ -150,6 +152,26 @@ export default function Home() {
   const [error, setError] = useState("");
   const [showFull, setShowFull] = useState(false);
 
+  // Restore analysis from sessionStorage on mount so that if Next.js
+  // forces a full browser navigation (due to RSC payload fetch failures
+  // through Replit's proxy), the results page reappears immediately
+  // instead of resetting to the upload form.
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        const { analysis: savedAnalysis, fileName: savedFileName } =
+          JSON.parse(saved);
+        if (savedAnalysis) {
+          setAnalysis(savedAnalysis);
+          setFileName(savedFileName ?? "");
+        }
+      }
+    } catch {
+      // Ignore parse errors — just show the upload form as normal
+    }
+  }, []);
+
   async function handleUpload(file: File) {
     setFileName(file.name);
     setPendingFile(null);
@@ -157,6 +179,8 @@ export default function Home() {
     setAnalysis(null);
     setError("");
     setShowFull(false);
+    // Clear any previously saved result while a new analysis is in flight
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
 
     try {
       const formData = new FormData();
@@ -175,6 +199,13 @@ export default function Home() {
       }
 
       setAnalysis(data.analysis);
+      // Persist to sessionStorage so a forced page reload doesn't lose results
+      try {
+        sessionStorage.setItem(
+          SESSION_KEY,
+          JSON.stringify({ analysis: data.analysis, fileName: file.name })
+        );
+      } catch { /* ignore storage errors */ }
     } catch (err) {
       console.error(err);
       setError("Something went wrong while analyzing your document.");
@@ -321,7 +352,10 @@ export default function Home() {
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
-                  if (f) handleUpload(f);
+                  if (f) {
+                    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+                    handleUpload(f);
+                  }
                 }}
               />
             </label>
