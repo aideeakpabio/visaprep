@@ -24,3 +24,30 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ── Analyzing state animations ─────────────────────────────────────────── */
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 1;   }
+}
+
+.analyzing-dot {
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+.analyzing-dot:nth-child(2) { animation-delay: 0.23s; }
+.analyzing-dot:nth-child(3) { animation-delay: 0.46s; }
+
+@keyframes status-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.status-message {
+  animation: status-fade 0.5s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analyzing-dot  { animation: none; opacity: 0.6; }
+  .status-message { animation: none; }
+}

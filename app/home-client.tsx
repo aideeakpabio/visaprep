@@ -1,6 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+// ── Analyzing state ──────────────────────────────────────────────────────────
+
+const STATUS_MESSAGES = [
+  "Reading your DS-160",
+  "Reviewing your application details",
+  "Connecting information across sections",
+  "Identifying key preparation areas",
+  "Preparing your personalized Application Insights",
+];
+
+function AnalyzingState() {
+  const [statusIndex, setStatusIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setStatusIndex((i) => (i + 1) % STATUS_MESSAGES.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="border border-gray-100 rounded-2xl p-8 text-center bg-white shadow-sm">
+      <p className="text-sm text-gray-700 font-medium mb-3 flex items-center justify-center gap-1">
+        Analyzing your application
+        <span className="inline-flex gap-[3px] ml-1 translate-y-px">
+          <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
+          <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
+          <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
+        </span>
+      </p>
+      <p key={statusIndex} className="status-message text-xs text-gray-400">
+        {STATUS_MESSAGES[statusIndex]}
+      </p>
+    </div>
+  );
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -347,16 +384,7 @@ export default function HomeClient() {
               </div>
             )}
 
-            {analyzing && (
-              <div className="border border-gray-100 rounded-2xl p-8 text-center bg-white shadow-sm">
-                <p className="text-sm text-gray-700 font-medium mb-1">
-                  Analyzing your application…
-                </p>
-                <p className="text-xs text-gray-400">
-                  This usually takes 10–20 seconds.
-                </p>
-              </div>
-            )}
+            {analyzing && <AnalyzingState />}
 
             <p className="mt-3 text-xs text-gray-400 text-center">
               🔒 Your document is analyzed securely.
