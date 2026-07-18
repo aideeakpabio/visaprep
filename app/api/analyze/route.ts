@@ -195,7 +195,7 @@ Sections must appear in AIM lesson order: Travel Information, Personal Informati
 // Temporary flag for UI verification before the OpenAI API key is configured.
 // Set to false to re-enable the real Application Intelligence Engine.
 // ─────────────────────────────────────────────────────────────────────────────
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 const MOCK_ANALYSIS = {
   applicationProfile:
@@ -468,6 +468,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       pages: extracted.pages,
       analysis,
+      model: completion.model,
+      usage: completion.usage,
     });
   } catch (error) {
     console.error("ANALYZE ERROR:", error);
