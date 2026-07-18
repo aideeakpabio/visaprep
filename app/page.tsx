@@ -313,10 +313,10 @@ export default function Home() {
       {!analysis && (
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
-          {/* US flag — left background, low opacity */}
+          {/* US flag — top-left corner, partial paintbrush reveal */}
           <div
-            className="absolute left-0 top-[30%] -translate-y-1/2 pointer-events-none select-none"
-            style={{ width: "36%", maxWidth: 300, opacity: 0.09 }}
+            className="absolute top-0 left-0 pointer-events-none select-none"
+            style={{ width: "30%", maxWidth: 260, opacity: 0.09 }}
           >
             <AmericanFlag />
           </div>
