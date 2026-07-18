@@ -198,31 +198,6 @@ export default function Home() {
       {!analysis && (
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
-          {/* US flag — real photo, top-left, 7% opacity */}
-          <div
-            className="absolute top-0 left-0 pointer-events-none select-none"
-            style={{ width: "32%", maxWidth: 280, opacity: 0.07 }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/flag.jpg"
-              alt=""
-              style={{ width: "100%", height: "auto", display: "block" }}
-            />
-          </div>
-
-          {/* Statue of Liberty — real photo, right background, 8% opacity */}
-          <div
-            className="absolute right-0 bottom-0 pointer-events-none select-none"
-            style={{ height: "72%", opacity: 0.08 }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/statue.jpg"
-              alt=""
-              style={{ height: "100%", width: "auto", display: "block", objectFit: "contain", objectPosition: "bottom right" }}
-            />
-          </div>
 
           {/* Hero content */}
           <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-10 px-8">
