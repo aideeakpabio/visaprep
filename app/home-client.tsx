@@ -253,6 +253,7 @@ export default function HomeClient() {
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
   const [showFull, setShowFull] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(false);
 
   // Restore from sessionStorage after mount. Initial state is null so SSR and
   // the first client render both show the upload page — no hydration mismatch.
@@ -632,10 +633,44 @@ export default function HomeClient() {
 
           {/* CTA */}
           {!isInvalidDoc && analysis && (
-            <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
+            <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
               <p className="text-sm text-gray-700 leading-relaxed">
                 Your free Application Insights are a good start, but they cover only part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply, discover more areas to prepare for, and be ready to explain your application clearly and confidently during your interview.
               </p>
+              <button
+                onClick={() => setShowComingSoon(true)}
+                className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
+              >
+                Continue to Full Assessment
+              </button>
+              <p className="text-xs text-gray-400 italic">
+                Your interview starts with your application. So do we.
+              </p>
+            </div>
+          )}
+
+          {/* Coming-soon modal */}
+          {showComingSoon && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              onClick={() => setShowComingSoon(false)}
+            >
+              <div
+                className="bg-white rounded-2xl shadow-xl p-8 mx-4 max-w-sm w-full flex flex-col items-center gap-4 text-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-3xl">🔒</div>
+                <h2 className="text-lg font-semibold text-gray-900">Coming Soon</h2>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  The full VisaPrep Assessment is on its way. Check back soon.
+                </p>
+                <button
+                  onClick={() => setShowComingSoon(false)}
+                  className="mt-2 px-6 py-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150"
+                >
+                  Got it
+                </button>
+              </div>
             </div>
           )}
 
