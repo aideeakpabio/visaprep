@@ -1,0 +1,163 @@
+Objective
+
+Refine the customer-facing language throughout the VisaPrep Application Insights experience. This is a writing and UX improvement only. Do not change the application logic, JSON schema, API structure, data extraction, or analysis flow.
+
+Writing Philosophy
+
+VisaPrep is designed to reduce uncertainty by helping applicants understand their own application.
+
+Every piece of customer-facing text should make applicants feel:
+
+encouraged
+understood
+supported
+more confident
+
+Never make them feel:
+
+judged
+interrogated
+accused
+intimidated
+
+VisaPrep should sound like an experienced visa coach sitting beside the applicant, not like a government report or AI assistant.
+
+Writing Guidelines
+
+Rewrite customer-facing text using these rules:
+
+1. Use simple everyday English.
+
+Prefer words like:
+
+shows
+asks
+understand
+explain
+prepare
+ready
+
+Avoid unnecessarily formal words like:
+
+indicates
+explore
+assess
+evaluate
+personalized preparation
+comprehensive
+optimize
+maximize
+facilitate
+
+If an ordinary Nigerian applicant would have to read a sentence twice, simplify it.
+
+2. Speak directly to the applicant.
+
+Whenever appropriate, use:
+
+you
+your application
+your interview
+
+instead of:
+
+the applicant
+the applicant's application
+
+Example:
+
+Instead of:
+
+The applicant is applying...
+
+Use:
+
+You're applying...
+
+3. Encourage throughout the experience.
+
+The report should reassure applicants while remaining truthful.
+
+Use supportive language such as:
+
+Don't worry...
+This is normal...
+We'll help you...
+This is simply something to prepare for...
+Understanding this now can help you feel more confident during your interview.
+
+Do not exaggerate or promise approval.
+
+4. Avoid sounding accusatory.
+
+Replace language that sounds investigative.
+
+Examples:
+
+Instead of:
+
+A consular officer may explore this...
+
+Use:
+
+During your interview, you may be asked about this...
+
+or
+
+A consular officer may want to understand this better...
+
+5. Remove unnecessary legal or technical wording.
+
+Example:
+
+Instead of:
+
+refusal under section 214(b)
+
+Use:
+
+previous visa refusal
+
+Applicants do not need legal terminology unless it genuinely helps them understand something.
+
+6. Be consistent.
+
+Prefer:
+
+shows
+understand
+be ready to explain
+
+Keep terminology consistent throughout the report.
+
+New Encouragement Section
+
+Immediately after Applicant Snapshot, add a short reassurance message.
+
+Suggested copy:
+
+You're off to a good start. Your application already tells your story, and understanding it is the first step toward a confident interview. As you go through these insights, we'll help you understand the areas that may come up and how to prepare for them.
+
+Keep the tone warm and encouraging.
+
+CTA
+
+Update the final call-to-action to:
+
+Your free Application Insights are a good start, but they cover only part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply, discover more areas to prepare for, and be ready to explain your application clearly and confidently during your interview.
+
+Important
+
+This task is a UX and copywriting refinement only.
+
+Do not modify:
+
+backend logic
+prompts
+JSON schema
+AI analysis
+API routes
+scoring
+data extraction
+
+Only improve customer-facing wording and user experience.
