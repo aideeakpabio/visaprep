@@ -22,16 +22,17 @@ interface Analysis {
   interviewQuestions: string[];
 }
 
-// ── American flag (waving, via SVG displacement filter) ───────────────────────
+// ── American flag — watercolor wash, feathered edges ─────────────────────────
+// Radial gradient mask anchored top-left fades the flag into the white page
+// so there are no hard rectangular boundaries.
 
 function AmericanFlag() {
   const W = 360;
   const H = 190;
   const stripeH = H / 13;
-  const cantonW = W * 0.4;   // 144
-  const cantonH = stripeH * 7; // ~102
+  const cantonW = W * 0.4;
+  const cantonH = stripeH * 7;
 
-  // 50 stars: 5 rows of 6 + 4 rows of 5
   const rowsOf6 = [0, 2, 4, 6, 8];
   const rowsOf5 = [1, 3, 5, 7];
 
@@ -47,7 +48,7 @@ function AmericanFlag() {
       style={{ width: "100%", height: "auto" }}
     >
       <defs>
-        {/* Wave filter: fractal noise drives a displacement map for cloth-like waving */}
+        {/* Cloth-wave displacement */}
         <filter id="flagWave" x="-6%" y="-6%" width="112%" height="112%">
           <feTurbulence
             type="fractalNoise"
@@ -64,10 +65,37 @@ function AmericanFlag() {
             scale="13"
           />
         </filter>
+
+        {/* Soft-edge filter — gentle blur on the rendered flag for a
+            painted/watercolor feel before the mask is applied */}
+        <filter id="flagSoften" x="-4%" y="-4%" width="108%" height="108%">
+          <feGaussianBlur stdDeviation="1.8" result="blurred" />
+          <feComposite in="SourceGraphic" in2="blurred" operator="over" />
+        </filter>
+
+        {/* Radial gradient mask: opaque at top-left origin, dissolving
+            toward the right and bottom so there's no rectangular crop */}
+        <radialGradient
+          id="flagFade"
+          cx="0"
+          cy="0"
+          r="1.35"
+          gradientUnits="objectBoundingBox"
+        >
+          <stop offset="0%"  stopColor="white" stopOpacity="1"   />
+          <stop offset="38%" stopColor="white" stopOpacity="0.9" />
+          <stop offset="68%" stopColor="white" stopOpacity="0.4" />
+          <stop offset="88%" stopColor="white" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </radialGradient>
+        <mask id="flagMask">
+          <rect x="0" y="0" width={W} height={H} fill="url(#flagFade)" />
+        </mask>
       </defs>
 
-      <g filter="url(#flagWave)">
-        {/* 13 alternating stripes — red on even rows */}
+      {/* Wave + soften applied together; mask clips to feathered shape */}
+      <g filter="url(#flagWave)" mask="url(#flagMask)">
+        {/* 13 alternating stripes */}
         {Array.from({ length: 13 }, (_, i) => (
           <rect
             key={i}
@@ -79,10 +107,10 @@ function AmericanFlag() {
           />
         ))}
 
-        {/* Blue canton (union) */}
+        {/* Blue canton */}
         <rect x={0} y={0} width={cantonW} height={cantonH} fill="#3C3B6E" />
 
-        {/* 50 white stars */}
+        {/* 50 white stars — 5 rows of 6, 4 rows of 5 */}
         {rowsOf6.map((row) =>
           [0, 1, 2, 3, 4, 5].map((col) => (
             <circle
@@ -110,7 +138,9 @@ function AmericanFlag() {
   );
 }
 
-// ── Statue of Liberty silhouette ─────────────────────────────────────────────
+// ── Statue of Liberty — soft sketch illustration ──────────────────────────────
+// Matches the flag's visual language: feathered edges, slight blur, same
+// illustration register — decorates without competing with content.
 
 function LibertySilhouette() {
   return (
@@ -121,28 +151,60 @@ function LibertySilhouette() {
       aria-hidden="true"
       style={{ height: "100%", width: "auto" }}
     >
-      <ellipse cx="155" cy="10" rx="7" ry="10" />
-      <rect x="151" y="18" width="8" height="44" rx="3" />
-      <path d="M 106 150 L 116 130 L 132 102 L 148 78 L 151 62 L 159 62 L 156 80 L 140 106 L 124 136 L 112 156 Z" />
-      <rect x="60" y="102" width="60" height="13" rx="2" />
-      <polygon points="63,102 66,73 69,102" />
-      <polygon points="71,102 74,67 77,102" />
-      <polygon points="80,102 83,62 86,102" />
-      <polygon points="88,102 91,59 94,102" />
-      <polygon points="97,102 100,63 103,102" />
-      <polygon points="105,102 108,69 111,102" />
-      <polygon points="113,102 116,75 119,102" />
-      <circle cx="90" cy="128" r="15" />
-      <rect x="84" y="143" width="12" height="13" />
-      <path d="M 60 156 Q 75 150 90 148 Q 105 150 120 156 L 116 170 L 64 170 Z" />
-      <path d="M 64 156 L 54 163 L 46 188 L 40 218 L 52 222 L 58 194 L 66 170 Z" />
-      <rect x="32" y="212" width="24" height="32" rx="3" />
-      <path d="M 64 170 L 116 170 L 121 212 L 59 212 Z" />
-      <path d="M 59 212 L 121 212 L 132 322 L 48 322 Z" />
-      <path d="M 44 322 L 136 322 L 144 362 L 36 362 Z" />
-      <rect x="34" y="362" width="112" height="28" />
-      <rect x="20" y="390" width="140" height="22" />
-      <rect x="6" y="412" width="168" height="18" rx="2" />
+      <defs>
+        {/* Soft blur gives the silhouette a sketched, slightly diffuse edge */}
+        <filter id="libertySketch" x="-8%" y="-4%" width="116%" height="108%">
+          <feGaussianBlur stdDeviation="2.2" result="blurred" />
+          <feMerge>
+            <feMergeNode in="blurred" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        {/* Gradient mask: fade top and left edges so the statue floats
+            naturally without a hard frame */}
+        <linearGradient id="libertyFadeTop" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="white" stopOpacity="0"   />
+          <stop offset="12%"  stopColor="white" stopOpacity="0.6" />
+          <stop offset="25%"  stopColor="white" stopOpacity="1"   />
+          <stop offset="85%"  stopColor="white" stopOpacity="1"   />
+          <stop offset="100%" stopColor="white" stopOpacity="0.5" />
+        </linearGradient>
+        <linearGradient id="libertyFadeLeft" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"  stopColor="white" stopOpacity="0"   />
+          <stop offset="20%" stopColor="white" stopOpacity="1"   />
+          <stop offset="100%" stopColor="white" stopOpacity="1"  />
+        </linearGradient>
+        <mask id="libertyMask">
+          <rect x="0" y="0" width="200" height="432" fill="url(#libertyFadeTop)" />
+          <rect x="0" y="0" width="200" height="432" fill="url(#libertyFadeLeft)" style={{ mixBlendMode: "multiply" }} />
+        </mask>
+      </defs>
+
+      <g filter="url(#libertySketch)" mask="url(#libertyMask)">
+        <ellipse cx="155" cy="10" rx="7" ry="10" />
+        <rect x="151" y="18" width="8" height="44" rx="3" />
+        <path d="M 106 150 L 116 130 L 132 102 L 148 78 L 151 62 L 159 62 L 156 80 L 140 106 L 124 136 L 112 156 Z" />
+        <rect x="60" y="102" width="60" height="13" rx="2" />
+        <polygon points="63,102 66,73 69,102" />
+        <polygon points="71,102 74,67 77,102" />
+        <polygon points="80,102 83,62 86,102" />
+        <polygon points="88,102 91,59 94,102" />
+        <polygon points="97,102 100,63 103,102" />
+        <polygon points="105,102 108,69 111,102" />
+        <polygon points="113,102 116,75 119,102" />
+        <circle cx="90" cy="128" r="15" />
+        <rect x="84" y="143" width="12" height="13" />
+        <path d="M 60 156 Q 75 150 90 148 Q 105 150 120 156 L 116 170 L 64 170 Z" />
+        <path d="M 64 156 L 54 163 L 46 188 L 40 218 L 52 222 L 58 194 L 66 170 Z" />
+        <rect x="32" y="212" width="24" height="32" rx="3" />
+        <path d="M 64 170 L 116 170 L 121 212 L 59 212 Z" />
+        <path d="M 59 212 L 121 212 L 132 322 L 48 322 Z" />
+        <path d="M 44 322 L 136 322 L 144 362 L 36 362 Z" />
+        <rect x="34" y="362" width="112" height="28" />
+        <rect x="20" y="390" width="140" height="22" />
+        <rect x="6" y="412" width="168" height="18" rx="2" />
+      </g>
     </svg>
   );
 }
@@ -266,16 +328,16 @@ function LessonCard({ section }: { section: Section }) {
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState("");
   const [showFull, setShowFull] = useState(false);
 
-  async function handleUpload(file: File | undefined) {
-    if (!file) return;
-
+  async function handleUpload(file: File) {
     setFileName(file.name);
+    setPendingFile(null);
     setAnalyzing(true);
     setAnalysis(null);
     setError("");
@@ -306,6 +368,14 @@ export default function Home() {
     }
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setPendingFile(f);
+    setFileName(f.name);
+    setError("");
+  }
+
   return (
     <main className="min-h-screen flex flex-col items-center bg-white">
 
@@ -313,15 +383,15 @@ export default function Home() {
       {!analysis && (
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
-          {/* US flag — top-left corner, partial paintbrush reveal */}
+          {/* US flag — top-left, watercolor wash emerging from corner */}
           <div
             className="absolute top-0 left-0 pointer-events-none select-none"
-            style={{ width: "30%", maxWidth: 260, opacity: 0.09 }}
+            style={{ width: "32%", maxWidth: 280, opacity: 0.11 }}
           >
             <AmericanFlag />
           </div>
 
-          {/* Statue of Liberty — right background, low opacity */}
+          {/* Statue of Liberty — right background, sketch style */}
           <div
             className="absolute right-0 bottom-0 pointer-events-none select-none"
             style={{
@@ -333,15 +403,19 @@ export default function Home() {
             <LibertySilhouette />
           </div>
 
-          {/* Hero content — z-10 keeps it fully above background elements */}
-          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-12 px-8">
-            <h1 className="text-5xl font-bold mb-4">VisaPrep</h1>
-            <p className="text-xl mb-3">
-              Prepare with clarity. Interview with confidence.
+          {/* Hero content */}
+          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-10 px-8">
+            <h1 className="text-5xl font-bold mb-6 tracking-tight">VisaPrep</h1>
+
+            <p className="text-xl font-medium text-gray-800 mb-1 leading-snug">
+              Your interview starts with your application.
             </p>
-            <p className="text-gray-600 max-w-xl">
-              Your visa application tells your story. VisaPrep helps you
-              understand it, so you can explain it clearly and confidently.
+            <p className="text-lg italic text-gray-400 mb-5">
+              So do we.
+            </p>
+            <p className="text-gray-500 max-w-sm text-sm leading-relaxed">
+              Upload your completed DS-160 and receive your personalized
+              Application Insights in minutes.
             </p>
           </div>
 
@@ -349,34 +423,77 @@ export default function Home() {
           <div className="relative z-10 w-full max-w-md px-8 pb-16">
             {!analyzing && (
               <>
-                <label className="border-2 border-dashed rounded-xl p-8 cursor-pointer text-center w-full hover:border-gray-400 transition-colors block bg-white/90">
-                  <span className="block mb-3 text-gray-700">
-                    Upload your DS-160 application
-                  </span>
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className="hidden"
-                    onChange={(e) => handleUpload(e.target.files?.[0])}
-                  />
-                  <span className="bg-black text-white px-6 py-3 rounded-lg text-sm font-medium">
-                    Choose File
-                  </span>
-                </label>
-
-                {fileName && (
-                  <p className="mt-4 text-sm text-gray-600 text-center">
-                    ✅ Received:{" "}
-                    <span className="font-medium">{fileName}</span>
+                {/* Drop zone */}
+                <div className="border border-gray-200 rounded-2xl p-8 text-center bg-white shadow-sm">
+                  <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+                    Upload your completed DS-160 PDF
                   </p>
-                )}
+
+                  {!pendingFile ? (
+                    /* Step 1: select file */
+                    <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 opacity-70"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4" />
+                      </svg>
+                      Select DS-160 PDF
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  ) : (
+                    /* Step 2: file chosen — confirm and analyze */
+                    <div className="flex flex-col items-center gap-4">
+                      <p className="text-sm text-gray-600 flex items-center gap-2">
+                        <span className="text-green-500">✓</span>
+                        <span className="font-medium truncate max-w-xs">{pendingFile.name}</span>
+                      </p>
+                      <button
+                        onClick={() => handleUpload(pendingFile)}
+                        className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Analyze My Application
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4 opacity-70"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </button>
+                      <label className="text-xs text-gray-400 underline cursor-pointer hover:text-gray-600 transition-colors">
+                        Choose a different file
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
               </>
             )}
 
             {analyzing && (
-              <div className="text-center text-gray-500 py-4">
-                <p className="text-sm">Analyzing your application…</p>
-                <p className="text-xs mt-1 text-gray-400">
+              <div className="border border-gray-100 rounded-2xl p-8 text-center bg-white shadow-sm">
+                <p className="text-sm text-gray-700 font-medium mb-1">
+                  Analyzing your application…
+                </p>
+                <p className="text-xs text-gray-400">
                   This usually takes 10–20 seconds.
                 </p>
               </div>
@@ -404,9 +521,12 @@ export default function Home() {
               Upload another
               <input
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept=".pdf"
                 className="hidden"
-                onChange={(e) => handleUpload(e.target.files?.[0])}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handleUpload(f);
+                }}
               />
             </label>
           </div>

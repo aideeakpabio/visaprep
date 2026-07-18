@@ -1,0 +1,170 @@
+The landing page is close, but I'd like to elevate it from "good" to "premium." Please make the following refinements while preserving the existing clean layout and upload-first experience.
+
+## Overall Goal
+
+The page should immediately communicate:
+
+"This is a premium, trustworthy product that helps applicants prepare for a U.S. visa interview."
+
+The upload area must remain the visual focal point.
+
+Do not redesign the page from scratch.
+
+----------------------------------------
+
+## 1. Hero Message
+
+Replace the current hero copy.
+
+Current:
+
+"Your visa application tells your story. VisaPrep helps you understand it, so you can explain it clearly and confidently."
+
+Replace with:
+
+Headline:
+
+Your interview starts with your application.
+
+Supporting line:
+
+So do we.
+
+Body copy:
+
+Upload your completed DS-160 and receive your personalized Application Insights in minutes.
+
+Keep the tone calm, premium, and reassuring.
+
+----------------------------------------
+
+## 2. American Flag
+
+The flag is much better now, but it still feels like a rectangular image placed in the corner.
+
+Please redesign it so it feels integrated into the page.
+
+Desired style:
+
+- soft brush stroke
+- watercolor wash
+- feathered edges
+- gently fading into the white background
+- no hard rectangular boundaries
+
+It should feel like America emerging from the page rather than a pasted graphic.
+
+Maintain the current low opacity.
+
+----------------------------------------
+
+## 3. Statue of Liberty
+
+Keep the statue on the right.
+
+However:
+
+- match its artistic style to the flag
+- use the same visual language
+- both should feel like part of one illustration set
+
+Possible styles:
+
+- watercolor
+- sketch
+- blueprint
+- soft illustration
+
+Keep opacity low.
+
+The statue should decorate—not compete with the content.
+
+----------------------------------------
+
+## 4. Upload Section
+
+This remains the most important element on the page.
+
+Improve the wording.
+
+Instead of:
+
+"Upload your DS-160 application"
+
+Use:
+
+"Upload your completed DS-160 PDF"
+
+The upload area should feel premium and trustworthy.
+
+----------------------------------------
+
+## 5. Upload Button
+
+If technically possible without hurting usability:
+
+Instead of displaying a generic browser button labelled:
+
+"Choose File"
+
+Create a branded upload button.
+
+Examples:
+
+"Select DS-160 PDF"
+
+or after selection:
+
+"Analyze My Application"
+
+The experience should feel intentional rather than default browser UI.
+
+----------------------------------------
+
+## 6. Visual Hierarchy
+
+Maintain this reading order:
+
+1. VisaPrep
+2. Hero message
+3. Supporting copy
+4. Upload box
+
+The upload box must remain the primary call to action.
+
+----------------------------------------
+
+## 7. Overall Design
+
+Increase the premium feel.
+
+The page should feel:
+
+- calm
+- modern
+- trustworthy
+- government-adjacent
+- AI-powered without looking "techy"
+
+Avoid flashy gradients.
+
+Avoid unnecessary animations.
+
+Use generous whitespace.
+
+The goal is confidence, not excitement.
+
+----------------------------------------
+
+## 8. Preserve
+
+Do NOT change:
+
+- overall layout
+- typography hierarchy
+- upload workflow
+- spacing around the upload area
+
+Only refine the visual quality and messaging.
+
+The result should look like a product ready for public launch rather than an MVP.
