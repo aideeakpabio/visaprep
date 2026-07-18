@@ -138,6 +138,70 @@ Key relationships:
 
 STAGE 2 — GENERATE APPLICATION INSIGHTS
 
+STEP A — IDENTIFY VISA CATEGORY
+
+Before generating any output, identify the visa classification shown in this DS-160.
+
+Use that classification as a reasoning lens throughout the entire analysis — not merely as a label to mention. Adjust:
+
+- which application details receive priority
+- why those details may naturally come up in the interview
+- what the applicant should be ready to explain
+- which cross-section relationships deserve attention
+- which personalized questions are most relevant
+
+The same application fact may carry different significance depending on the visa category. Adjust your analysis accordingly.
+
+If the visa category cannot be clearly identified from the extracted text, state that the application does not provide enough information to apply a confident category-specific lens and proceed with general DS-160 guidance.
+
+CATEGORY-SPECIFIC REASONING PRIORITIES
+
+Use the following as reasoning guidance, not as a rigid checklist.
+
+B1/B2 — Business or Tourism:
+Prioritize: purpose of travel, itinerary and duration, funding, employment or business context, accommodation and U.S. contacts, prior travel, previous visa history, changes since any prior refusal, and consistency across travel purpose, dates, finances, and responsibilities.
+
+F-1 — Academic Student:
+Prioritize: school and program choice, academic background, connection between prior education or work and the intended program, funding for tuition and living expenses, timing of study, understanding of the program, educational and professional goals, and consistency among school, course, funding, and background. Previous visa or travel history where relevant.
+
+J-1 — Exchange Visitor:
+Prioritize: exchange program purpose, sponsor and host organization, program duration, funding, connection between the program and the applicant's background, expected learning or professional development, and consistency among sponsor, role, dates, and objectives.
+
+H, L, O, P, or other employment-based categories:
+Prioritize: petitioning employer or organization, role and responsibilities, professional background and qualifications, relationship between prior experience and proposed U.S. role, work location and assignment, petition-related details shown in the DS-160, and consistency among employer, role, dates, and professional history.
+
+K and other fiancé(e)-related categories:
+Prioritize: relationship history, timeline, prior meetings, contact and family details, and consistency across relationship-related information. Do not offer legal conclusions or predict outcomes.
+
+Crew, transit, diplomatic, media, or other categories:
+Prioritize the declared purpose, sponsoring organization, assignment, itinerary, and category-specific facts contained in the application. Do not force B1/B2 reasoning onto these applicants.
+
+CATEGORY REASONING RULES
+
+1. Do not assume every category has the same interview priorities.
+2. Do not use generic B1/B2 language for non-B1/B2 applicants.
+3. Ground every insight in information actually found in the DS-160.
+4. Do not invent missing school, petition, sponsor, employer, financial, or relationship details.
+5. When the visa category is unclear or conflicting, state that the application does not provide enough information to apply a confident category-specific lens and proceed with general guidance.
+
+CATEGORY REASONING EXAMPLES
+
+The same application fact has different significance depending on the visa category.
+
+Parent or family funding:
+- B1/B2: Focus on how the trip costs will be covered, the relationship to the sponsor, and whether the travel plan is financially understandable.
+- F-1: Focus on how tuition and living expenses will be financed throughout the academic program, the reliability of the funding source, and how the funding relates to the study plan.
+
+Recent employment change:
+- B1/B2: Focus on how the new role relates to the stated travel purpose, professional responsibilities, timing, and return plans.
+- F-1: Focus on why further study is being pursued at this point in the applicant's career and how the program connects with prior education or employment.
+
+U.S. contact:
+- B1/B2: Focus on the relationship between the contact, accommodation, itinerary, and purpose of travel.
+- F-1: Distinguish between the school or designated school contact and any personal contacts in the United States.
+
+──────────────────────────────────────────
+
 PURPOSE OF STAGE 2
 
 Your responsibility is not simply to identify facts within the DS-160.
