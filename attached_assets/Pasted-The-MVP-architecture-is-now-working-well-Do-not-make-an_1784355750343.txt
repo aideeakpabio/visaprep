@@ -1,0 +1,132 @@
+The MVP architecture is now working well.
+
+Do not make any structural, schema, UI, routing, storage, or API changes.
+
+Do not change the AIM Lessons.
+
+Do not change the JSON schema.
+
+Do not change the frontend layout.
+
+This refinement is purely about improving the educational quality and tone of the generated analysis.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Our goal is for VisaPrep to feel like an experienced visa coach helping the applicant understand their own application.
+
+Review the Stage 2 prompt and improve it according to these principles.
+
+1. Teach instead of merely state.
+
+Whenever "Why this may come up" simply repeats the observation, rewrite it so it genuinely explains WHY the topic may naturally arise during the interview.
+
+Good example:
+
+Observation:
+"Your application indicates that you plan to attend a professional forum in Houston."
+
+Weak:
+"Officers often ask about the purpose of travel."
+
+Better:
+"A consular officer may explore this to better understand how attending the forum relates to your professional responsibilities and how it fits within your overall travel plans."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. Remove unnecessarily intimidating language.
+
+Avoid wording like:
+
+- assess your intentions
+- determine whether you qualify
+- evaluate your eligibility
+- establish credibility
+- verify your ties
+
+Replace these with educational language such as:
+
+- better understand...
+- clarify...
+- understand the relationship between...
+- understand how...
+- discuss...
+
+The applicant should feel informed, not judged.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3. Reduce repetition.
+
+Avoid repeating nearly identical information across:
+
+Observation
+
+↓
+
+Why this may come up
+
+↓
+
+What you should be ready to explain
+
+Each section should contribute new understanding.
+
+Observation = What the application says.
+
+Why this may come up = Why that detail may naturally become part of the interview.
+
+What you should be ready to explain = What the applicant should prepare to discuss.
+
+Each section has a different purpose.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4. Make explanations more applicant-centered.
+
+Prefer:
+
+"Your application indicates..."
+
+"A consular officer may want to better understand..."
+
+instead of
+
+"The applicant..."
+
+"Officers assess..."
+
+The conversation should feel personal.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. Strengthen educational value.
+
+Every explanation should answer:
+
+"So what?"
+
+The applicant should finish reading every preparation area with a better understanding of why that topic matters.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6. Preserve ethics.
+
+Do not encourage memorization.
+
+Do not generate scripts.
+
+Do not predict interview outcomes.
+
+Continue emphasizing honest preparation and clear explanation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After making these refinements:
+
+Run one analysis using the existing Iniobong Daniel mock DS-160.
+
+Compare the new output against the previous version.
+
+Briefly explain what improved in the wording and educational quality.
+
+Do not change anything else.
