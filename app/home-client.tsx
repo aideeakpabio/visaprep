@@ -6,10 +6,10 @@ import { useState, useEffect } from "react";
 
 const STATUS_MESSAGES = [
   "Reading your DS-160",
-  "Reviewing your application details",
-  "Connecting information across sections",
-  "Identifying key preparation areas",
-  "Preparing your personalized Application Insights",
+  "Looking at your application details",
+  "Connecting your answers across sections",
+  "Finding areas to help you prepare",
+  "Getting your Application Insights ready",
 ];
 
 function AnalyzingState() {
@@ -31,7 +31,7 @@ function AnalyzingState() {
   return (
     <div className="border border-gray-100 rounded-2xl p-8 text-center bg-white shadow-sm">
       <p className="text-sm text-gray-700 font-medium mb-3 flex items-center justify-center gap-1">
-        Analyzing your application
+        Going through your application
         <span className="inline-flex gap-[3px] ml-1 translate-y-px">
           <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
           <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
@@ -175,7 +175,7 @@ function LessonCard({ section }: { section: Section }) {
         <div className="border-t px-4 pb-4 pt-4 space-y-4 bg-white">
           {section.keySignals.length > 0 && (
             <div>
-              <FieldLabel>What was detected</FieldLabel>
+              <FieldLabel>What your application shows</FieldLabel>
               <ul className="space-y-1">
                 {section.keySignals.map((s, i) => (
                   <li key={i} className="text-sm text-gray-600 flex gap-2">
@@ -197,7 +197,7 @@ function LessonCard({ section }: { section: Section }) {
                 <div key={i} className="space-y-3">
                   {i > 0 && <div className="border-t border-gray-100" />}
                   <div>
-                    <FieldLabel>Observation</FieldLabel>
+                    <FieldLabel>What we noticed</FieldLabel>
                     <p className="text-sm text-gray-700">{insight.observation}</p>
                   </div>
                   {insight.whyItMatters ? (
@@ -319,8 +319,8 @@ export default function HomeClient() {
               So do we.
             </p>
             <p className="text-gray-500 max-w-sm text-sm leading-relaxed">
-              Upload your completed DS-160 and receive your personalized
-              Application Insights in minutes.
+              Upload your completed DS-160 and get your Application Insights
+              in minutes.
             </p>
           </div>
 
@@ -472,6 +472,11 @@ export default function HomeClient() {
                 )}
               </Card>
 
+              {/* 1b — Encouragement */}
+              <p className="text-sm text-gray-600 leading-relaxed px-1">
+                You're off to a good start. Your application already tells your story, and understanding it is the first step toward a confident interview. As you go through these insights, we'll help you understand the areas that may come up and how to prepare for them.
+              </p>
+
               {/* 2 — Top Preparation Areas */}
               {analysis.topPreparationAreas.length > 0 && (
                 <Card>
@@ -503,8 +508,7 @@ export default function HomeClient() {
                 <Card>
                   <SectionHeading>What You Should Be Ready to Explain</SectionHeading>
                   <p className="text-xs text-gray-400 mb-4">
-                    Based on your submitted application. These topics may naturally
-                    arise during your interview.
+                    These topics come from your application and may naturally come up during your interview.
                   </p>
                   <div className="space-y-6">
                     {analysis.readyToExplain.map((item, i) => (
@@ -557,7 +561,7 @@ export default function HomeClient() {
                     {analysis.crossSectionObservations.length > 0 && (
                       <div className="border rounded-xl bg-white p-4 space-y-4">
                         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                          Cross-Section Observations
+                          How Your Answers Connect
                         </p>
                         {analysis.crossSectionObservations.map((obs, i) => (
                           <div key={i} className="space-y-2">
@@ -587,6 +591,15 @@ export default function HomeClient() {
                 )}
               </div>
             </>
+          )}
+
+          {/* CTA */}
+          {!isInvalidDoc && analysis && (
+            <div className="border border-gray-200 rounded-xl p-6 bg-gray-50">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Your free Application Insights are a good start, but they cover only part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply, discover more areas to prepare for, and be ready to explain your application clearly and confidently during your interview.
+              </p>
+            </div>
           )}
 
           <p className="text-xs text-gray-400 text-center pb-8">
