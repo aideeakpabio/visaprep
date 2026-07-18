@@ -87,10 +87,16 @@ interface ReadyToExplainItem {
   possibleQuestions: string[];
 }
 
+interface ApplicationStrength {
+  label: string;
+  detail: string;
+}
+
 interface Analysis {
   documentAssessment: DocumentAssessment;
   applicationProfile: string;
   submissionDate: string | null;
+  strengths: ApplicationStrength[];
   topPreparationAreas: TopPreparationArea[];
   sections: Section[];
   crossSectionObservations: CrossSectionObservation[];
@@ -485,7 +491,30 @@ export default function HomeClient() {
                 You're off to a good start. Your application already tells your story, and understanding it is the first step toward a confident interview. As you go through these insights, we'll help you understand the areas that may come up and how to prepare for them.
               </p>
 
-              {/* 2 — Top Preparation Areas */}
+              {/* 2 — Strengths in Your Application */}
+              {analysis.strengths?.length > 0 && (
+                <Card>
+                  <SectionHeading>Strengths in Your Application</SectionHeading>
+                  <ul className="space-y-3 mb-4">
+                    {analysis.strengths.map((s, i) => (
+                      <li key={i} className="flex gap-3">
+                        <span className="text-green-500 shrink-0 mt-0.5">✓</span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">{s.label}</p>
+                          {s.detail && (
+                            <p className="text-sm text-gray-600 mt-0.5">{s.detail}</p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-gray-400 leading-relaxed border-t border-gray-100 pt-3">
+                    These strengths do not guarantee a visa decision, but they provide a solid foundation for your interview preparation.
+                  </p>
+                </Card>
+              )}
+
+              {/* 3 — Top Preparation Areas */}
               {analysis.topPreparationAreas.length > 0 && (
                 <Card>
                   <SectionHeading>Top Preparation Areas</SectionHeading>

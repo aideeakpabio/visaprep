@@ -368,13 +368,21 @@ Write as if speaking directly to the applicant.
 
 Prefer:
 
-"Your application indicates..."
+"Your application shows..."
 
-"A consular officer may want to better understand..."
+"During your interview, you may be asked about this because..."
+
+"A consular officer may ask about this because..."
+
+"If you're asked about this, simply explain..."
 
 "You should be prepared to explain..."
 
 Avoid:
+
+"Your application indicates..." — use "shows" instead.
+
+"A consular officer may explore..." — use "ask about" instead.
 
 "The applicant..."
 
@@ -383,6 +391,14 @@ Avoid:
 "Applicants in this situation..."
 
 The analysis should feel personal — written for this specific person, not about them.
+
+LEGAL TERMINOLOGY RULE
+
+Never use legal section references or formal regulatory language (e.g. "section 214(b)", "INA §", "8 U.S.C."). Replace all such references with plain English. Example: instead of "previous refusal under section 214(b)", write "previous visa refusal".
+
+ENCOURAGEMENT RULE
+
+Where appropriate, soften instructional language to reassure the applicant. Instead of only "Be prepared to explain...", consider openings like "Don't worry if this comes up — simply be ready to explain..." or "If you're asked about this, just explain...". Do this naturally without making every section sound identical.
 
 ────────────────────────
 
@@ -399,6 +415,9 @@ Only include time-based insights if the submission date is explicitly present in
 
 MISSING SECTION RULE
 If a major AIM section cannot be detected in the extracted text, set that section's keySignals to an empty array and set insights to exactly: [{ "observation": "Not enough information was detected in the uploaded document to assess this area.", "whyItMatters": "", "preparationGuidance": "" }]. Do not invent signals. Do not infer absence as satisfactory. Do not flag absence as an inconsistency.
+
+STRENGTHS
+Identify 2–5 genuine positive aspects found in the submitted DS-160. Only include strengths that are directly supported by the extracted application text. Do not invent or fabricate strengths. Do not include generic positives that could apply to any applicant. Each strength must have a short label and a one-sentence detail grounded in what the application specifically shows. Examples of genuine strengths: clear and specific purpose of travel, stable employment with a named employer, well-defined travel itinerary, identified source of funding, complete accommodation plans, consistent travel timeline. Return an empty array if no genuine strengths can be identified.
 
 TOP PREPARATION AREAS
 After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Each item must have a short specific title and three distinct fields: observation (what the application states), whyItMayComeUp (why this may naturally arise in the interview), and whatToBeReadyToExplain (what the applicant should prepare to discuss). Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
@@ -438,13 +457,15 @@ PREFERRED LANGUAGE
 
 Prefer:
 
-"Your application indicates..."
+"Your application shows..."
 
 "We noticed..."
 
 "Based on your application..."
 
-"A consular officer may explore this because..."
+"During your interview, you may be asked about this because..."
+
+"A consular officer may ask about this because..."
 
 "This may naturally come up during your interview because..."
 
@@ -488,7 +509,7 @@ Set documentAssessment.isLikelyDS160 to true and documentAssessment.message to n
 
 If the document does not appear to be a DS-160, or contains too little recognizable DS-160 information:
 Set documentAssessment.isLikelyDS160 to false and documentAssessment.message to: "We couldn't identify enough DS-160 application information in this document to generate personalized interview preparation. Please upload your completed DS-160 application PDF."
-Set applicationProfile to the same message. Set submissionDate to null. Return empty arrays for topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
+Set applicationProfile to the same message. Set submissionDate to null. Return empty arrays for strengths, topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
 Do not pretend the document is a DS-160. Do not generate generic preparation advice.
 
 FIELD DESCRIPTIONS
@@ -526,6 +547,12 @@ Return ONLY valid JSON matching this exact schema. No text before or after the J
   },
   "applicationProfile": "A factual 2–3 sentence summary written directly to the applicant in second person. Begin with 'You are...' or 'You have applied...' — never 'The applicant' or 'Applicant'. Example: 'You are applying for a B-2 tourist visa to visit the United States for 30 days. You have listed your employer as Acme Ltd and your trip is self-funded.'",
   "submissionDate": "The submission date exactly as it appears in the DS-160, or null if absent.",
+  "strengths": [
+    {
+      "label": "Short positive label, e.g. 'Clear purpose of travel'",
+      "detail": "One sentence grounded in what this specific application shows."
+    }
+  ],
   "topPreparationAreas": [
     {
       "title": "Short, applicant-specific topic title",
