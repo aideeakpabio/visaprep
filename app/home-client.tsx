@@ -358,6 +358,10 @@ export default function HomeClient() {
               </div>
             )}
 
+            <p className="mt-3 text-xs text-gray-400 text-center">
+              🔒 Your document is analyzed securely.
+            </p>
+
             {error && (
               <div className="mt-4 border border-red-200 rounded-xl p-5 w-full bg-red-50">
                 <p className="text-sm text-red-700">{error}</p>
