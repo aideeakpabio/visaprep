@@ -1,0 +1,103 @@
+Refine the customer-facing wording throughout the Application Insights page. This is a copywriting and UX polish only. Do not modify any backend logic, prompts, JSON schema, API routes, or analysis behavior.
+
+1. Replace formal language with simpler English
+
+Throughout the report:
+
+Replace "Your application indicates..." with "Your application shows..."
+Replace "A consular officer may explore..." with "During your interview, you may be asked about this because..." or "A consular officer may ask about this because..."
+Remove unnecessary formal or legal wording wherever possible.
+2. Remove unnecessary legal terminology
+
+Instead of:
+
+previous B1/B2 visa refusal under section 214(b)
+
+Use:
+
+previous visa refusal
+
+The legal reference does not help applicants understand their application.
+
+3. Make explanations warmer and easier to understand
+
+Rewrite the "Why this may come up" sections using simple, conversational English.
+
+Examples:
+
+Instead of:
+
+"...to understand your professional stability..."
+
+Use:
+
+"...to better understand your work experience and how it relates to your trip."
+
+Instead of:
+
+"...whether your financial situation supports your travel plans."
+
+Use:
+
+"...to better understand how you plan to pay for your trip."
+
+Instead of:
+
+"...to ensure they align with your travel itinerary..."
+
+Use:
+
+"...to better understand where you'll be staying during your trip."
+
+The goal is to sound like a helpful visa coach, not a government report.
+
+4. Add encouragement throughout the report
+
+Where appropriate, soften instructional language.
+
+For example, instead of only saying:
+
+Be prepared to explain...
+
+consider wording like:
+
+Don't worry if this comes up. Just be ready to explain...
+
+or
+
+If you're asked about this, simply explain...
+
+Do this naturally without making every section sound repetitive.
+
+The overall tone should help applicants feel supported and more confident.
+
+5. Add a new section after the encouragement message
+
+Insert a new section titled:
+
+Strengths in Your Application
+
+This section should highlight positive aspects found in the applicant's DS-160.
+
+Examples include:
+
+Clear purpose of travel
+Stable employment
+Well-defined travel plans
+Identified source of trip funding
+Complete accommodation plans
+Consistent travel timeline
+
+Only include strengths that genuinely exist in the applicant's application.
+
+End the section with:
+
+These strengths do not guarantee a visa decision, but they provide a solid foundation for your interview preparation.
+
+This section should appear before Top Preparation Areas.
+
+Guiding Principle
+
+When writing customer-facing text:
+
+Choose clarity over formality, reassurance over intimidation, and understanding over complexity. Every sentence should help applicants feel more prepared and more confident.
