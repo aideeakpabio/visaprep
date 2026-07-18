@@ -1,0 +1,220 @@
+We are upgrading VisaPrep from bullet-style analysis to a structured Application Understanding Experience.
+
+Make this as one coordinated change across the AI prompt, API response schema, TypeScript types, persistence logic, and frontend rendering.
+
+Do not change:
+- The seven AIM Lessons
+- Interview Weights
+- Memory Risks
+- OpenAI model
+- Temperature
+- PDF extraction
+- Upload flow
+- Existing styling system
+- Refresh persistence behavior
+
+Before editing, create a checkpoint.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. REDESIGN THE JSON SCHEMA
+
+In app/api/analyze/route.ts, replace the current OUTPUT JSON schema with this exact structure:
+
+{
+  "documentAssessment": {
+    "isLikelyDS160": true,
+    "message": null
+  },
+  "applicationProfile": "A factual 2–3 sentence summary of the application as submitted.",
+  "submissionDate": "The submission date exactly as it appears in the DS-160, or null if absent.",
+  "topPreparationAreas": [
+    {
+      "title": "Short, applicant-specific topic title",
+      "observation": "What the application specifically indicates.",
+      "whyItMayComeUp": "Why a consular officer may naturally explore this topic.",
+      "whatToBeReadyToExplain": "What the applicant should prepare to explain honestly and clearly."
+    }
+  ],
+  "sections": [
+    {
+      "lesson": "AIM lesson name",
+      "interviewWeight": "Low | Medium | Medium–High | High",
+      "memoryRisk": "Low | Low–Medium | Medium | Moderate–High | High",
+      "keySignals": [
+        "Specific fact extracted from this section"
+      ],
+      "insights": [
+        {
+          "observation": "What the application indicates.",
+          "whyItMatters": "Why this detail may be relevant to understanding the application or interview discussion.",
+          "preparationGuidance": "What the applicant should review or be ready to explain."
+        }
+      ]
+    }
+  ],
+  "crossSectionObservations": [
+    {
+      "title": "Short title describing the connection",
+      "connection": "The factual relationship between two or more application sections.",
+      "whyItMatters": "Why understanding this relationship may help the applicant explain the application clearly.",
+      "whatToReview": "What the applicant should check or prepare."
+    }
+  ],
+  "readyToExplain": [
+    {
+      "topic": "Short topic title",
+      "whyItMayComeUp": "Why this topic may naturally arise from the submitted application.",
+      "whatToBeReadyToExplain": "The information or circumstances the applicant should be prepared to discuss.",
+      "possibleQuestions": [
+        "One applicant-specific question that could naturally arise from the application"
+      ]
+    }
+  ]
+}
+
+All seven AIM sections must remain present and in the existing lesson order.
+
+Remove the old interviewQuestions field and replace it with readyToExplain.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. ADD DOCUMENT VALIDATION BEHAVIOR
+
+Update the SYSTEM_PROMPT so the model first determines whether the extracted document contains enough recognizable DS-160 application information.
+
+If it is likely a completed DS-160:
+
+"documentAssessment": {
+  "isLikelyDS160": true,
+  "message": null
+}
+
+If it is not a DS-160, or contains too little recognizable DS-160 information:
+
+"documentAssessment": {
+  "isLikelyDS160": false,
+  "message": "We couldn't identify enough DS-160 application information in this document to generate personalized interview preparation. Please upload your completed DS-160 application PDF."
+}
+
+For an invalid or insufficient document:
+- Do not pretend it is a DS-160.
+- Do not generate generic preparation advice.
+- Set applicationProfile to the same helpful message.
+- Set submissionDate to null.
+- Return empty arrays for topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3. REFINE THE AI OUTPUT INSTRUCTIONS
+
+Update Stage 2 so the model understands that each structured item has a distinct purpose:
+
+observation:
+State only what the submitted application indicates.
+
+whyItMayComeUp / whyItMatters:
+Translate the application detail into interview understanding. Explain why a consular officer may naturally seek clarification or context. Do not imply certainty or predict the outcome.
+
+whatToBeReadyToExplain / preparationGuidance:
+Place responsibility on the applicant. Explain what they should review and prepare to discuss honestly, clearly, and in their own words.
+
+Use calm, educational language.
+
+Never merely repeat the same sentence across multiple fields.
+
+Never create fear.
+
+Never describe common facts such as previous refusals, traveling alone, relatives in the United States, sponsors, employment changes, or multi-city travel as inherently problematic.
+
+Example of the required quality:
+
+{
+  "title": "Previous Visa Refusal",
+  "observation": "Your application indicates that you were refused a U.S. visa in 2022.",
+  "whyItMayComeUp": "Previous refusals are part of many applicants' histories, and a consular officer may want to understand the circumstances of the earlier application and what has changed since then.",
+  "whatToBeReadyToExplain": "Be prepared to explain the earlier application honestly and describe any significant changes in your employment, travel purpose, finances, or personal circumstances since 2022."
+}
+
+This example is a writing standard, not content to copy unless supported by the uploaded application.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4. UPDATE TYPES AND DATA HANDLING
+
+Find every frontend or API TypeScript type/interface that represents the analysis response and update it to match the new schema.
+
+Update all parsing, state, and localStorage/session persistence logic so:
+- New results persist after refresh exactly as before.
+- Missing optional values do not crash the page.
+- Old cached results using the previous schema are cleared or safely ignored instead of breaking the UI.
+
+Do not create a database.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. UPDATE THE FRONTEND
+
+Update the result page to render the new schema naturally.
+
+Keep the existing clean visual style, borders, typography, spacing, and responsiveness.
+
+Applicant Snapshot:
+- Keep the existing heading.
+- Display applicationProfile and submissionDate.
+
+Top Preparation Areas:
+- Render each item as a structured block.
+- Show the title prominently.
+- Show the observation as normal text.
+- Add the label: "Why this may come up"
+- Add the label: "What you should be ready to explain"
+- Do not display the four fields as one dense paragraph.
+
+Replace the heading:
+"Questions to Prepare For"
+
+with:
+"What You Should Be Ready to Explain"
+
+For each readyToExplain item, display:
+- Topic
+- "Why this may come up"
+- "What you should be ready to explain"
+- Possible questions, under the smaller label "Questions you may hear"
+
+Do not imply that these exact questions will definitely be asked.
+
+Full Analysis:
+Update the expandable full analysis section to render the structured section insights and cross-section observations clearly.
+
+Invalid document state:
+If documentAssessment.isLikelyDS160 is false:
+- Show one clear card titled "We Need Your DS-160"
+- Display documentAssessment.message
+- Show an obvious "Upload another document" action
+- Do not show Top Preparation Areas, Ready to Explain, or Full Analysis
+- Do not display the invalid response under the heading "Applicant Snapshot"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6. VERIFY
+
+After implementing:
+
+- Run TypeScript checks.
+- Run the production build.
+- Confirm there are no errors or warnings caused by these changes.
+- Confirm desktop and mobile layouts remain responsive.
+- Confirm results still persist after refresh.
+- Do not publish yet.
+
+When complete, report:
+1. Files changed
+2. Schema changes
+3. Frontend changes
+4. Validation behavior
+5. Build/test results
+6. Anything that could not be completed
+
+Do not make unrelated improvements.

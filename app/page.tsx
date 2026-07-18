@@ -4,25 +4,55 @@ import { useEffect, useState } from "react";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
+interface DocumentAssessment {
+  isLikelyDS160: boolean;
+  message: string | null;
+}
+
+interface TopPreparationArea {
+  title: string;
+  observation: string;
+  whyItMayComeUp: string;
+  whatToBeReadyToExplain: string;
+}
+
+interface SectionInsight {
+  observation: string;
+  whyItMatters: string;
+  preparationGuidance: string;
+}
+
 interface Section {
   lesson: string;
   interviewWeight: string;
   memoryRisk: string;
   keySignals: string[];
-  insights: string[];
-  preparationPrompts: string[];
+  insights: SectionInsight[];
+}
+
+interface CrossSectionObservation {
+  title: string;
+  connection: string;
+  whyItMatters: string;
+  whatToReview: string;
+}
+
+interface ReadyToExplainItem {
+  topic: string;
+  whyItMayComeUp: string;
+  whatToBeReadyToExplain: string;
+  possibleQuestions: string[];
 }
 
 interface Analysis {
+  documentAssessment: DocumentAssessment;
   applicationProfile: string;
   submissionDate: string | null;
-  topPreparationAreas: string[];
+  topPreparationAreas: TopPreparationArea[];
   sections: Section[];
-  crossSectionObservations: string[];
-  interviewQuestions: string[];
+  crossSectionObservations: CrossSectionObservation[];
+  readyToExplain: ReadyToExplainItem[];
 }
-
-// SVG components removed — replaced with real photos (public/flag.jpg, public/statue.jpg)
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
@@ -62,16 +92,11 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function BulletList({ items }: { items: string[] }) {
+function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="space-y-2">
-      {items.map((item, i) => (
-        <li key={i} className="flex gap-2 text-sm text-gray-700">
-          <span className="mt-1 shrink-0 text-gray-400">•</span>
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
+    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">
+      {children}
+    </p>
   );
 }
 
@@ -79,7 +104,7 @@ function LessonCard({ section }: { section: Section }) {
   const [open, setOpen] = useState(false);
   const missing =
     section.insights.length === 1 &&
-    section.insights[0].startsWith("Not enough information");
+    section.insights[0].observation.startsWith("Not enough information");
 
   return (
     <div className="border rounded-xl overflow-hidden">
@@ -107,9 +132,7 @@ function LessonCard({ section }: { section: Section }) {
         <div className="border-t px-4 pb-4 pt-4 space-y-4 bg-white">
           {section.keySignals.length > 0 && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                What was detected
-              </p>
+              <FieldLabel>What was detected</FieldLabel>
               <ul className="space-y-1">
                 {section.keySignals.map((s, i) => (
                   <li key={i} className="text-sm text-gray-600 flex gap-2">
@@ -120,18 +143,34 @@ function LessonCard({ section }: { section: Section }) {
               </ul>
             </div>
           )}
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-              Application Insights
+
+          {missing ? (
+            <p className="text-sm text-gray-500 italic">
+              {section.insights[0].observation}
             </p>
-            <BulletList items={section.insights} />
-          </div>
-          {section.preparationPrompts.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                Prepare to discuss
-              </p>
-              <BulletList items={section.preparationPrompts} />
+          ) : (
+            <div className="space-y-5">
+              {section.insights.map((insight, i) => (
+                <div key={i} className="space-y-3">
+                  {i > 0 && <div className="border-t border-gray-100" />}
+                  <div>
+                    <FieldLabel>Observation</FieldLabel>
+                    <p className="text-sm text-gray-700">{insight.observation}</p>
+                  </div>
+                  {insight.whyItMatters ? (
+                    <div>
+                      <FieldLabel>Why this may matter</FieldLabel>
+                      <p className="text-sm text-gray-700">{insight.whyItMatters}</p>
+                    </div>
+                  ) : null}
+                  {insight.preparationGuidance ? (
+                    <div>
+                      <FieldLabel>What to prepare</FieldLabel>
+                      <p className="text-sm text-gray-700">{insight.preparationGuidance}</p>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -142,7 +181,8 @@ function LessonCard({ section }: { section: Section }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-const SESSION_KEY = "visaprep_analysis";
+// v2 key — old schema results are automatically ignored rather than crashing
+const SESSION_KEY = "visaprep_analysis_v2";
 
 export default function Home() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -152,17 +192,16 @@ export default function Home() {
   const [error, setError] = useState("");
   const [showFull, setShowFull] = useState(false);
 
-  // Restore analysis from sessionStorage on mount so that if Next.js
-  // forces a full browser navigation (due to RSC payload fetch failures
-  // through Replit's proxy), the results page reappears immediately
-  // instead of resetting to the upload form.
+  // Restore analysis from sessionStorage on mount.
+  // Uses SESSION_KEY v2 so old-schema cached results are naturally ignored.
   useEffect(() => {
     try {
       const saved = sessionStorage.getItem(SESSION_KEY);
       if (saved) {
         const { analysis: savedAnalysis, fileName: savedFileName } =
           JSON.parse(saved);
-        if (savedAnalysis) {
+        // Guard: only restore if it matches the new schema shape
+        if (savedAnalysis?.documentAssessment !== undefined) {
           setAnalysis(savedAnalysis);
           setFileName(savedFileName ?? "");
         }
@@ -179,7 +218,6 @@ export default function Home() {
     setAnalysis(null);
     setError("");
     setShowFull(false);
-    // Clear any previously saved result while a new analysis is in flight
     try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
 
     try {
@@ -199,7 +237,6 @@ export default function Home() {
       }
 
       setAnalysis(data.analysis);
-      // Persist to sessionStorage so a forced page reload doesn't lose results
       try {
         sessionStorage.setItem(
           SESSION_KEY,
@@ -222,13 +259,15 @@ export default function Home() {
     setError("");
   }
 
+  const isInvalidDoc =
+    analysis !== null && analysis.documentAssessment?.isLikelyDS160 === false;
+
   return (
     <main className="min-h-screen flex flex-col items-center bg-white">
 
       {/* ── Hero — upload / analyzing ────────────────────────────────────── */}
       {!analysis && (
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
-
 
           {/* Hero content */}
           <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-10 px-8">
@@ -249,16 +288,44 @@ export default function Home() {
           {/* Upload widget */}
           <div className="relative z-10 w-full max-w-md px-8 pb-16">
             {!analyzing && (
-              <>
-                {/* Drop zone */}
-                <div className="border border-gray-200 rounded-2xl p-8 text-center bg-white shadow-sm">
-                  <p className="text-sm text-gray-500 mb-5 leading-relaxed">
-                    Upload your completed DS-160 PDF
-                  </p>
+              <div className="border border-gray-200 rounded-2xl p-8 text-center bg-white shadow-sm">
+                <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+                  Upload your completed DS-160 PDF
+                </p>
 
-                  {!pendingFile ? (
-                    /* Step 1: select file */
-                    <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+                {!pendingFile ? (
+                  /* Step 1: select file */
+                  <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4 opacity-70"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4" />
+                    </svg>
+                    Select DS-160 PDF
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                ) : (
+                  /* Step 2: file chosen — confirm and analyze */
+                  <div className="flex flex-col items-center gap-4">
+                    <p className="text-sm text-gray-600 flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span className="font-medium truncate max-w-xs">{pendingFile.name}</span>
+                    </p>
+                    <button
+                      onClick={() => handleUpload(pendingFile)}
+                      className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Analyze My Application
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="w-4 h-4 opacity-70"
@@ -267,9 +334,11 @@ export default function Home() {
                         stroke="currentColor"
                         strokeWidth={2}
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
-                      Select DS-160 PDF
+                    </button>
+                    <label className="text-xs text-gray-400 underline cursor-pointer hover:text-gray-600 transition-colors">
+                      Choose a different file
                       <input
                         type="file"
                         accept=".pdf"
@@ -277,42 +346,9 @@ export default function Home() {
                         onChange={handleFileChange}
                       />
                     </label>
-                  ) : (
-                    /* Step 2: file chosen — confirm and analyze */
-                    <div className="flex flex-col items-center gap-4">
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        <span className="text-green-500">✓</span>
-                        <span className="font-medium truncate max-w-xs">{pendingFile.name}</span>
-                      </p>
-                      <button
-                        onClick={() => handleUpload(pendingFile)}
-                        className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Analyze My Application
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4 opacity-70"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </button>
-                      <label className="text-xs text-gray-400 underline cursor-pointer hover:text-gray-600 transition-colors">
-                        Choose a different file
-                        <input
-                          type="file"
-                          accept=".pdf"
-                          className="hidden"
-                          onChange={handleFileChange}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-              </>
+                  </div>
+                )}
+              </div>
             )}
 
             {analyzing && (
@@ -361,87 +397,163 @@ export default function Home() {
             </label>
           </div>
 
-          {/* 1 — Applicant Snapshot */}
-          <Card>
-            <SectionHeading>Applicant Snapshot</SectionHeading>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              {analysis.applicationProfile}
-            </p>
-            {analysis.submissionDate && (
-              <p className="mt-3 text-xs text-gray-400">
-                Submission date: {analysis.submissionDate}
+          {/* ── Invalid document ──────────────────────────────────────────── */}
+          {isInvalidDoc && (
+            <Card className="border-amber-200 bg-amber-50">
+              <SectionHeading>We Need Your DS-160</SectionHeading>
+              <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                {analysis.documentAssessment.message}
               </p>
-            )}
-          </Card>
-
-          {/* 2 — Top Preparation Areas */}
-          {analysis.topPreparationAreas.length > 0 && (
-            <Card>
-              <SectionHeading>Top Preparation Areas</SectionHeading>
-              <ol className="list-none space-y-3">
-                {analysis.topPreparationAreas.map((area, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-gray-700">
-                    <span className="shrink-0 font-semibold text-gray-400 w-4">
-                      {i + 1}.
-                    </span>
-                    <span>{area}</span>
-                  </li>
-                ))}
-              </ol>
+              <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+                Upload another document
+                <input
+                  type="file"
+                  accept=".pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+                      handleUpload(f);
+                    }
+                  }}
+                />
+              </label>
             </Card>
           )}
 
-          {/* 3 — Questions to Prepare For */}
-          {analysis.interviewQuestions.length > 0 && (
-            <Card>
-              <SectionHeading>Questions to Prepare For</SectionHeading>
-              <p className="text-xs text-gray-400 mb-3">
-                Based on your submitted application. Prepare to discuss these
-                areas clearly and honestly.
-              </p>
-              <ol className="list-none space-y-3">
-                {analysis.interviewQuestions.map((q, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-gray-700">
-                    <span className="shrink-0 font-semibold text-gray-400 w-4">
-                      {i + 1}.
-                    </span>
-                    <span>{q}</span>
-                  </li>
-                ))}
-              </ol>
-            </Card>
-          )}
+          {/* ── Valid DS-160 results ──────────────────────────────────────── */}
+          {!isInvalidDoc && (
+            <>
+              {/* 1 — Applicant Snapshot */}
+              <Card>
+                <SectionHeading>Applicant Snapshot</SectionHeading>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {analysis.applicationProfile}
+                </p>
+                {analysis.submissionDate && (
+                  <p className="mt-3 text-xs text-gray-400">
+                    Submission date: {analysis.submissionDate}
+                  </p>
+                )}
+              </Card>
 
-          {/* 4 — View Full Analysis (collapsible) */}
-          <div className="border rounded-xl overflow-hidden">
-            <button
-              onClick={() => setShowFull((v) => !v)}
-              className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
-            >
-              <span className="font-medium text-sm text-gray-900">
-                View Full Analysis
-              </span>
-              <span className="text-gray-400 text-sm">
-                {showFull ? "▲ Hide" : "▼ Show all sections"}
-              </span>
-            </button>
+              {/* 2 — Top Preparation Areas */}
+              {analysis.topPreparationAreas.length > 0 && (
+                <Card>
+                  <SectionHeading>Top Preparation Areas</SectionHeading>
+                  <div className="space-y-6">
+                    {analysis.topPreparationAreas.map((area, i) => (
+                      <div key={i} className="space-y-3">
+                        {i > 0 && <div className="border-t border-gray-100" />}
+                        <p className="font-medium text-sm text-gray-900">
+                          {i + 1}. {area.title}
+                        </p>
+                        <p className="text-sm text-gray-700">{area.observation}</p>
+                        <div>
+                          <FieldLabel>Why this may come up</FieldLabel>
+                          <p className="text-sm text-gray-700">{area.whyItMayComeUp}</p>
+                        </div>
+                        <div>
+                          <FieldLabel>What you should be ready to explain</FieldLabel>
+                          <p className="text-sm text-gray-700">{area.whatToBeReadyToExplain}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
 
-            {showFull && (
-              <div className="border-t px-4 py-4 space-y-3 bg-gray-50">
-                {analysis.crossSectionObservations.length > 0 && (
-                  <div className="border rounded-xl bg-white p-4">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-                      Cross-Section Observations
-                    </p>
-                    <BulletList items={analysis.crossSectionObservations} />
+              {/* 3 — What You Should Be Ready to Explain */}
+              {analysis.readyToExplain.length > 0 && (
+                <Card>
+                  <SectionHeading>What You Should Be Ready to Explain</SectionHeading>
+                  <p className="text-xs text-gray-400 mb-4">
+                    Based on your submitted application. These topics may naturally
+                    arise during your interview.
+                  </p>
+                  <div className="space-y-6">
+                    {analysis.readyToExplain.map((item, i) => (
+                      <div key={i} className="space-y-3">
+                        {i > 0 && <div className="border-t border-gray-100" />}
+                        <p className="font-medium text-sm text-gray-900">{item.topic}</p>
+                        <div>
+                          <FieldLabel>Why this may come up</FieldLabel>
+                          <p className="text-sm text-gray-700">{item.whyItMayComeUp}</p>
+                        </div>
+                        <div>
+                          <FieldLabel>What you should be ready to explain</FieldLabel>
+                          <p className="text-sm text-gray-700">{item.whatToBeReadyToExplain}</p>
+                        </div>
+                        {item.possibleQuestions.length > 0 && (
+                          <div>
+                            <FieldLabel>Questions you may hear</FieldLabel>
+                            <ul className="space-y-1 mt-1">
+                              {item.possibleQuestions.map((q, j) => (
+                                <li key={j} className="flex gap-2 text-sm text-gray-600">
+                                  <span className="shrink-0 text-gray-300">—</span>
+                                  <span>{q}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+
+              {/* 4 — View Full Analysis (collapsible) */}
+              <div className="border rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setShowFull((v) => !v)}
+                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-sm text-gray-900">
+                    View Full Analysis
+                  </span>
+                  <span className="text-gray-400 text-sm">
+                    {showFull ? "▲ Hide" : "▼ Show all sections"}
+                  </span>
+                </button>
+
+                {showFull && (
+                  <div className="border-t px-4 py-4 space-y-3 bg-gray-50">
+                    {analysis.crossSectionObservations.length > 0 && (
+                      <div className="border rounded-xl bg-white p-4 space-y-4">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          Cross-Section Observations
+                        </p>
+                        {analysis.crossSectionObservations.map((obs, i) => (
+                          <div key={i} className="space-y-2">
+                            {i > 0 && <div className="border-t border-gray-100" />}
+                            <p className="font-medium text-sm text-gray-900">{obs.title}</p>
+                            <p className="text-sm text-gray-700">{obs.connection}</p>
+                            {obs.whyItMatters ? (
+                              <div>
+                                <FieldLabel>Why this matters</FieldLabel>
+                                <p className="text-sm text-gray-700">{obs.whyItMatters}</p>
+                              </div>
+                            ) : null}
+                            {obs.whatToReview ? (
+                              <div>
+                                <FieldLabel>What to review</FieldLabel>
+                                <p className="text-sm text-gray-700">{obs.whatToReview}</p>
+                              </div>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {analysis.sections.map((section, i) => (
+                      <LessonCard key={i} section={section} />
+                    ))}
                   </div>
                 )}
-                {analysis.sections.map((section, i) => (
-                  <LessonCard key={i} section={section} />
-                ))}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           <p className="text-xs text-gray-400 text-center pb-8">
             VisaPrep is a preparation tool. It does not provide legal advice,

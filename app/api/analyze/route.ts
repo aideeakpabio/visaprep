@@ -286,16 +286,16 @@ TIME AWARENESS RULE
 Only include time-based insights if the submission date is explicitly present in the DS-160 text. Do not estimate, approximate, or infer it from other dates in the document (e.g. appointment dates, travel dates, passport issue dates). If the submission date is absent, omit all time-based language entirely.
 
 MISSING SECTION RULE
-If a major AIM section cannot be detected in the extracted text, set that section's insights array to exactly: ["Not enough information was detected in the uploaded document to assess this area."] — and set keySignals and preparationPrompts to empty arrays. Do not invent signals. Do not infer absence as satisfactory. Do not flag absence as an inconsistency.
+If a major AIM section cannot be detected in the extracted text, set that section's keySignals to an empty array and set insights to exactly: [{ "observation": "Not enough information was detected in the uploaded document to assess this area.", "whyItMatters": "", "preparationGuidance": "" }]. Do not invent signals. Do not infer absence as satisfactory. Do not flag absence as an inconsistency.
 
 TOP PREPARATION AREAS
-After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Select based on both Interview Weight AND applicant-specific relevance and specificity. A meaningful, specific observation from a MEDIUM-weight section should take priority over a generic observation from a HIGH-weight section. Order by overall significance to this particular application — not mechanically by section weight. These must be actionable and grounded in what is actually in this application, not generic advice.
+After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Each item must have a short specific title and three distinct fields: observation (what the application states), whyItMayComeUp (why this may naturally arise in the interview), and whatToBeReadyToExplain (what the applicant should prepare to discuss). Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
 
 CROSS-SECTION OBSERVATIONS
-Identify 2–4 meaningful connections between sections. State these as observations, never as conclusions about the interview outcome.
+Identify 2–4 meaningful connections between sections. Each observation must have: a short title, a factual connection statement, a whyItMatters field explaining how understanding this helps the applicant, and a whatToReview field. State these as observations, never as conclusions about the interview outcome.
 
-QUESTIONS TO PREPARE FOR
-Generate questions that arise naturally from this applicant's submitted information and that the applicant should be prepared to discuss. Prioritize sections rated HIGH (Travel Information, Previous U.S. Travel, Family/Roots/Ties). Do not target a fixed quantity — include all questions that are meaningfully grounded in the submitted details. Do not use a generic question bank. Each question must arise from a specific detail present in this application. Do not imply certainty about what a Consular Officer will ask.
+READY TO EXPLAIN
+For each topic the applicant should be prepared to discuss, provide: a short topic title, why it may naturally come up from the submitted application, what the applicant should be ready to explain, and 1–3 applicant-specific possibleQuestions that arise naturally from the submitted details. Prioritize sections rated HIGH. Do not use a generic question bank. Do not imply these questions will definitely be asked.
 
 PROHIBITED LANGUAGE
 Never use: "red flag", "suspicious", "this could hurt", "strong ties", "weak ties", "your application looks good/bad", or any statement predicting approval or refusal.
@@ -346,6 +346,33 @@ Never write in a way that encourages memorization.
 
 Always encourage understanding.
 
+DOCUMENT VALIDATION
+Before generating any analysis, assess whether the uploaded document appears to be a completed DS-160 application. Look for recognizable DS-160 elements: visa classification, personal information fields, travel purpose, employment information, family composition, or other characteristic DS-160 content.
+
+If the document appears to be a completed DS-160:
+Set documentAssessment.isLikelyDS160 to true and documentAssessment.message to null. Proceed with the full analysis.
+
+If the document does not appear to be a DS-160, or contains too little recognizable DS-160 information:
+Set documentAssessment.isLikelyDS160 to false and documentAssessment.message to: "We couldn't identify enough DS-160 application information in this document to generate personalized interview preparation. Please upload your completed DS-160 application PDF."
+Set applicationProfile to the same message. Set submissionDate to null. Return empty arrays for topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
+Do not pretend the document is a DS-160. Do not generate generic preparation advice.
+
+FIELD DESCRIPTIONS
+
+observation:
+State only what the submitted application indicates. Ground every observation in the extracted text. Never invent or speculate.
+
+whyItMayComeUp / whyItMatters:
+Translate the application detail into interview understanding. Explain why a consular officer may naturally seek clarification or context. Do not imply certainty. Do not predict outcomes.
+
+whatToBeReadyToExplain / preparationGuidance:
+Place responsibility on the applicant. Explain what they should review and prepare to discuss honestly, clearly, and in their own words. Never provide scripts or suggest memorization.
+
+possibleQuestions:
+Generate 1–3 questions that arise naturally from a specific detail in this application. Do not use a generic question bank. Do not imply these questions will definitely be asked.
+
+Never merely repeat the same sentence across multiple fields. Each field must add distinct value.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 OUTPUT
@@ -353,26 +380,54 @@ OUTPUT
 Return ONLY valid JSON matching this exact schema. No text before or after the JSON object.
 
 {
-  "applicationProfile": "A factual 2–3 sentence summary of the application as submitted. Describe what the application states — visa type, stated purpose, employment context, travel plans, family composition — emphasizing the application itself, not who the applicant is as a person.",
-  "submissionDate": "The submission date exactly as it appears in the DS-160, or null if not present.",
+  "documentAssessment": {
+    "isLikelyDS160": true,
+    "message": null
+  },
+  "applicationProfile": "A factual 2–3 sentence summary of the application as submitted.",
+  "submissionDate": "The submission date exactly as it appears in the DS-160, or null if absent.",
   "topPreparationAreas": [
-    "Most important preparation area specific to this application"
+    {
+      "title": "Short, applicant-specific topic title",
+      "observation": "What the application specifically indicates.",
+      "whyItMayComeUp": "Why a consular officer may naturally explore this topic.",
+      "whatToBeReadyToExplain": "What the applicant should prepare to explain honestly and clearly."
+    }
   ],
   "sections": [
     {
       "lesson": "AIM lesson name",
       "interviewWeight": "Low | Medium | Medium–High | High",
       "memoryRisk": "Low | Low–Medium | Medium | Moderate–High | High",
-      "keySignals": ["Specific fact extracted from this section"],
-      "insights": ["AIM-style observational insight specific to this applicant"],
-      "preparationPrompts": ["Actionable thing to review or be ready to discuss"]
+      "keySignals": [
+        "Specific fact extracted from this section"
+      ],
+      "insights": [
+        {
+          "observation": "What the application indicates.",
+          "whyItMatters": "Why this detail may be relevant to understanding the application or interview discussion.",
+          "preparationGuidance": "What the applicant should review or be ready to explain."
+        }
+      ]
     }
   ],
   "crossSectionObservations": [
-    "A meaningful relationship observed between two or more AIM sections"
+    {
+      "title": "Short title describing the connection",
+      "connection": "The factual relationship between two or more application sections.",
+      "whyItMatters": "Why understanding this relationship may help the applicant explain the application clearly.",
+      "whatToReview": "What the applicant should check or prepare."
+    }
   ],
-  "interviewQuestions": [
-    "A question arising naturally from a specific detail in this application"
+  "readyToExplain": [
+    {
+      "topic": "Short topic title",
+      "whyItMayComeUp": "Why this topic may naturally arise from the submitted application.",
+      "whatToBeReadyToExplain": "The information or circumstances the applicant should be prepared to discuss.",
+      "possibleQuestions": [
+        "One applicant-specific question that could naturally arise from the application"
+      ]
+    }
   ]
 }
 
