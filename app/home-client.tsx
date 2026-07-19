@@ -336,9 +336,11 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
             <p className="text-lg italic text-gray-400 mb-5">
               So do we.
             </p>
+            <p className="text-gray-800 max-w-sm text-sm font-medium leading-relaxed mb-1">
+              Understand your application. Prepare with clarity. Interview with confidence.
+            </p>
             <p className="text-gray-500 max-w-sm text-sm leading-relaxed">
-              Upload your completed DS-160 and get your Application Insights
-              in minutes.
+              VisaPrep helps you understand what your application communicates and prepare to explain it clearly and confidently during your visa interview.
             </p>
           </div>
 
@@ -347,7 +349,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
             {!analyzing && (
               <div className="border border-gray-200 rounded-2xl p-8 text-center bg-white shadow-sm">
                 <p className="text-sm text-gray-500 mb-5 leading-relaxed">
-                  Upload your completed DS-160 PDF
+                  Upload your DS-160 to begin
                 </p>
 
                 {!pendingFile ? (
@@ -638,13 +640,13 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           {!isInvalidDoc && analysis && (
             <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
               <p className="text-sm text-gray-700 leading-relaxed">
-                Go beyond your free Application Insights with a comprehensive assessment that identifies additional strengths, highlights potential concerns, and helps you explain your application with clarity and confidence during your visa interview.
+                Go beyond your free Application Insights and begin your complete interview preparation — built specifically around your application.
               </p>
               <button
                 onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
                 className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
               >
-                Unlock a deeper understanding of your application
+                Start My Personalized Interview Preparation
               </button>
               <p className="text-xs text-gray-400 italic">
                 Your interview starts with your application. So do we.
@@ -669,14 +671,31 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                       Test Mode
                     </span>
                   )}
-                  <h2 className="text-lg font-semibold text-gray-900">VisaPrep Full Assessment</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Start Your Personalized Interview Preparation</h2>
                   <p className="text-2xl font-bold text-gray-900">₦20,000</p>
                 </div>
 
-                {/* Description */}
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  A deeper, personalized preparation based on your actual application — covering more areas, more connections between your answers, and more of what you need to be ready to explain.
-                </p>
+                {/* What's included */}
+                <ul className="flex flex-col gap-3">
+                  {[
+                    { label: "Comprehensive Application Assessment", detail: "Understand the strengths, inconsistencies, and interview implications of your application." },
+                    { label: "Personalized Interview Preparation", detail: "Know exactly what parts of your application require the most attention." },
+                    { label: "Personalized Interview Questions", detail: "Questions generated specifically from your own DS-160." },
+                    { label: "Areas You Should Be Ready to Explain", detail: "Know what a consular officer is most likely to explore further." },
+                    { label: "Personalized Preparation Roadmap", detail: "A clear plan showing what to review before your interview." },
+                    { label: "AI Interview Practice", detail: "Practice realistic visa interview conversations based on your own application and receive personalized feedback after every session.", soon: true },
+                  ].map(({ label, detail, soon }) => (
+                    <li key={label} className="flex gap-3 items-start">
+                      <span className="mt-0.5 text-green-500 shrink-0">✓</span>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 leading-snug">
+                          {label}{soon && <span className="ml-2 text-xs font-normal text-gray-400">(Coming Soon)</span>}
+                        </p>
+                        <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{detail}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
 
                 {/* Email field */}
                 <div className="flex flex-col gap-1">
