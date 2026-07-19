@@ -1,0 +1,166 @@
+Product Direction Update
+
+We're making an important strategic shift in VisaPrep.
+
+The product should no longer emphasize AI analysis or the assessment itself.
+
+The assessment is only the beginning.
+
+VisaPrep's promise is to help users:
+
+Understand your application. Prepare with clarity. Interview with confidence.
+
+Everything in the product should reinforce that journey.
+
+Our internal product journey is now:
+
+1. Understand
+
+Understand your application.
+
+↓
+
+2. Prepare
+
+Prepare with clarity.
+
+↓
+
+3. Practice
+
+Practice with AI.
+
+↓
+
+4. Interview
+
+Interview with confidence.
+
+Every screen, message, and CTA should reduce uncertainty and move users naturally from one stage to the next.
+
+Landing Page
+
+The current landing page asks users to upload a DS-160 immediately.
+
+Instead, first establish empathy and communicate that VisaPrep understands what applicants actually need.
+
+Keep the hero:
+
+Your interview starts with your application. So do we.
+
+Replace the supporting copy with messaging focused on outcomes rather than uploading PDFs.
+
+Suggested direction:
+
+Understand your application. Prepare with clarity. Interview with confidence.
+
+Follow with a concise sentence communicating that VisaPrep helps applicants understand what their application communicates and prepare to explain it confidently during their interview.
+
+The upload box should become the beginning of that journey rather than the main focus.
+
+Instead of leading with:
+
+Upload your completed DS-160...
+
+Lead with the value.
+
+Then invite the upload.
+
+Application Insights (Free)
+
+The free product remains Application Insights.
+
+However, the emphasis should be on what users gain rather than the report itself.
+
+Users should leave thinking:
+
+"Finally, someone helped me understand my own application."
+
+The report should clearly communicate:
+
+what their application communicates
+what they should be ready to explain
+where they should focus their preparation
+Paid Experience
+
+Do not position the paid product as purchasing a "Full Assessment."
+
+Instead, position it as beginning a complete preparation journey.
+
+Replace the current payment messaging with something like:
+
+Start Your Personalized Interview Preparation
+
+Immediately after payment, you'll begin your personalized preparation with:
+
+✅ Comprehensive Application Assessment
+
+Understand the strengths, inconsistencies, and interview implications of your application.
+
+✅ Personalized Interview Preparation
+
+Know exactly what parts of YOUR application require the most attention.
+
+✅ Personalized Interview Questions
+
+Questions generated specifically from your own DS-160.
+
+✅ Areas You Should Be Ready to Explain
+
+Know what a consular officer is most likely to explore further.
+
+✅ Personalized Preparation Roadmap
+
+A clear plan showing what to review before your interview.
+
+✅ AI Interview Practice (Coming Soon)
+
+Practice realistic visa interview conversations based on your own application and receive personalized feedback after every session.
+
+Do NOT use the word "Mock."
+
+Use "Practice."
+
+Primary CTA
+
+Replace the payment button text.
+
+Instead of emphasizing access to an assessment, emphasize beginning preparation.
+
+Preferred direction:
+
+Start My Personalized Interview Preparation
+
+Alternative acceptable wording:
+
+Start My Complete Interview Preparation
+
+The CTA should feel like the beginning of a journey rather than unlocking a report.
+
+Product Philosophy
+
+Throughout the product, remember:
+
+People are not paying VisaPrep for information.
+
+They are paying for confidence.
+
+Information creates understanding.
+
+Understanding creates clarity.
+
+Clarity enables preparation.
+
+Preparation builds confidence.
+
+VisaPrep never promises visa approval.
+
+VisaPrep promises better preparation.
+
+Every screen should reduce uncertainty.
+
+Users should leave each interaction feeling more prepared than before.
+
+The goal is for applicants to think:
+
+"These people understand exactly what I've been looking for."
