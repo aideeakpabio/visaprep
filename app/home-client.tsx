@@ -246,14 +246,17 @@ function readSaved(): { analysis: Analysis | null; fileName: string } {
   return { analysis: null, fileName: "" };
 }
 
-export default function HomeClient() {
+export default function HomeClient({ testMode = false }: { testMode?: boolean }) {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
   const [showFull, setShowFull] = useState(false);
-  const [showComingSoon, setShowComingSoon] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [payEmail, setPayEmail] = useState("");
+  const [payError, setPayError] = useState("");
+  const [paySubmitting, setPaySubmitting] = useState(false);
 
   // Restore from sessionStorage after mount. Initial state is null so SSR and
   // the first client render both show the upload page — no hydration mismatch.
@@ -638,7 +641,7 @@ export default function HomeClient() {
                 Your free Application Insights are a good start, but they cover only part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply, discover more areas to prepare for, and be ready to explain your application clearly and confidently during your interview.
               </p>
               <button
-                onClick={() => setShowComingSoon(true)}
+                onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
                 className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
               >
                 Continue to Full Assessment
@@ -649,27 +652,100 @@ export default function HomeClient() {
             </div>
           )}
 
-          {/* Coming-soon modal */}
-          {showComingSoon && (
+          {/* Payment offer modal */}
+          {showPayment && (
             <div
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-              onClick={() => setShowComingSoon(false)}
+              onClick={() => { if (!paySubmitting) setShowPayment(false); }}
             >
               <div
-                className="bg-white rounded-2xl shadow-xl p-8 mx-4 max-w-sm w-full flex flex-col items-center gap-4 text-center"
+                className="bg-white rounded-2xl shadow-xl p-8 mx-4 max-w-sm w-full flex flex-col gap-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="text-3xl">🔒</div>
-                <h2 className="text-lg font-semibold text-gray-900">Coming Soon</h2>
+                {/* Header */}
+                <div className="flex flex-col gap-1">
+                  {testMode && (
+                    <span className="self-start inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200 mb-1">
+                      Test Mode
+                    </span>
+                  )}
+                  <h2 className="text-lg font-semibold text-gray-900">VisaPrep Full Assessment</h2>
+                  <p className="text-2xl font-bold text-gray-900">₦20,000</p>
+                </div>
+
+                {/* Description */}
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  The full VisaPrep Assessment is on its way. Check back soon.
+                  A deeper, personalized preparation based on your actual application — covering more areas, more connections between your answers, and more of what you need to be ready to explain.
                 </p>
+
+                {/* Email field */}
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="pay-email" className="text-xs font-medium text-gray-700">
+                    Email address
+                  </label>
+                  <input
+                    id="pay-email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                    value={payEmail}
+                    onChange={(e) => { setPayEmail(e.target.value); setPayError(""); }}
+                    disabled={paySubmitting}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
+                  />
+                  {payError && (
+                    <p className="text-xs text-red-600">{payError}</p>
+                  )}
+                </div>
+
+                {/* Submit */}
                 <button
-                  onClick={() => setShowComingSoon(false)}
-                  className="mt-2 px-6 py-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150"
+                  disabled={paySubmitting}
+                  onClick={async () => {
+                    const trimmed = payEmail.trim();
+                    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+                      setPayError("Please enter a valid email address.");
+                      return;
+                    }
+                    setPayError("");
+                    setPaySubmitting(true);
+                    try {
+                      const res = await fetch("/api/payment/initialize", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: trimmed }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok || data.error) {
+                        setPayError(data.error ?? "Could not start payment. Please try again.");
+                        setPaySubmitting(false);
+                        return;
+                      }
+                      // Redirect to Paystack hosted checkout
+                      window.location.href = data.authorization_url;
+                    } catch {
+                      setPayError("Network error. Please check your connection and try again.");
+                      setPaySubmitting(false);
+                    }
+                  }}
+                  className="w-full py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Got it
+                  {paySubmitting ? "Redirecting to payment…" : "Continue to Secure Payment"}
                 </button>
+
+                {/* Cancel */}
+                {!paySubmitting && (
+                  <button
+                    onClick={() => setShowPayment(false)}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors text-center"
+                  >
+                    Cancel
+                  </button>
+                )}
+
+                <p className="text-xs text-gray-400 text-center leading-relaxed">
+                  Payment is processed securely by Paystack. VisaPrep does not store your card details.
+                </p>
               </div>
             </div>
           )}
