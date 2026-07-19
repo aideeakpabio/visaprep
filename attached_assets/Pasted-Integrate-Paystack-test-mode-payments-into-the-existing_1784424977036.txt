@@ -1,0 +1,61 @@
+Integrate Paystack test-mode payments into the existing VisaPrep application.
+
+IMPORTANT:
+- First inspect the existing project architecture and reuse its current patterns.
+- Do not restructure the application.
+- Do not alter the existing DS-160 upload, analysis, Application Insights flow, AI prompts, or report output.
+- Do not build the Full Assessment engine in this task.
+- Keep changes minimal and production-conscious.
+- Do not expose or hardcode any API key.
+- Use the existing Replit deployment URL dynamically for now so the domain can later change to https://visaprep.ng without rewriting the integration.
+
+PAYMENT PRODUCT:
+- Product name: VisaPrep Full Assessment
+- Price: NGN 20,000
+- Paystack amount: 2,000,000 kobo
+- Currency: NGN
+- Environment secret: PAYSTACK_SECRET_KEY
+
+USER FLOW:
+1. Replace the current “Coming Soon” behavior of the existing “Continue to Full Assessment” button with a dedicated payment offer page or modal that matches the existing VisaPrep visual design.
+2. Show:
+   - VisaPrep Full Assessment
+   - ₦20,000
+   - A brief, clear description explaining that it provides deeper personalized preparation based on the applicant’s application.
+   - A required customer email field, unless the application already has a reliable email available from the existing session or application data.
+   - A “Continue to Secure Payment” button.
+3. When clicked, call a server-side API route that initializes a Paystack transaction using the official Paystack Initialize Transaction API.
+4. Never accept the amount from the browser. Define and enforce the amount, currency, and product on the server.
+5. Generate a unique transaction reference.
+6. Include useful metadata such as product name and any existing non-sensitive application/report identifier.
+7. Use Paystack’s returned hosted authorization_url to redirect the customer to Paystack Checkout.
+8. Set the callback URL dynamically from the current request origin and point it to a VisaPrep payment callback page.
+9. On return from Paystack, verify the transaction reference server-side through Paystack’s Verify Transaction API.
+10. Treat payment as successful only when all of the following match:
+    - Paystack API response is successful
+    - transaction status is “success”
+    - amount is exactly 2,000,000
+    - currency is NGN
+    - reference matches the initialized transaction
+11. Never trust query parameters or the frontend alone as proof of payment.
+12. Prevent repeated verification attempts from causing duplicate fulfillment.
+13. After successful verification, show a polished confirmation page:
+    Heading: “Payment successful”
+    Body: “Your payment has been confirmed. Your VisaPrep Full Assessment will be prepared from your application.”
+    Since the Full Assessment engine is not yet implemented, clearly label access as “Coming soon” rather than pretending a report has been generated.
+14. Provide clear cancelled, pending, failed, invalid-reference, and network-error states with a safe retry option.
+15. Do not collect or handle card information directly; payment details must remain on Paystack Checkout.
+16. Add concise server-side logging without logging the secret key, full Paystack responses containing sensitive data, DS-160 content, or personal information.
+17. Add a small visible “Test Mode” label to payment-related screens whenever PAYSTACK_SECRET_KEY begins with sk_test_.
+18. Do not add the Paystack public key unless the chosen hosted-checkout implementation genuinely requires it.
+19. Do not configure webhooks in this task unless they are necessary for the minimal reliable implementation. Server-side callback verification is sufficient for this first test.
+20. Run the project’s available type checks, linting and build checks. Fix only errors caused by this implementation.
+21. At the end, report:
+    - files changed
+    - routes created
+    - environment variable required
+    - exact manual test steps
+    - anything that still needs configuration
+    - confirmation that no secret was committed
+
+Do not deploy or push until the implementation has been reviewed and the existing free Application Insights flow has been confirmed intact.
