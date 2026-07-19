@@ -638,13 +638,13 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           {!isInvalidDoc && analysis && (
             <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
               <p className="text-sm text-gray-700 leading-relaxed">
-                Your free Application Insights are a good start, but they cover only part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply, discover more areas to prepare for, and be ready to explain your application clearly and confidently during your interview.
+                Go beyond your free Application Insights with a comprehensive assessment that identifies additional strengths, highlights potential concerns, and helps you explain your application with clarity and confidence during your visa interview.
               </p>
               <button
                 onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
                 className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
               >
-                Continue to Full Assessment
+                Unlock a deeper understanding of your application
               </button>
               <p className="text-xs text-gray-400 italic">
                 Your interview starts with your application. So do we.
