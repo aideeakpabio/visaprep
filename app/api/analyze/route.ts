@@ -955,11 +955,17 @@ export async function POST(request: Request) {
       throw new Error("Empty response from analysis engine.");
     }
 
-    const analysis = JSON.parse(raw);
+    const fullAnalysis = JSON.parse(raw);
+
+    // Strip paid-tier fields before sending to the client.
+    // sections, crossSectionObservations, and readyToExplain are only rendered
+    // after a verified Paystack payment — they must not be included in the free response.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { sections, crossSectionObservations, readyToExplain, ...freeAnalysis } = fullAnalysis;
 
     return NextResponse.json({
       pages: extracted.pages,
-      analysis,
+      analysis: freeAnalysis,
       model: completion.model,
       usage: completion.usage,
     });
