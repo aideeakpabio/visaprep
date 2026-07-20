@@ -4,42 +4,66 @@ import { useState, useEffect } from "react";
 
 // ── Analyzing state ──────────────────────────────────────────────────────────
 
-const STATUS_MESSAGES = [
-  "Reading your DS-160",
-  "Looking at your application details",
-  "Connecting your answers across sections",
-  "Finding areas to help you prepare",
-  "Getting your Application Insights ready",
+// Stage 1 — generic, shown while the document is being checked (~7s)
+const STAGE_1_MESSAGES = [
+  "Uploading your document...",
+  "Checking the file...",
+  "Reading the document...",
+  "Preparing your file for analysis...",
 ];
 
-function AnalyzingState() {
-  const [statusIndex, setStatusIndex] = useState(0);
+// Stage 2 — DS-160-specific, shown once the document is confirmed usable
+const STAGE_2_MESSAGES = [
+  "Reviewing your application details...",
+  "Understanding your travel plans...",
+  "Examining your application sections...",
+  "Identifying your application strengths...",
+  "Preparing your Application Insights...",
+];
 
+const STAGE_1_DURATION_MS = 7000;
+const MESSAGE_INTERVAL_MS = 2200;
+
+function AnalyzingState() {
+  const [stage, setStage] = useState<1 | 2>(1);
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  // Transition from stage 1 → stage 2 after a fixed delay
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setStage(2);
+      setMsgIndex(0);
+    }, STAGE_1_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Advance message within the current stage
+  useEffect(() => {
+    const messages = stage === 1 ? STAGE_1_MESSAGES : STAGE_2_MESSAGES;
     const id = setInterval(() => {
-      setStatusIndex((i) => {
-        if (i >= STATUS_MESSAGES.length - 1) {
-          clearInterval(id);
-          return i;
-        }
+      setMsgIndex((i) => {
+        if (i >= messages.length - 1) { clearInterval(id); return i; }
         return i + 1;
       });
-    }, 3500);
+    }, MESSAGE_INTERVAL_MS);
     return () => clearInterval(id);
-  }, []);
+  }, [stage]);
+
+  const messages = stage === 1 ? STAGE_1_MESSAGES : STAGE_2_MESSAGES;
+  const heading = stage === 1 ? "Checking your document" : "Going through your application";
 
   return (
     <div className="border border-gray-100 rounded-2xl p-8 text-center bg-white shadow-sm">
       <p className="text-sm text-gray-700 font-medium mb-3 flex items-center justify-center gap-1">
-        Going through your application
+        {heading}
         <span className="inline-flex gap-[3px] ml-1 translate-y-px">
           <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
           <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
           <span className="analyzing-dot w-[3px] h-[3px] rounded-full bg-gray-500 inline-block" />
         </span>
       </p>
-      <p key={statusIndex} className="status-message text-xs text-gray-400">
-        {STATUS_MESSAGES[statusIndex]}
+      <p key={`${stage}-${msgIndex}`} className="status-message text-xs text-gray-400">
+        {messages[msgIndex]}
       </p>
     </div>
   );
@@ -96,6 +120,7 @@ interface Analysis {
   documentAssessment: DocumentAssessment;
   applicationProfile: string;
   submissionDate: string | null;
+  firstName: string | null;
   strengths: ApplicationStrength[];
   topPreparationAreas: TopPreparationArea[];
   sections: Section[];
@@ -104,24 +129,6 @@ interface Analysis {
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────
-
-function WeightBadge({ label }: { label: string }) {
-  const high = label.toLowerCase().includes("high");
-  const low = label.toLowerCase().endsWith("low");
-  return (
-    <span
-      className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full border ${
-        high
-          ? "border-gray-800 text-gray-800"
-          : low
-          ? "border-gray-300 text-gray-400"
-          : "border-gray-500 text-gray-500"
-      }`}
-    >
-      {label}
-    </span>
-  );
-}
 
 function Card({
   children,
@@ -149,89 +156,10 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function LessonCard({ section }: { section: Section }) {
-  const [open, setOpen] = useState(false);
-  const missing =
-    section.insights.length === 1 &&
-    section.insights[0].observation.startsWith("Not enough information");
-
-  return (
-    <div className="border rounded-xl overflow-hidden">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 transition-colors"
-      >
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="font-medium text-sm text-gray-900">
-            {section.lesson}
-          </span>
-          <WeightBadge label={`Interview Weight: ${section.interviewWeight}`} />
-          {missing && (
-            <span className="text-xs text-gray-400 italic">
-              Insufficient data
-            </span>
-          )}
-        </div>
-        <span className="text-gray-400 text-sm ml-4 shrink-0">
-          {open ? "▲" : "▼"}
-        </span>
-      </button>
-
-      {open && (
-        <div className="border-t px-4 pb-4 pt-4 space-y-4 bg-white">
-          {section.keySignals.length > 0 && (
-            <div>
-              <FieldLabel>What your application shows</FieldLabel>
-              <ul className="space-y-1">
-                {section.keySignals.map((s, i) => (
-                  <li key={i} className="text-sm text-gray-600 flex gap-2">
-                    <span className="shrink-0 text-gray-300">—</span>
-                    <span>{s}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {missing ? (
-            <p className="text-sm text-gray-500 italic">
-              {section.insights[0].observation}
-            </p>
-          ) : (
-            <div className="space-y-5">
-              {section.insights.map((insight, i) => (
-                <div key={i} className="space-y-3">
-                  {i > 0 && <div className="border-t border-gray-100" />}
-                  <div>
-                    <FieldLabel>What we noticed</FieldLabel>
-                    <p className="text-sm text-gray-700">{insight.observation}</p>
-                  </div>
-                  {insight.whyItMatters ? (
-                    <div>
-                      <FieldLabel>Why this may matter</FieldLabel>
-                      <p className="text-sm text-gray-700">{insight.whyItMatters}</p>
-                    </div>
-                  ) : null}
-                  {insight.preparationGuidance ? (
-                    <div>
-                      <FieldLabel>What to prepare</FieldLabel>
-                      <p className="text-sm text-gray-700">{insight.preparationGuidance}</p>
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-// v2 key — old schema results are automatically ignored rather than crashing
-const SESSION_KEY = "visaprep_analysis_v2";
+// v3 key — bumped when firstName was added to the schema
+const SESSION_KEY = "visaprep_analysis_v3";
 
 function readSaved(): { analysis: Analysis | null; fileName: string } {
   try {
@@ -252,7 +180,6 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState("");
-  const [showFull, setShowFull] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [payEmail, setPayEmail] = useState("");
   const [payError, setPayError] = useState("");
@@ -274,7 +201,6 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
     setAnalyzing(true);
     setAnalysis(null);
     setError("");
-    setShowFull(false);
     try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
 
     try {
@@ -340,7 +266,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               Understand your application. Prepare with clarity. Interview with confidence.
             </p>
             <p className="text-gray-500 max-w-sm text-sm leading-relaxed">
-              VisaPrep helps you understand what your application communicates and prepare to explain it clearly and confidently during your visa interview.
+              VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity, so you can walk into your visa interview with confidence.
             </p>
           </div>
 
@@ -382,12 +308,12 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     </p>
                     <button
                       onClick={() => handleUpload(pendingFile)}
-                      className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors"
+                      className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors shadow-sm"
                     >
-                      Analyze My Application
+                      Analyze My DS-160
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 opacity-70"
+                        className="w-4 h-4 opacity-90"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -427,15 +353,19 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
 
       {/* ── Results ──────────────────────────────────────────────────────── */}
       {analysis && (
-        <div className="w-full max-w-2xl mt-8 space-y-5 px-8 pb-8">
+        <div className="w-full max-w-2xl mt-8 space-y-5 px-4 sm:px-8 pb-8">
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">
-              Analyzed:{" "}
-              <span className="font-medium text-gray-700">{fileName}</span>
-            </p>
-            <label className="text-sm text-gray-500 underline cursor-pointer hover:text-gray-700">
-              Upload another
+          {/* ── 1: File Analyzed ──────────────────────────────────────────── */}
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-green-500 shrink-0 text-base">✓</span>
+              <p className="text-sm text-gray-600 truncate">
+                <span className="font-medium text-gray-800 truncate">{fileName}</span>
+                <span className="text-gray-400"> — analyzed successfully</span>
+              </p>
+            </div>
+            <label className="text-sm text-gray-400 underline cursor-pointer hover:text-gray-600 transition-colors whitespace-nowrap shrink-0">
+              Try another file
               <input
                 type="file"
                 accept=".pdf"
@@ -479,7 +409,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           {/* ── Valid DS-160 results ──────────────────────────────────────── */}
           {!isInvalidDoc && (
             <>
-              {/* 1 — Applicant Snapshot */}
+              {/* 2 — Applicant Snapshot */}
               <Card>
                 <SectionHeading>Applicant Snapshot</SectionHeading>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -492,12 +422,15 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                 )}
               </Card>
 
-              {/* 1b — Encouragement */}
+              {/* 3 — Personalized opening encouragement */}
               <p className="text-sm text-gray-600 leading-relaxed px-1">
-                You're off to a good start. Your application already tells your story, and understanding it is the first step toward a confident interview. As you go through these insights, we'll help you understand the areas that may come up and how to prepare for them.
+                {analysis.firstName
+                  ? `${analysis.firstName}, you're off to a good start.`
+                  : "You're off to a good start."}{" "}
+                Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.
               </p>
 
-              {/* 2 — Strengths in Your Application */}
+              {/* 4 — Strengths in Your Application */}
               {analysis.strengths?.length > 0 && (
                 <Card>
                   <SectionHeading>Strengths in Your Application</SectionHeading>
@@ -515,256 +448,184 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     ))}
                   </ul>
                   <p className="text-xs text-gray-400 leading-relaxed border-t border-gray-100 pt-3">
-                    These strengths do not guarantee a visa decision, but they provide a solid foundation for your interview preparation.
+                    These strengths do not guarantee a visa decision, but they reflect well-supported details in your application.
                   </p>
                 </Card>
               )}
 
-              {/* 3 — Top Preparation Areas */}
+              {/* 5 — Application Highlights */}
               {analysis.topPreparationAreas.length > 0 && (
                 <Card>
-                  <SectionHeading>Top Preparation Areas</SectionHeading>
-                  <div className="space-y-6">
-                    {analysis.topPreparationAreas.map((area, i) => (
-                      <div key={i} className="space-y-3">
-                        {i > 0 && <div className="border-t border-gray-100" />}
-                        <p className="font-medium text-sm text-gray-900">
-                          {i + 1}. {area.title}
-                        </p>
-                        <p className="text-sm text-gray-700">{area.observation}</p>
-                        <div>
-                          <FieldLabel>Why this may come up</FieldLabel>
-                          <p className="text-sm text-gray-700">{area.whyItMayComeUp}</p>
-                        </div>
-                        <div>
-                          <FieldLabel>What you should be ready to explain</FieldLabel>
-                          <p className="text-sm text-gray-700">{area.whatToBeReadyToExplain}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
-              )}
-
-              {/* 3 — What You Should Be Ready to Explain */}
-              {analysis.readyToExplain.length > 0 && (
-                <Card>
-                  <SectionHeading>What You Should Be Ready to Explain</SectionHeading>
-                  <p className="text-xs text-gray-400 mb-4">
-                    These topics come from your application and may naturally come up during your interview.
+                  <SectionHeading>Application Highlights</SectionHeading>
+                  <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                    These are important details in your application that are worth understanding clearly before your interview.
                   </p>
                   <div className="space-y-6">
-                    {analysis.readyToExplain.map((item, i) => (
-                      <div key={i} className="space-y-3">
-                        {i > 0 && <div className="border-t border-gray-100" />}
-                        <p className="font-medium text-sm text-gray-900">{item.topic}</p>
-                        <div>
+                    {analysis.topPreparationAreas.map((area, i) => (
+                      <div key={i} className="space-y-2">
+                        {i > 0 && <div className="border-t border-gray-100 pt-4" />}
+                        <p className="font-medium text-sm text-gray-900">{area.title}</p>
+                        <p className="text-sm text-gray-700 leading-relaxed">{area.observation}</p>
+                        <div className="mt-1">
                           <FieldLabel>Why this may come up</FieldLabel>
-                          <p className="text-sm text-gray-700">{item.whyItMayComeUp}</p>
+                          <p className="text-sm text-gray-700 leading-relaxed">{area.whyItMayComeUp}</p>
                         </div>
-                        <div>
-                          <FieldLabel>What you should be ready to explain</FieldLabel>
-                          <p className="text-sm text-gray-700">{item.whatToBeReadyToExplain}</p>
-                        </div>
-                        {item.possibleQuestions.length > 0 && (
-                          <div>
-                            <FieldLabel>Questions you may hear</FieldLabel>
-                            <ul className="space-y-1 mt-1">
-                              {item.possibleQuestions.map((q, j) => (
-                                <li key={j} className="flex gap-2 text-sm text-gray-600">
-                                  <span className="shrink-0 text-gray-300">—</span>
-                                  <span>{q}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
                 </Card>
               )}
 
-              {/* 4 — View Full Analysis (collapsible) */}
-              <div className="border rounded-xl overflow-hidden">
+              {/* 6 — Premium Preparation CTA */}
+              <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
+                <p className="text-sm text-gray-700 leading-relaxed max-w-md">
+                  Your free Application Insights are a good start, but they cover only a part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply and prepare to explain it clearly and confidently during your interview.
+                </p>
                 <button
-                  onClick={() => setShowFull((v) => !v)}
-                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors"
+                  onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
+                  className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
                 >
-                  <span className="font-medium text-sm text-gray-900">
-                    View Full Analysis
-                  </span>
-                  <span className="text-gray-400 text-sm">
-                    {showFull ? "▲ Hide" : "▼ Show all sections"}
-                  </span>
+                  Start My Personalized Interview Preparation
                 </button>
-
-                {showFull && (
-                  <div className="border-t px-4 py-4 space-y-3 bg-gray-50">
-                    {analysis.crossSectionObservations.length > 0 && (
-                      <div className="border rounded-xl bg-white p-4 space-y-4">
-                        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                          How Your Answers Connect
-                        </p>
-                        {analysis.crossSectionObservations.map((obs, i) => (
-                          <div key={i} className="space-y-2">
-                            {i > 0 && <div className="border-t border-gray-100" />}
-                            <p className="font-medium text-sm text-gray-900">{obs.title}</p>
-                            <p className="text-sm text-gray-700">{obs.connection}</p>
-                            {obs.whyItMatters ? (
-                              <div>
-                                <FieldLabel>Why this matters</FieldLabel>
-                                <p className="text-sm text-gray-700">{obs.whyItMatters}</p>
-                              </div>
-                            ) : null}
-                            {obs.whatToReview ? (
-                              <div>
-                                <FieldLabel>What to review</FieldLabel>
-                                <p className="text-sm text-gray-700">{obs.whatToReview}</p>
-                              </div>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    {analysis.sections.map((section, i) => (
-                      <LessonCard key={i} section={section} />
-                    ))}
-                  </div>
-                )}
+                <p className="text-xs text-gray-400 italic">
+                  Your interview starts with your application. So do we.
+                </p>
               </div>
             </>
-          )}
-
-          {/* CTA */}
-          {!isInvalidDoc && analysis && (
-            <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
-              <p className="text-sm text-gray-700 leading-relaxed">
-                Go beyond your free Application Insights and begin your complete interview preparation — built specifically around your application.
-              </p>
-              <button
-                onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
-                className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
-              >
-                Start My Personalized Interview Preparation
-              </button>
-              <p className="text-xs text-gray-400 italic">
-                Your interview starts with your application. So do we.
-              </p>
-            </div>
           )}
 
           {/* Payment offer modal */}
           {showPayment && (
             <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
               onClick={() => { if (!paySubmitting) setShowPayment(false); }}
             >
               <div
-                className="bg-white rounded-2xl shadow-xl p-8 mx-4 max-w-sm w-full flex flex-col gap-4"
+                className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl mx-0 sm:mx-4 max-w-sm w-full flex flex-col max-h-[92vh] sm:max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Header */}
-                <div className="flex flex-col gap-1">
-                  {testMode && (
-                    <span className="self-start inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200 mb-1">
-                      Test Mode
-                    </span>
+                {/* Sticky top bar — always visible */}
+                <div className="flex items-start justify-between px-6 pt-5 pb-3 shrink-0">
+                  <div className="flex flex-col gap-1">
+                    {testMode && (
+                      <span className="self-start inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200 mb-1">
+                        Test Mode
+                      </span>
+                    )}
+                    <h2 className="text-base font-semibold text-gray-900 leading-snug pr-4">
+                      Start Your Personalized Interview Preparation
+                    </h2>
+                  </div>
+                  {!paySubmitting && (
+                    <button
+                      onClick={() => setShowPayment(false)}
+                      className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none mt-0.5"
+                      aria-label="Close"
+                    >
+                      ✕
+                    </button>
                   )}
-                  <h2 className="text-lg font-semibold text-gray-900">Start Your Personalized Interview Preparation</h2>
-                  <p className="text-2xl font-bold text-gray-900">₦20,000</p>
                 </div>
 
-                {/* What's included */}
-                <ul className="flex flex-col gap-3">
-                  {[
-                    { label: "Comprehensive Application Assessment", detail: "Understand the strengths, inconsistencies, and interview implications of your application." },
-                    { label: "Personalized Interview Preparation", detail: "Know exactly what parts of your application require the most attention." },
-                    { label: "Personalized Interview Questions", detail: "Questions generated specifically from your own DS-160." },
-                    { label: "Areas You Should Be Ready to Explain", detail: "Know what a consular officer is most likely to explore further." },
-                    { label: "Personalized Preparation Roadmap", detail: "A clear plan showing what to review before your interview." },
-                    { label: "AI Interview Practice", detail: "Practice realistic visa interview conversations based on your own application and receive personalized feedback after every session.", soon: true },
-                  ].map(({ label, detail, soon }) => (
-                    <li key={label} className="flex gap-3 items-start">
-                      <span className="mt-0.5 text-green-500 shrink-0">✓</span>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 leading-snug">
-                          {label}{soon && <span className="ml-2 text-xs font-normal text-gray-400">(Coming Soon)</span>}
-                        </p>
-                        <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{detail}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                {/* Scrollable content */}
+                <div className="overflow-y-auto flex-1 px-6 pb-6 flex flex-col gap-5">
 
-                {/* Email field */}
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="pay-email" className="text-xs font-medium text-gray-700">
-                    Email address
-                  </label>
-                  <input
-                    id="pay-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={payEmail}
-                    onChange={(e) => { setPayEmail(e.target.value); setPayError(""); }}
+                  {/* Supporting copy */}
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Go beyond your free Application Insights with a complete, personalized preparation experience built around your own DS-160.
+                  </p>
+
+                  {/* Benefits list */}
+                  <ul className="flex flex-col gap-3">
+                    {[
+                      { label: "Comprehensive Application Assessment", detail: "Understand the strengths, connections, and interview implications across your full application." },
+                      { label: "Personalized Interview Preparation", detail: "Know exactly which parts of your application deserve the most attention before your interview." },
+                      { label: "Areas You Should Be Ready to Explain", detail: "Understand what a consular officer may naturally want to explore further in your application." },
+                      { label: "Personalized Interview Questions", detail: "Questions generated specifically from your own DS-160 — not a generic question bank." },
+                      { label: "Personalized Preparation Roadmap", detail: "A clear plan showing what to review and understand before your interview." },
+                      { label: "AI Interview Practice", detail: "Practice realistic visa interview conversations based on your own application and receive personalized feedback after every session.", soon: true },
+                    ].map(({ label, detail, soon }) => (
+                      <li key={label} className="flex gap-3 items-start">
+                        <span className="mt-0.5 text-green-500 shrink-0 text-sm">✓</span>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 leading-snug">
+                            {label}{soon && <span className="ml-2 text-xs font-normal text-gray-400">(Coming Soon)</span>}
+                          </p>
+                          <p className="text-xs text-gray-500 leading-relaxed mt-0.5">{detail}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-100" />
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-2xl font-bold text-gray-900">₦20,000</p>
+                    <p className="text-sm text-gray-400">one-time</p>
+                  </div>
+
+                  {/* Email field */}
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="pay-email" className="text-xs font-medium text-gray-700">
+                      Email address
+                    </label>
+                    <input
+                      id="pay-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={payEmail}
+                      onChange={(e) => { setPayEmail(e.target.value); setPayError(""); }}
+                      disabled={paySubmitting}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
+                    />
+                    {payError && (
+                      <p className="text-xs text-red-600">{payError}</p>
+                    )}
+                  </div>
+
+                  {/* Submit */}
+                  <button
                     disabled={paySubmitting}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
-                  />
-                  {payError && (
-                    <p className="text-xs text-red-600">{payError}</p>
-                  )}
-                </div>
-
-                {/* Submit */}
-                <button
-                  disabled={paySubmitting}
-                  onClick={async () => {
-                    const trimmed = payEmail.trim();
-                    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-                      setPayError("Please enter a valid email address.");
-                      return;
-                    }
-                    setPayError("");
-                    setPaySubmitting(true);
-                    try {
-                      const res = await fetch("/api/payment/initialize", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: trimmed }),
-                      });
-                      const data = await res.json();
-                      if (!res.ok || data.error) {
-                        setPayError(data.error ?? "Could not start payment. Please try again.");
-                        setPaySubmitting(false);
+                    onClick={async () => {
+                      const trimmed = payEmail.trim();
+                      if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+                        setPayError("Please enter a valid email address.");
                         return;
                       }
-                      // Redirect to Paystack hosted checkout
-                      window.location.href = data.authorization_url;
-                    } catch {
-                      setPayError("Network error. Please check your connection and try again.");
-                      setPaySubmitting(false);
-                    }
-                  }}
-                  className="w-full py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {paySubmitting ? "Redirecting to payment…" : "Continue to Secure Payment"}
-                </button>
-
-                {/* Cancel */}
-                {!paySubmitting && (
-                  <button
-                    onClick={() => setShowPayment(false)}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors text-center"
+                      setPayError("");
+                      setPaySubmitting(true);
+                      try {
+                        const res = await fetch("/api/payment/initialize", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: trimmed }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok || data.error) {
+                          setPayError(data.error ?? "Could not start payment. Please try again.");
+                          setPaySubmitting(false);
+                          return;
+                        }
+                        // Redirect to Paystack hosted checkout
+                        window.location.href = data.authorization_url;
+                      } catch {
+                        setPayError("Network error. Please check your connection and try again.");
+                        setPaySubmitting(false);
+                      }
+                    }}
+                    className="w-full py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    {paySubmitting ? "Redirecting to payment…" : "Start My Personalized Interview Preparation"}
                   </button>
-                )}
 
-                <p className="text-xs text-gray-400 text-center leading-relaxed">
-                  Payment is processed securely by Paystack. VisaPrep does not store your card details.
-                </p>
+                  {/* Security note */}
+                  <p className="text-xs text-gray-400 text-center leading-relaxed">
+                    Payment is processed securely by Paystack. VisaPrep does not store your card details.
+                  </p>
+                </div>
               </div>
             </div>
           )}

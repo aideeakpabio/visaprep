@@ -590,7 +590,7 @@ Set documentAssessment.isLikelyDS160 to true and documentAssessment.message to n
 
 If the document does not appear to be a DS-160, or contains too little recognizable DS-160 information:
 Set documentAssessment.isLikelyDS160 to false and documentAssessment.message to: "We couldn't identify enough DS-160 application information in this document to generate personalized interview preparation. Please upload your completed DS-160 application PDF."
-Set applicationProfile to the same message. Set submissionDate to null. Return empty arrays for strengths, topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
+Set applicationProfile to the same message. Set submissionDate to null. Set firstName to null. Return empty arrays for strengths, topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
 Do not pretend the document is a DS-160. Do not generate generic preparation advice.
 
 FIELD DESCRIPTIONS
@@ -628,6 +628,7 @@ Return ONLY valid JSON matching this exact schema. No text before or after the J
   },
   "applicationProfile": "A factual 2–3 sentence summary written directly to the applicant in second person. Begin with 'You are...' or 'You have applied...' — never 'The applicant' or 'Applicant'. Example: 'You are applying for a B-2 tourist visa to visit the United States for 30 days. You have listed your employer as Acme Ltd and your trip is self-funded.'",
   "submissionDate": "The submission date exactly as it appears in the DS-160, or null if absent.",
+  "firstName": "The applicant's given name as it appears on the DS-160 (first name only, not full name). Extract this from the Surname / Given Names field or any name field in the document. Return null if no name is identifiable.",
   "strengths": [
     {
       "label": "Short positive label, e.g. 'Clear purpose of travel'",
