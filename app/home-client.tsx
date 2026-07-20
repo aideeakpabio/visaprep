@@ -253,13 +253,13 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
           {/* Hero content */}
-          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-14 pb-10 px-8">
-            <h1 className="text-5xl font-bold mb-6 tracking-tight">VisaPrep</h1>
+          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-12 sm:pt-14 pb-10 px-5 sm:px-8">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6 tracking-tight">VisaPrep</h1>
 
-            <p className="text-xl font-medium text-gray-800 mb-1 leading-snug">
+            <p className="text-lg sm:text-xl font-medium text-gray-800 mb-1 leading-tight sm:leading-snug">
               Your interview starts with your application.
             </p>
-            <p className="text-lg italic text-gray-400 mb-5">
+            <p className="text-base sm:text-lg italic text-gray-400 mb-5">
               So do we.
             </p>
             <p className="text-gray-800 max-w-sm text-sm font-medium leading-relaxed mb-1">
@@ -271,9 +271,9 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           </div>
 
           {/* Upload widget */}
-          <div className="relative z-10 w-full max-w-md px-8 pb-16">
+          <div className="relative z-10 w-full max-w-md px-4 sm:px-8 pb-16">
             {!analyzing && (
-              <div className="border border-gray-200 rounded-2xl p-8 text-center bg-white shadow-sm">
+              <div className="border border-gray-200 rounded-2xl p-6 sm:p-8 text-center bg-white shadow-sm">
                 <p className="text-sm text-gray-500 mb-5 leading-relaxed">
                   Upload your DS-160 to begin
                 </p>
@@ -463,7 +463,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                   <div className="space-y-6">
                     {analysis.topPreparationAreas.map((area, i) => (
                       <div key={i} className="space-y-2">
-                        {i > 0 && <div className="border-t border-gray-100 pt-4" />}
+                        {i > 0 && <div className="border-t border-gray-100 mt-4" />}
                         <p className="font-medium text-sm text-gray-900">{area.title}</p>
                         <p className="text-sm text-gray-700 leading-relaxed">{area.observation}</p>
                         <div className="mt-1">
