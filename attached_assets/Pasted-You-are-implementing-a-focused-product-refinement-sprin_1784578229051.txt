@@ -1,0 +1,837 @@
+You are implementing a focused product refinement sprint for VisaPrep.
+
+Before editing anything, inspect the existing application, understand the current architecture and identify the files responsible for:
+
+- Landing page and hero content
+- PDF upload component
+- Upload and analysis states
+- DS-160 validation
+- Analysis API route and output schema
+- Free Application Insights report
+- Premium upgrade modal
+- Payment flow
+- Responsive styling
+
+Do not begin by rebuilding the application or replacing working systems unnecessarily.
+
+The objective is to refine the existing product while preserving all working functionality.
+
+==================================================
+PRODUCT CONTEXT
+==================================================
+
+VisaPrep is an AI-powered visa preparation platform initially designed for Nigerians applying for U.S. visas.
+
+Its core philosophy is:
+
+Understanding before evaluation.
+Familiarity before memorization.
+Preparation, not prediction.
+
+VisaPrep must help genuine applicants:
+
+- Understand what their visa application communicates
+- Recognize the parts of their application that deserve attention
+- Prepare to explain their own circumstances clearly and truthfully
+- Approach their interview with greater clarity and confidence
+
+VisaPrep must never imply that it can predict visa approval, guarantee an outcome, manipulate an interview or help applicants deceive a consular officer.
+
+The platform should feel:
+
+- Trustworthy
+- Intelligent
+- Calm
+- Personal
+- Clear
+- Supportive
+- Premium but accessible
+
+Avoid language that feels:
+
+- Alarmist
+- Accusatory
+- Overly legalistic
+- Robotic
+- Judgmental
+- Certain about what an officer will ask
+- Certain about the outcome of an interview
+
+Use plain English that is natural and understandable to Nigerian applicants.
+
+==================================================
+CENTRAL PRODUCT DIRECTION
+==================================================
+
+The product experience must clearly distinguish between understanding and preparation.
+
+FREE = UNDERSTANDING
+
+The free Application Insights experience helps the applicant understand what their application communicates and identify the most important parts that deserve attention.
+
+PAID = PREPARATION
+
+The paid experience helps the applicant prepare to explain those areas, understand possible interview implications, review personalized questions and build confidence.
+
+Core commercial principle:
+
+Never charge users merely to understand what the system has identified in their own application.
+
+Charge for the deeper preparation required to respond clearly and confidently.
+
+The free experience must provide genuine personalized value. However, it must not become a complete interview-preparation report.
+
+The user should finish the free report feeling:
+
+- Seen
+- Informed
+- Reassured
+- Curious to continue
+- Convinced that VisaPrep genuinely understood their application
+
+The user should not finish feeling:
+
+- Frightened
+- Overwhelmed
+- Judged
+- Confused
+- Fully prepared without needing the paid experience
+
+==================================================
+1. UPDATE THE HOMEPAGE HERO
+==================================================
+
+Update the hero section so that it clearly communicates the VisaPrep promise.
+
+Use this primary message:
+
+“VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity, so you can walk into your visa interview with confidence.”
+
+Present the three-stage supporting message clearly:
+
+Understand your application.
+Prepare with clarity.
+Interview with confidence.
+
+Also retain and prominently present the core brand statement:
+
+“Your interview starts with your application.
+So do we.”
+
+The page should quickly answer:
+
+- Why am I here?
+- How can VisaPrep help me?
+- What will I gain?
+- What should I do next?
+
+Do not overcrowd the hero section. Maintain strong visual hierarchy and readable line lengths on desktop and mobile.
+
+Keep the current single-colour VisaPrep logo treatment. Do not split the VisaPrep wordmark into blue and green. Do not redesign the logo during this sprint.
+
+==================================================
+2. REMOVE “VIEW FULL ANALYSIS”
+==================================================
+
+Remove “View Full Analysis” from the free experience entirely.
+
+This includes:
+
+- Buttons
+- Links
+- Headings
+- Hidden routes intended only for that wording
+- References in the free report
+- References inside modals or supporting copy
+
+There should not appear to be a second, more detailed free analysis waiting behind another button.
+
+The free deliverable is called:
+
+Application Insights
+
+The paid deliverable is the personalized preparation experience.
+
+Use product language that reflects this distinction consistently.
+
+==================================================
+3. IMPROVE THE PDF UPLOAD STATE
+==================================================
+
+Currently, selecting a PDF primarily changes the button text. Improve the interaction so the user can visually recognize that the upload step is complete.
+
+Before a file is selected:
+
+- The upload control should remain neutral.
+- The analysis CTA should remain disabled or visually inactive where appropriate.
+
+After a PDF is successfully selected:
+
+- Display the filename clearly.
+- Give the main CTA a distinct active state.
+- Use the established green progression language for this ready state.
+- Make it obvious that the next action is to begin analysis.
+- Keep the CTA accessible and readable.
+- Do not rely on colour alone; include text or an icon that communicates readiness.
+
+Suggested active CTA text:
+
+“Analyze My DS-160”
+
+The change should feel like:
+
+File selected → Ready to analyse
+
+Do not suggest that validation has already succeeded merely because a PDF was selected.
+
+==================================================
+4. SPLIT VALIDATION AND ANALYSIS INTO TWO STAGES
+==================================================
+
+Refine the analysis flow into two clearly separated internal stages.
+
+STAGE 1: DOCUMENT VALIDATION
+
+The system should first determine whether the uploaded file:
+
+- Can be opened
+- Contains usable text or extractable content
+- Appears to be the relevant completed DS-160 material required by VisaPrep
+- Contains enough information for meaningful analysis
+
+During this stage, show only generic validation messages.
+
+Examples:
+
+- Uploading your document...
+- Checking the file...
+- Reading the document...
+- Confirming the document type...
+- Preparing your file for analysis...
+
+Do not show DS-160-specific intelligence messages before validation succeeds.
+
+If validation fails:
+
+- Stop the process.
+- Do not continue into DS-160 analysis.
+- Display a calm, specific and helpful error.
+- Explain what type of document is required.
+- Allow the user to select another file.
+- Do not use technical error language unless necessary.
+
+Possible error structure:
+
+“We couldn’t confirm that this file contains enough DS-160 information for analysis. Please upload a readable copy of your completed DS-160 application, or clear screenshots containing the application details.”
+
+Adapt the wording to the actual file formats currently supported by the application.
+
+STAGE 2: DS-160 ANALYSIS
+
+Only after successful validation should the interface begin showing DS-160-specific progress messages.
+
+Examples:
+
+- Reviewing your application details...
+- Understanding your travel plans...
+- Examining important connections across your application...
+- Identifying your application strengths...
+- Preparing your personalized Application Insights...
+
+Prevent progress messages from looping awkwardly during longer analyses. Spread them naturally across the process.
+
+Preserve the current working analysis system wherever possible. Do not introduce unnecessary duplicate API calls.
+
+==================================================
+5. CURATE THE FREE APPLICATION INSIGHTS
+==================================================
+
+The free Application Insights report must be deliberately concise and personalized.
+
+Its purpose is to answer:
+
+“What does my application communicate, and what deserves my attention?”
+
+It must not attempt to answer the complete paid question:
+
+“How should I prepare to explain everything during my interview?”
+
+Use only information grounded in the uploaded application.
+
+Do not generate generic visa advice merely to fill space.
+
+Prioritize a few meaningful observations over a long list of weak observations.
+
+==================================================
+6. USE THIS FREE REPORT STRUCTURE
+==================================================
+
+The free report should follow this order:
+
+1. File Analyzed
+2. Applicant Snapshot
+3. Personalized Opening Encouragement
+4. Strengths in Your Application
+5. Application Highlights
+6. Premium Preparation CTA
+
+Remove or relocate free-report sections that do not belong in this structure.
+
+Do not include the following as full free sections:
+
+- What You Should Be Ready to Explain
+- Questions You May Hear
+- Likely Interview Questions
+- Detailed preparation instructions
+- Suggested responses
+- Interview practice
+- Extensive interview implications
+
+These belong in the paid preparation experience.
+
+==================================================
+7. FILE ANALYZED
+==================================================
+
+Keep this brief.
+
+Show that the file was successfully analysed and, where useful, identify the uploaded filename.
+
+Do not give this section excessive visual weight.
+
+==================================================
+8. APPLICANT SNAPSHOT
+==================================================
+
+Provide a concise, factual snapshot derived from the uploaded application.
+
+Depending on available information, this may include:
+
+- Applicant name
+- Visa category
+- Main purpose of travel
+- Destination
+- Proposed travel period
+- Funding source
+- Employment or study status
+
+Do not invent missing information.
+
+Do not repeat every DS-160 field.
+
+This should help the applicant quickly confirm that VisaPrep understood the correct application.
+
+==================================================
+9. PERSONALIZE THE OPENING ENCOURAGEMENT
+==================================================
+
+Immediately after the Applicant Snapshot, include a short and supportive transition addressed to the applicant by first name only.
+
+The message must be personalized but not falsely reassuring.
+
+It should acknowledge that understanding the application is the first step towards preparing confidently.
+
+Example tone:
+
+“Iniobong, you’re off to a good start. Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.”
+
+The exact wording may vary slightly, but it should remain:
+
+- Warm
+- Calm
+- Brief
+- Honest
+- Confidence-building
+
+Do not imply that the application is strong enough for approval.
+
+==================================================
+10. STRENGTHS IN YOUR APPLICATION
+==================================================
+
+Identify genuine strengths visible in the application.
+
+Each strength should:
+
+- Be specific to the applicant
+- Be supported by application details
+- Use calm, factual language
+- Avoid predicting how a consular officer will decide
+
+Examples of possible strength categories include:
+
+- A clearly stated travel purpose
+- A defined itinerary
+- Consistent employment information
+- Relevant travel history
+- Clear funding arrangements
+- Logical connections between the applicant’s circumstances and travel plans
+
+Do not force a predetermined number if the evidence does not support it.
+
+Do not describe ordinary information as an exceptional strength simply to sound positive.
+
+==================================================
+11. REPLACE “TOP PREPARATION AREAS” WITH “APPLICATION HIGHLIGHTS”
+==================================================
+
+Rename the section:
+
+“Top Preparation Areas”
+
+to:
+
+“Application Highlights”
+
+This section must help the applicant recognize important details, transitions, combinations or circumstances within their application.
+
+“Application Highlights” should feel informative rather than threatening.
+
+Avoid labels such as:
+
+- Red flags
+- Weaknesses
+- Problems
+- Risk factors
+- Concerns
+- Suspicious areas
+
+The system may identify areas that deserve careful explanation, but the language must remain neutral and constructive.
+
+==================================================
+12. SIMPLIFY EACH APPLICATION HIGHLIGHT
+==================================================
+
+Each Application Highlight should contain only:
+
+1. A concise personalized heading
+2. The label: “Why this may come up”
+3. A short application-specific explanation
+
+Example format:
+
+Employment Transition
+
+Why this may come up
+
+Your application shows that you recently moved from a long-term role at one company to a newer position. Because your current employment is relatively recent, you should be familiar with the timeline and how the change fits into your professional history.
+
+However, be careful not to turn the free explanation into full preparation guidance.
+
+The free version may explain why the detail is notable, but it should not provide:
+
+- A prepared answer
+- A response script
+- A list of interview questions
+- A coaching strategy
+- A detailed explanation framework
+- Instructions for overcoming perceived weaknesses
+
+Also avoid certainty such as:
+
+“The officer will ask about this.”
+
+Prefer language such as:
+
+- This may attract additional attention.
+- This may naturally lead to questions.
+- This is an important part of your application to understand.
+- The combination of these details may require a clear explanation.
+
+==================================================
+13. REMOVE DUPLICATION
+==================================================
+
+Audit the complete free report for repeated information.
+
+The same observation must not appear repeatedly across:
+
+- Applicant Snapshot
+- Strengths
+- Application Highlights
+- Explanatory paragraphs
+- CTA copy
+- Hidden or collapsed content
+
+Each section must have a distinct role:
+
+Applicant Snapshot = What the application says
+
+Strengths = What appears clear, coherent or well-supported
+
+Application Highlights = What deserves closer personal understanding
+
+Paid Preparation = How to prepare and explain it
+
+Remove repetitive sections rather than merely renaming them.
+
+==================================================
+14. DIFFERENTIATE INSIGHT FROM PREPARATION
+==================================================
+
+Apply the following content boundary consistently:
+
+FREE APPLICATION INSIGHTS
+
+May include:
+
+- Applicant Snapshot
+- Personalized encouragement
+- Application strengths
+- Important personalized observations
+- Why certain details may deserve attention
+
+PAID PERSONALIZED PREPARATION
+
+May include:
+
+- What the applicant should be ready to explain
+- Deeper interview implications
+- Questions the applicant may hear
+- Personalized preparation guidance
+- Connections the applicant should understand
+- Practice prompts
+- Confidence-building guidance
+- Adaptive interview practice when available
+
+Review both the frontend rendering and the AI output schema or prompt logic.
+
+Do not merely hide paid content with CSS if the free API response is still unnecessarily generating and exposing it to the client.
+
+Where practical, structure the data so free and paid content are intentionally separated.
+
+However, do not break the current analysis engine or paid flow. Make the smallest safe architectural change required to enforce this boundary.
+
+==================================================
+15. FREE REPORT UPGRADE CTA
+==================================================
+
+End the free Application Insights report with one focused upgrade section.
+
+The approved supporting message is:
+
+“Your free Application Insights are a good start, but they cover only a part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply and prepare to explain it clearly and confidently during your interview.”
+
+Review the product naming already used in the payment flow. Maintain consistency between “VisaPrep Assessment” and the preparation experience. Do not create several competing paid-product names.
+
+The main button should use clear outcome-focused language.
+
+Preferred CTA:
+
+“Start My Personalized Interview Preparation”
+
+A suitable alternative is:
+
+“Unlock My Personalized Interview Preparation”
+
+Choose one and use it consistently.
+
+Avoid weak or internal language such as:
+
+- Upgrade
+- View More
+- Premium Tier
+- Complete Tier
+- Buy Now
+- Unlock Full Analysis
+
+The CTA should communicate the transformation the applicant is purchasing.
+
+==================================================
+16. REDESIGN THE PREMIUM UPGRADE EXPERIENCE
+==================================================
+
+When the applicant clicks the preparation CTA, open a polished and fully responsive premium modal or upgrade screen.
+
+The current order should be changed so value comes before price.
+
+Use this sequence:
+
+1. Outcome-focused heading
+2. Short supporting explanation
+3. Paid preparation benefits
+4. Price
+5. Final payment/action button
+6. Relevant security or payment reassurance
+
+The benefit list may include items such as:
+
+- Personalized areas to prepare
+- What you should be ready to explain
+- Questions you may hear
+- Deeper application connections
+- Interview preparation guidance
+- Confidence-building practice
+
+Only list capabilities that actually exist or are being implemented in the paid experience.
+
+Use green checkmarks for included benefits.
+
+Do not misrepresent future features as currently available.
+
+The price should appear after the user understands the value.
+
+Place the amount close to the final action button.
+
+Do not allow the modal to become so tall that the heading, price or CTA becomes inaccessible on mobile.
+
+The modal must:
+
+- Fit within the viewport
+- Have a sensible maximum height
+- Scroll internally when needed
+- Keep the close control accessible
+- Prevent background scrolling where appropriate
+- Respect mobile safe areas
+- Have sufficient bottom padding
+- Keep the final CTA fully visible and tappable
+
+Do not break the existing live payment integration.
+
+==================================================
+17. ESTABLISH A CONSISTENT COLOUR LANGUAGE
+==================================================
+
+Use colour intentionally throughout the interface.
+
+BLUE communicates:
+
+- Trust
+- Intelligence
+- Understanding
+- Analysis
+- Information
+- Guidance
+
+GREEN communicates:
+
+- Progress
+- Readiness
+- Success
+- Completion
+- Action
+- Access granted
+
+Use green for states such as:
+
+- File successfully selected
+- Ready-to-analyse CTA
+- Successful validation
+- Completion indicators
+- Checkmarks
+- Main forward-action CTAs
+- Successful payment or unlocked access
+
+Do not use green everywhere.
+
+Do not make every button green merely for consistency.
+
+Secondary, neutral, informational and navigational controls may remain blue or neutral.
+
+Green should mean that the user is progressing, completing or taking an important forward action.
+
+Maintain accessible colour contrast.
+
+Do not rely solely on colour to communicate status.
+
+Do not split the VisaPrep logo into blue and green.
+
+==================================================
+18. RESPONSIVE DESIGN AUDIT
+==================================================
+
+Perform a complete responsive audit across the full user journey.
+
+Audit at minimum:
+
+- Homepage
+- Hero section
+- Upload area
+- Selected-file state
+- Validation progress
+- Analysis progress
+- Error states
+- Application Insights report
+- Applicant Snapshot
+- Strength cards
+- Application Highlight cards
+- Upgrade CTA
+- Premium modal
+- Payment interface or redirect controls
+- Success and failure states
+
+Test representative viewport sizes, including approximately:
+
+- 320px mobile width
+- 375px mobile width
+- 390px mobile width
+- 768px tablet width
+- Standard laptop width
+- Wide desktop width
+
+Ensure:
+
+- No text is clipped
+- No heading overflows
+- Buttons remain fully visible
+- Buttons are large enough to tap
+- Cards do not exceed the viewport
+- Modals can be scrolled
+- Price and CTA are accessible
+- Horizontal scrolling does not occur
+- Long filenames wrap or truncate gracefully
+- Progress messages remain readable
+- Spacing remains balanced
+- Content does not touch screen edges
+- The report hierarchy remains clear
+- Fixed elements do not cover important content
+
+Responsive work must cover the complete experience, not only the homepage.
+
+==================================================
+19. PRESERVE WORKING FUNCTIONALITY
+==================================================
+
+Do not unnecessarily modify:
+
+- OpenAI integration
+- Existing environment variables
+- Payment provider configuration
+- Settlement configuration
+- Live/test payment switching logic
+- GitHub or deployment configuration
+- Authentication, if present
+- Existing security controls
+- Working PDF extraction
+- Visa category intelligence
+- Core analysis philosophy
+- Unrelated pages or features
+
+Do not expose API keys or secrets.
+
+Do not place private server-side logic in client components.
+
+Do not replace working integrations merely to simplify the visual implementation.
+
+Where a backend or schema change is genuinely required, explain it in the completion summary.
+
+==================================================
+20. CONTENT AND ETHICAL GUARDRAILS
+==================================================
+
+All generated and static language must preserve the VisaPrep ethical position.
+
+The system must:
+
+- Encourage truthful preparation
+- Help applicants understand their own information
+- Avoid guaranteeing outcomes
+- Avoid predicting approval or refusal
+- Avoid coaching applicants to conceal information
+- Avoid advising applicants to invent stronger explanations
+- Avoid presenting assumptions as facts
+- Avoid claiming certainty about what a consular officer will ask
+
+Use:
+
+“may”
+“could”
+“deserves attention”
+“may naturally lead to questions”
+“be ready to explain truthfully”
+
+Avoid:
+
+“will definitely”
+“the officer will”
+“this will cause refusal”
+“say this to improve your chances”
+“use this answer”
+
+==================================================
+21. IMPLEMENTATION APPROACH
+==================================================
+
+Complete the work in a controlled order:
+
+Phase 1: Inspect and map the current application
+
+Phase 2: Update hero content and upload states
+
+Phase 3: Separate validation from DS-160 analysis messaging
+
+Phase 4: Restructure the free report and output handling
+
+Phase 5: Redesign the premium upgrade experience
+
+Phase 6: Apply the colour system consistently
+
+Phase 7: Complete responsive audit and fixes
+
+Phase 8: Test the complete user journey
+
+Do not stop after editing visual components.
+
+Test actual state transitions:
+
+- No file selected
+- Valid PDF selected
+- Invalid or unsupported file selected
+- Validation in progress
+- Validation failure
+- Analysis in progress
+- Analysis success
+- Free report rendering
+- Upgrade modal opening and closing
+- Upgrade modal scrolling on mobile
+- Payment CTA
+- Existing payment flow
+- Analysis restart with another file
+
+==================================================
+22. ACCEPTANCE CRITERIA
+==================================================
+
+The refinement sprint is complete only when all of the following are true:
+
+- The hero communicates understanding, clarity and confidence.
+- “Your interview starts with your application. So do we.” remains visible.
+- “View Full Analysis” has been completely removed.
+- Selecting a PDF produces a clear visual ready state.
+- Validation messages remain generic until the file is confirmed usable.
+- Invalid files never trigger DS-160-specific analysis messages.
+- The free report follows the approved six-part structure.
+- Opening encouragement uses the applicant’s first name.
+- “Top Preparation Areas” has been replaced with “Application Highlights.”
+- Every Application Highlight contains a heading, “Why this may come up,” and a concise personalized explanation.
+- The free report does not contain full preparation guidance or interview-question sections.
+- Duplicate observations have been removed.
+- Free understanding and paid preparation are clearly differentiated.
+- The free report ends with one focused preparation CTA.
+- The premium modal presents benefits before price.
+- The modal is fully usable on mobile.
+- Blue and green follow the established semantic colour language.
+- The logo remains a single-colour mark.
+- No existing analysis, payment or deployment functionality has been unintentionally broken.
+- No secrets are exposed.
+- The full flow works across mobile, tablet and desktop.
+
+==================================================
+23. FINAL RESPONSE REQUIRED
+==================================================
+
+After implementing the changes, provide a concise completion report containing:
+
+1. Files changed
+2. Major changes completed
+3. Any API, schema or prompt changes
+4. Responsive fixes completed
+5. Tests performed
+6. Anything that could not be completed
+7. Any decisions that require product-owner review
+
+Do not simply say “Done.”
+
+Do not claim that a feature was tested unless it was actually tested.
+
+If any instruction conflicts with the existing architecture or could break a live integration, preserve the working system and clearly explain the conflict before making a destructive change.
