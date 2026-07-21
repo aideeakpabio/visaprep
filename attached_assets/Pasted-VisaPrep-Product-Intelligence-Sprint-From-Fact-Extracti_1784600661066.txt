@@ -1,0 +1,300 @@
+VisaPrep Product Intelligence Sprint
+From Fact Extraction to Application Intelligence
+
+Congratulations on completing the Product Refinement Sprint.
+
+We have now evaluated the product against six benchmark applicants covering B1/B2 and F-1 visa categories. Overall, the product performs well and consistently delivers valuable Application Insights.
+
+This sprint is not about changing VisaPrep's philosophy or architecture.
+
+It is about making the intelligence noticeably deeper, the experience more personalized, and the value immediately obvious to users.
+
+Core Product Philosophy
+
+Continue preserving VisaPrep's guiding principle:
+
+Your interview starts with your application. So do we.
+
+VisaPrep exists to help genuine applicants understand what their application communicates and prepare to explain it clearly and confidently.
+
+Do not predict visa outcomes.
+
+Do not speculate about consular decisions.
+
+Do not encourage applicants to game the interview.
+
+The New Objective
+
+The engine already identifies important facts well.
+
+The next evolution is much more ambitious.
+
+Teach the engine to understand the application as one connected story.
+
+Rather than producing a collection of observations, produce meaningful insights.
+
+An insight should help the applicant think:
+
+"I never realized those parts of my application connected like that."
+
+or
+
+"Now I understand why this might naturally come up during my interview."
+
+Every insight should deliver value that goes beyond simply reading the DS-160.
+
+The applicant should feel they have learned something meaningful about their own application.
+
+The Application Insights should provide value they are unlikely to receive from:
+
+reading their DS-160
+a typical visa consultant
+generic interview question websites
+a generic AI assistant
+
+The free experience should naturally make users want to continue because they immediately recognize the depth of understanding VisaPrep provides.
+
+1. Cross-Section Reasoning
+
+Highest priority.
+
+Move beyond identifying isolated facts.
+
+Identify meaningful relationships between different parts of the application.
+
+Examples include:
+
+Employment ↔ Purpose of travel
+Job responsibilities ↔ Conference attendance
+Degree ↔ Master's programme
+Internship ↔ Career goals
+Scholarship ↔ Academic achievement
+Previous refusal ↔ Changes reflected in the current application
+Previous travel ↔ Current travel plans
+Family information ↔ Interview preparation
+Funding ↔ Nature of trip
+Executive responsibilities ↔ Business meetings
+
+Rather than saying:
+
+You have stable employment.
+
+Explain:
+
+Your current role appears directly connected to the purpose of your trip. Be prepared to explain how attending this event supports your responsibilities at work.
+
+The focus should shift from facts to meaning.
+
+2. Increase Insight Value
+
+Every Application Highlight should answer one question:
+
+Why is this important for this applicant?
+
+Avoid merely describing facts.
+
+Instead explain:
+
+why the applicant should understand it
+how it connects to other parts of the application
+why it may naturally become part of an interview conversation
+
+The applicant should consistently feel:
+
+"I hadn't looked at my application that way before."
+
+3. Personalized Encouragement
+
+Replace the generic encouragement.
+
+Generate one short encouragement uniquely based on the applicant's own profile.
+
+Use information such as:
+
+academic achievements
+career progression
+professional growth
+funding
+scholarships
+previous travel
+executive experience
+long-term goals
+
+Each report should feel individually written.
+
+4. Replace Low-Value Observations
+
+Avoid observations that add little value unless stronger observations are unavailable.
+
+Examples include:
+
+Complete supporting documents
+Clear purpose of travel
+Clear purpose of study
+Well-defined itinerary
+
+Instead prioritize richer observations that demonstrate understanding.
+
+5. Use More Available Context
+
+Many applications contain valuable information that currently goes unused.
+
+Examples include:
+
+internships
+promotions
+management responsibilities
+ownership interests
+scholarships
+academic distinctions
+employment transitions
+executive positions
+board memberships
+previous compliant travel
+
+When they strengthen the overall narrative, incorporate them into the analysis.
+
+6. Avoid Unsupported Inferences
+
+Remain grounded.
+
+Do not infer:
+
+why a previous visa was refused
+that a factor improves approval chances
+that something weakens or strengthens an application
+that a factor simplifies the application process
+
+Discuss only what the application communicates.
+
+7. Family Information
+
+Where appropriate, acknowledge immediate family information factually.
+
+Example:
+
+Your application includes immediate family members in Nigeria. Be comfortable discussing your family circumstances if questions naturally arise during your interview.
+
+Avoid speculation.
+
+8. Homepage Copy
+
+Update the homepage sequence:
+
+VisaPrep
+
+Your interview starts with your application.
+
+So do we.
+
+VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity and confidence during your interview.
+
+Understand your application.
+
+Prepare with clarity.
+
+Interview with confidence.
+
+Upload section.
+
+9. Homepage Styling
+
+Display:
+
+Understand your application.
+
+Prepare with clarity.
+
+Interview with confidence.
+
+using VisaPrep green.
+
+Ensure each phrase remains visually balanced without awkward wrapping across desktop and mobile devices.
+
+10. Upload Experience
+
+After upload:
+
+Replace
+
+"Upload your DS-160 to begin"
+
+with
+
+a green checkmark and the uploaded filename.
+
+Do not increase the upload box height after upload.
+
+Maintain a clean layout.
+
+11. Premium Modal
+
+The user has already clicked:
+
+Start Your Personalized Interview Preparation.
+
+Do not repeat this heading.
+
+Instead introduce the value.
+
+Suggested heading:
+
+Continue with Your Full VisaPrep Assessment
+
+Supporting copy:
+
+Your free Application Insights are a great start.
+
+Your Full VisaPrep Assessment helps you understand your application more deeply and prepares you to explain it with clarity and confidence during your interview.
+
+Then reinforce the philosophy:
+
+Your interview will be based on your application. Here's what we'll help you prepare for next:
+
+Follow immediately with the premium checklist.
+
+12. Payment CTA
+
+Replace the second button text with a payment-specific label.
+
+Preferred:
+
+Continue to Payment
+
+Style it using VisaPrep green.
+
+The user has already decided to continue.
+
+Now reduce ambiguity and guide them naturally toward payment.
+
+13. Application Highlights Typography
+
+Improve visual hierarchy.
+
+Application Highlights remains the primary heading.
+
+Each highlight title should have slightly greater emphasis than its explanation (for example, semi-bold).
+
+Maintain a clean, premium reading experience.
+
+14. Golden Test Suite
+
+The six benchmark applicants now become VisaPrep's permanent internal evaluation suite.
+
+Future prompt refinements should be validated against all six applicants.
+
+The objective is continual improvement across diverse applicant profiles rather than optimization for one scenario.
+
+Success Criteria
+
+This sprint is successful if users move from saying:
+
+"The AI summarized my application."
+
+to saying:
+
+"The AI helped me understand my application in ways I hadn't considered, and now I see why preparing from my own application is so valuable."
+
+Every insight should reinforce VisaPrep's unique promise:
+
+Your interview starts with your application. So do we.

@@ -121,6 +121,7 @@ interface Analysis {
   applicationProfile: string;
   submissionDate: string | null;
   firstName: string | null;
+  encouragement: string | null;
   strengths: ApplicationStrength[];
   topPreparationAreas: TopPreparationArea[];
   sections: Section[];
@@ -158,8 +159,8 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-// v3 key — bumped when firstName was added to the schema
-const SESSION_KEY = "visaprep_analysis_v3";
+// v4 key — bumped when encouragement field was added to the schema
+const SESSION_KEY = "visaprep_analysis_v4";
 
 function readSaved(): { analysis: Analysis | null; fileName: string } {
   try {
@@ -262,24 +263,38 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
             <p className="text-base sm:text-lg italic text-gray-400 mb-5">
               So do we.
             </p>
-            <p className="text-gray-800 max-w-sm text-sm font-medium leading-relaxed mb-1">
-              Understand your application. Prepare with clarity. Interview with confidence.
+            <p className="text-gray-500 max-w-sm text-sm leading-relaxed mb-5">
+              VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity and confidence during your interview.
             </p>
-            <p className="text-gray-500 max-w-sm text-sm leading-relaxed">
-              VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity, so you can walk into your visa interview with confidence.
-            </p>
+            <div className="flex flex-col items-center gap-1.5">
+              {["Understand your application.", "Prepare with clarity.", "Interview with confidence."].map((phrase) => (
+                <p key={phrase} className="text-sm font-medium text-green-600 tracking-wide">
+                  {phrase}
+                </p>
+              ))}
+            </div>
           </div>
 
           {/* Upload widget */}
           <div className="relative z-10 w-full max-w-md px-4 sm:px-8 pb-16">
             {!analyzing && (
               <div className="border border-gray-200 rounded-2xl p-6 sm:p-8 text-center bg-white shadow-sm">
-                <p className="text-sm text-gray-500 mb-5 leading-relaxed">
-                  Upload your DS-160 to begin
-                </p>
+                {/* Line 1: label text OR checkmark + filename — same height in both states */}
+                <div className="mb-5 flex items-center justify-center min-h-[20px]">
+                  {!pendingFile ? (
+                    <p className="text-sm text-gray-500 leading-relaxed">Upload your DS-160 to begin</p>
+                  ) : (
+                    <label className="inline-flex items-center gap-2 text-sm cursor-pointer group">
+                      <span className="text-green-500 shrink-0">✓</span>
+                      <span className="font-medium text-gray-800 truncate max-w-[220px] sm:max-w-xs">{pendingFile.name}</span>
+                      <span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors shrink-0">(change)</span>
+                      <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                    </label>
+                  )}
+                </div>
 
+                {/* Line 2: action button — same size in both states */}
                 {!pendingFile ? (
-                  /* Step 1: select file */
                   <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-colors">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -300,38 +315,22 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     />
                   </label>
                 ) : (
-                  /* Step 2: file chosen — confirm and analyze */
-                  <div className="flex flex-col items-center gap-4">
-                    <p className="text-sm text-gray-600 flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span className="font-medium truncate max-w-xs">{pendingFile.name}</span>
-                    </p>
-                    <button
-                      onClick={() => handleUpload(pendingFile)}
-                      className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                  <button
+                    onClick={() => handleUpload(pendingFile)}
+                    className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors shadow-sm"
+                  >
+                    Analyze My DS-160
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-4 h-4 opacity-90"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
                     >
-                      Analyze My DS-160
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 opacity-90"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </button>
-                    <label className="text-xs text-gray-400 underline cursor-pointer hover:text-gray-600 transition-colors">
-                      Choose a different file
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
-                    </label>
-                  </div>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </button>
                 )}
               </div>
             )}
@@ -424,10 +423,10 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
 
               {/* 3 — Personalized opening encouragement */}
               <p className="text-sm text-gray-600 leading-relaxed px-1">
-                {analysis.firstName
-                  ? `${analysis.firstName}, you're off to a good start.`
-                  : "You're off to a good start."}{" "}
-                Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.
+                {analysis.encouragement
+                  ?? (analysis.firstName
+                    ? `${analysis.firstName}, you're off to a good start. Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.`
+                    : "You're off to a good start. Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.")}
               </p>
 
               {/* 4 — Strengths in Your Application */}
@@ -464,7 +463,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     {analysis.topPreparationAreas.map((area, i) => (
                       <div key={i} className="space-y-2">
                         {i > 0 && <div className="border-t border-gray-100 mt-4" />}
-                        <p className="font-medium text-sm text-gray-900">{area.title}</p>
+                        <p className="font-semibold text-sm text-gray-900">{area.title}</p>
                         <p className="text-sm text-gray-700 leading-relaxed">{area.observation}</p>
                         <div className="mt-1">
                           <FieldLabel>Why this may come up</FieldLabel>
@@ -513,7 +512,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                       </span>
                     )}
                     <h2 className="text-base font-semibold text-gray-900 leading-snug pr-4">
-                      Start Your Personalized Interview Preparation
+                      Continue with Your Full VisaPrep Assessment
                     </h2>
                   </div>
                   {!paySubmitting && (
@@ -531,8 +530,18 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                 <div className="overflow-y-auto flex-1 px-6 pb-6 flex flex-col gap-5">
 
                   {/* Supporting copy */}
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Go beyond your free Application Insights with a complete, personalized preparation experience built around your own DS-160.
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Your free Application Insights are a great start.
+                    </p>
+                    <p className="text-sm text-gray-600 leading-relaxed">
+                      Your Full VisaPrep Assessment helps you understand your application more deeply and prepares you to explain it with clarity and confidence during your interview.
+                    </p>
+                  </div>
+
+                  {/* Philosophy bridge */}
+                  <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                    Your interview will be based on your application. Here&rsquo;s what we&rsquo;ll help you prepare for next:
                   </p>
 
                   {/* Benefits list */}
@@ -616,9 +625,9 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                         setPaySubmitting(false);
                       }
                     }}
-                    className="w-full py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {paySubmitting ? "Redirecting to payment…" : "Start My Personalized Interview Preparation"}
+                    {paySubmitting ? "Redirecting to payment…" : "Continue to Payment"}
                   </button>
 
                   {/* Security note */}

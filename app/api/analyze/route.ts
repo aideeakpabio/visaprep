@@ -489,6 +489,78 @@ If a major AIM section cannot be detected in the extracted text, set that sectio
 STRENGTHS
 Per the STRENGTHS-FIRST COMMUNICATION PRINCIPLE, identify 2–5 genuine positive aspects found in the submitted DS-160. These strengths establish the tone of the entire report and must appear first in the output. Only include strengths directly supported by the extracted application text. Do not invent or fabricate strengths. Do not include generic positives that could apply to any applicant. Each strength must have a short label and a one-sentence detail grounded in what this specific application shows. Examples of genuine strengths: clear and specific purpose of travel, stable employment with a named employer, well-defined travel itinerary, identified source of funding, complete accommodation plans, consistent travel timeline, prior U.S. travel with clean compliance, no previous visa refusals, coherent family situation in the home country, well-matched purpose and U.S. contact. Return an empty array if no genuine strengths can be identified.
 
+ENCOURAGEMENT
+
+Generate one short personalized sentence of genuine encouragement based on something specific and notable in this applicant's profile. This should feel individually written for this person — not generic.
+
+Draw on information such as: academic achievements, career progression, professional growth, scholarships, internships, promotions, executive experience, funding sources, previous compliant travel, or long-term goals.
+
+Do not write generic encouragement such as "You're off to a good start." That adds no value. Write something specific to this application.
+
+Examples of strong encouragement:
+- "Your scholarship and consistent travel record reflect a well-supported application."
+- "Your progression from internship to management tells a clear professional story."
+- "Your two previous compliant visits and clearly stated purpose provide a strong foundation for this application."
+- "Your executive role and the purpose of this business trip connect in a way that gives your application a clear narrative."
+
+Return null only if no specific notable detail can be identified that would make genuine encouragement meaningful.
+
+APPLICATION AS A CONNECTED STORY — HIGHEST PRIORITY FOR APPLICATION HIGHLIGHTS
+
+The most valuable insight you can offer is not a summary of an isolated fact.
+
+It is understanding of how different parts of the application connect.
+
+Before generating Application Highlights, identify the meaningful relationships in this specific application:
+
+Employment ↔ Purpose of travel
+Job responsibilities ↔ Conference or event attendance
+Education ↔ Graduate program or further study
+Scholarship ↔ Academic achievement and funding
+Previous compliant travel ↔ Current travel plans
+Previous refusal ↔ Changes reflected in the current application
+Internship ↔ Career progression narrative
+Executive role ↔ Business meetings or responsibilities
+Funding source ↔ Nature and duration of trip
+Family context ↔ Interview conversation
+
+Rather than writing: "You have stable employment."
+Write: "Your current role appears directly connected to your stated travel purpose. Be prepared to explain how attending this event supports your responsibilities at work."
+
+Every Application Highlight must answer: "Why is this important for this specific applicant — not for applicants in general?"
+
+The applicant should consistently feel: "I hadn't looked at my application that way before" or "Now I understand why this might naturally come up."
+
+LOW-VALUE OBSERVATION RULE
+
+Avoid Application Highlights that merely describe facts anyone could read directly from the DS-160. The following are examples of low-value observations — do not use them unless no richer insight is available for this applicant:
+
+- "You have a clear purpose of travel."
+- "Your itinerary is well-defined."
+- "Your purpose of study is clear."
+- "Your documents appear complete."
+
+Instead, explain why the purpose, itinerary, or supporting context is meaningful in the context of this specific application and what it means for the interview conversation.
+
+RICH CONTEXT RULE
+
+Many applications contain valuable detail that adds depth to the analysis. When present in the DS-160, actively incorporate the following:
+
+- Internships and their connection to current role or career direction
+- Promotions and management responsibilities
+- Ownership interests or business stakes
+- Scholarships and academic distinctions
+- Employment transitions and career progression
+- Executive positions and board memberships
+- Previous compliant U.S. travel
+- Long-term academic or professional goals
+
+When these details appear, use them to deepen the analysis and help the applicant understand their own narrative more fully.
+
+FAMILY INFORMATION RULE
+
+Where appropriate, acknowledge immediate family information factually. Example: "Your application includes immediate family members in Nigeria. Be comfortable discussing your family circumstances if questions naturally arise during your interview." Never speculate about how family circumstances will be interpreted by a consular officer.
+
 TOP PREPARATION AREAS
 After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Frame these as preparation opportunities — topics where additional familiarity will help the applicant speak confidently — not as weaknesses, problems, or concerns. Each item must have a short specific title and three distinct fields: observation (what the application specifically states), whyItMayComeUp (why this may naturally arise in the interview), and whatToBeReadyToExplain (what the applicant should prepare to discuss honestly and clearly in their own words). Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
 
@@ -590,7 +662,7 @@ Set documentAssessment.isLikelyDS160 to true and documentAssessment.message to n
 
 If the document does not appear to be a DS-160, or contains too little recognizable DS-160 information:
 Set documentAssessment.isLikelyDS160 to false and documentAssessment.message to: "We couldn't identify enough DS-160 application information in this document to generate personalized interview preparation. Please upload your completed DS-160 application PDF."
-Set applicationProfile to the same message. Set submissionDate to null. Set firstName to null. Return empty arrays for strengths, topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
+Set applicationProfile to the same message. Set submissionDate to null. Set firstName to null. Set encouragement to null. Return empty arrays for strengths, topPreparationAreas, sections, crossSectionObservations, and readyToExplain.
 Do not pretend the document is a DS-160. Do not generate generic preparation advice.
 
 FIELD DESCRIPTIONS
@@ -629,6 +701,7 @@ Return ONLY valid JSON matching this exact schema. No text before or after the J
   "applicationProfile": "A factual 2–3 sentence summary written directly to the applicant in second person. Begin with 'You are...' or 'You have applied...' — never 'The applicant' or 'Applicant'. Example: 'You are applying for a B-2 tourist visa to visit the United States for 30 days. You have listed your employer as Acme Ltd and your trip is self-funded.'",
   "submissionDate": "The submission date exactly as it appears in the DS-160, or null if absent.",
   "firstName": "The applicant's given name as it appears on the DS-160 (first name only, not full name). Extract this from the Surname / Given Names field or any name field in the document. Return null if no name is identifiable.",
+  "encouragement": "One short personalized sentence of genuine encouragement (maximum 30 words) based on something specific and notable in this applicant's profile. Write directly to the applicant using 'Your'. Return null if no specific notable detail can be identified.",
   "strengths": [
     {
       "label": "Short positive label, e.g. 'Clear purpose of travel'",
