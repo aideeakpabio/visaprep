@@ -1,0 +1,153 @@
+VisaPrep Homepage Final Polish — Preserve Brand Message
+
+The homepage redesign successfully improved the structure (fixed navigation, larger headline, upload card above the fold), but in doing so it unintentionally removed some of the approved brand language and visual hierarchy.
+
+This sprint is not a redesign.
+
+It is a refinement to restore VisaPrep's product positioning while preserving the new layout.
+
+1. Restore the approved supporting message
+
+The supporting paragraph beneath the headline has been changed.
+
+Replace it with the approved copy:
+
+Upload your DS-160 and receive your personalized Application Insights in minutes.
+
+This sentence has been intentionally chosen because:
+
+it tells the user exactly what to do;
+it immediately communicates the product promise;
+it reinforces the name "Application Insights";
+it is shorter, clearer, and more conversion-focused.
+
+Remove the newer explanatory paragraph.
+
+The longer explanation belongs further down the page or elsewhere—not in the hero.
+
+2. Restore the green outcome emphasis
+
+Earlier versions used green to emphasize the positive outcome.
+
+That visual cue has disappeared.
+
+Bring it back.
+
+After the supporting sentence, include the approved outcome statement:
+
+Understand your application. Prepare with clarity. Interview with confidence.
+
+Render this in the established green accent.
+
+Do not make it oversized.
+
+It should act as a reassuring promise immediately before the upload card.
+
+This line is one of VisaPrep's strongest pieces of messaging and should not be removed.
+
+3. Improve the upload card hierarchy
+
+Currently the first visible text inside the upload card is:
+
+PDF only · Your completed DS-160 application
+
+This makes the card begin with a technical instruction.
+
+Instead, the first thing users should see is the action.
+
+Preferred order:
+
+Upload your completed DS-160
+
+Small supporting text:
+
+Receive your personalized Application Insights in minutes.
+
+Then:
+
+PDF only
+Upload button
+Security note
+
+The user's attention should move naturally toward the upload button.
+
+4. Increase separation between headline and supporting content
+
+The headline is strong.
+
+However, the supporting content currently feels visually compressed beneath it.
+
+Increase spacing slightly between:
+
+Headline
+
+↓
+
+Supporting sentence
+
+↓
+
+Green promise
+
+↓
+
+Upload card
+
+Maintain a compact above-the-fold layout while giving each layer room to breathe.
+
+5. Strengthen the upload button
+
+The upload button is good but can feel slightly more premium.
+
+Without changing colors:
+
+increase horizontal padding slightly;
+increase font weight if needed;
+ensure it is the strongest visual element inside the card.
+6. Make the upload card feel more premium
+
+Keep the current width.
+
+Improve polish through subtle refinements:
+
+slightly softer border;
+gentle shadow;
+slightly larger border radius if appropriate;
+comfortable internal padding.
+
+Do not introduce gradients, heavy shadows, or decorative effects.
+
+7. Improve desktop balance
+
+On large desktop screens there is still a large amount of unused white space.
+
+Without moving the upload card below the fold:
+
+slightly widen the hero content container;
+slightly increase the supporting text width;
+ensure the eye naturally flows from headline to upload.
+
+Do not stretch text across the full page.
+
+8. Preserve existing improvements
+
+Keep:
+
+fixed navigation;
+top-left VisaPrep logo;
+upload card above the fold;
+responsive layout;
+removed duplicate logo;
+upload functionality;
+all backend functionality.
+Success Criteria
+
+The first screen should communicate this sequence within five seconds:
+
+Your interview starts with your application. So do we.
+Upload your DS-160 and receive your personalized Application Insights in minutes.
+Understand your application. Prepare with clarity. Interview with confidence.
+Upload your completed DS-160.
+Click Select DS-160 PDF.
+
+The homepage should feel calm, premium, trustworthy, and immediately action-oriented. Every element above the fold should reinforce the product's core promise rather than explain it.

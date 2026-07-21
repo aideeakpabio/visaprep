@@ -272,80 +272,81 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
         <div className="w-full flex flex-col items-center sm:min-h-[calc(100vh-68px)]">
 
           {/* Hero content */}
-          <div className="relative z-10 w-full max-w-3xl flex flex-col items-center text-center pt-10 sm:pt-14 pb-5 px-5 sm:px-10">
+          <div className="relative z-10 w-full max-w-4xl flex flex-col items-center text-center pt-10 sm:pt-14 pb-5 px-5 sm:px-10">
             <h1
               style={{ fontSize: "clamp(2.25rem, 5vw, 4.5rem)", lineHeight: "1.06" }}
-              className="font-bold text-gray-900 mb-5 tracking-tight max-w-2xl"
+              className="font-bold text-gray-900 mb-6 tracking-tight max-w-2xl"
             >
               Your interview starts with your application. So do we.
             </h1>
-            <p
-              style={{ fontSize: "clamp(1rem, 1.4vw, 1.15rem)" }}
-              className="text-gray-500 max-w-[680px] leading-relaxed"
-            >
-              VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity, so you can walk into your visa interview with confidence.
+            <p className="text-gray-500 text-base sm:text-lg max-w-[720px] leading-relaxed mb-5">
+              Upload your DS-160 and receive your personalized Application Insights in minutes.
+            </p>
+            <p className="text-sm sm:text-base font-medium text-green-600 tracking-wide">
+              Understand your application. Prepare with clarity. Interview with confidence.
             </p>
           </div>
 
           {/* Upload widget */}
-          <div className="relative z-10 w-full max-w-[620px] px-4 sm:px-6 pb-10 mt-6">
+          <div className="relative z-10 w-full max-w-[620px] px-4 sm:px-6 pb-10 mt-7">
             {!analyzing && (
-              <div className="border border-gray-300 rounded-2xl p-7 sm:p-9 text-center bg-white shadow-sm">
-                {/* Supported file guidance */}
-                <p className="text-xs text-gray-400 mb-5">PDF only · Your completed DS-160 application</p>
-
-                {/* Line 1: label text OR checkmark + filename — same height in both states */}
-                <div className="mb-4 flex items-center justify-center min-h-[20px]">
-                  {!pendingFile ? (
-                    <p className="text-sm text-gray-500 leading-relaxed">Upload your DS-160 to begin</p>
-                  ) : (
-                    <label className="inline-flex items-center gap-2 text-sm cursor-pointer group">
-                      <span className="text-green-500 shrink-0">✓</span>
-                      <span className="font-medium text-gray-800 truncate max-w-[220px] sm:max-w-xs">{pendingFile.name}</span>
-                      <span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors shrink-0">(change)</span>
-                      <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
-                    </label>
-                  )}
-                </div>
-
-                {/* Line 2: action button — same size in both states */}
+              <div className="border border-gray-200 rounded-3xl p-8 sm:p-10 text-center bg-white shadow-sm">
                 {!pendingFile ? (
-                  <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-7 py-3.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 opacity-70"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4" />
-                    </svg>
-                    Select DS-160 PDF
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      className="hidden"
-                      onChange={handleFileChange}
-                    />
-                  </label>
+                  <>
+                    {/* Call-to-action hierarchy */}
+                    <p className="text-base font-semibold text-gray-900 mb-1.5">Upload your completed DS-160</p>
+                    <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+                      Receive your personalized Application Insights in minutes.
+                    </p>
+                    <p className="text-xs text-gray-400 mb-5">PDF only</p>
+                    <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-8 py-3.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 opacity-70"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4" />
+                      </svg>
+                      Select DS-160 PDF
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                  </>
                 ) : (
-                  <button
-                    onClick={() => handleUpload(pendingFile)}
-                    className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-6 py-3 rounded-lg text-sm font-semibold transition-colors shadow-sm"
-                  >
-                    Analyze My DS-160
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-4 h-4 opacity-90"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={2}
+                  <>
+                    {/* File selected */}
+                    <div className="mb-5 flex items-center justify-center">
+                      <label className="inline-flex items-center gap-2 text-sm cursor-pointer group">
+                        <span className="text-green-500 shrink-0">✓</span>
+                        <span className="font-medium text-gray-800 truncate max-w-[220px] sm:max-w-xs">{pendingFile.name}</span>
+                        <span className="text-xs text-gray-400 group-hover:text-gray-600 transition-colors shrink-0">(change)</span>
+                        <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                      </label>
+                    </div>
+                    <button
+                      onClick={() => handleUpload(pendingFile)}
+                      className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-8 py-3.5 rounded-lg text-sm font-semibold transition-colors shadow-sm"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </button>
+                      Analyze My DS-160
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4 opacity-90"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </button>
+                  </>
                 )}
               </div>
             )}
