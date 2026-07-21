@@ -1,0 +1,134 @@
+VisaPrep Landing Page Refinement Sprint (High Impact, Low Effort)
+
+The AI engine and product experience have matured significantly. The landing page should now better reflect the quality of the product behind it.
+
+This is not a redesign. It is a high-impact visual refinement intended to make the product feel more premium and more confident, especially on desktop, while preserving the existing branding, colors, copy, and functionality.
+
+Please implement the following changes:
+
+1. Increase the desktop content width (Highest Priority)
+
+The current layout feels too narrow on desktop and resembles a mobile application centered on a large screen.
+
+Increase the maximum content width so the page makes much better use of desktop space while maintaining comfortable readability.
+
+Do not simply stretch text across the entire screen. Create a balanced, premium layout with generous margins.
+
+2. Increase hero typography
+
+Make the hero section feel more confident and visually important.
+
+Increase the size and weight of:
+
+VisaPrep logo/wordmark (slightly)
+Hero headline
+Supporting paragraph
+Green emphasis statement
+
+The typography should immediately communicate that this is a serious AI platform rather than an early-stage demo.
+
+Maintain excellent readability on mobile.
+
+3. Add more whitespace
+
+Increase vertical spacing between major sections:
+
+Logo
+Hero headline
+Supporting paragraph
+Green emphasis statement
+Upload card
+
+Avoid making the page feel crowded.
+
+Aim for a calm, premium presentation similar to modern AI products.
+
+4. Make the upload card more prominent
+
+Slightly increase the visual presence of the upload card.
+
+Without changing its functionality:
+
+give it a little more breathing room
+slightly increase its visual weight
+ensure it naturally draws the user's attention as the primary action on the page
+
+Do not make it oversized.
+
+5. Improve desktop visual hierarchy
+
+Review the desktop experience as a whole.
+
+Ensure that users immediately understand:
+
+What VisaPrep is
+Why it is valuable
+What they should do next
+
+The eye should naturally flow:
+
+VisaPrep
+
+↓
+
+Your interview starts with your application.
+
+So do we.
+
+↓
+
+Supporting paragraph
+
+↓
+
+Understand your application.
+
+Prepare with clarity.
+
+Interview with confidence.
+
+↓
+
+Upload your DS-160
+
+Important
+
+Please preserve:
+
+all existing colors
+branding
+messaging
+functionality
+responsiveness
+
+Do not introduce:
+
+animations
+gradients
+illustrations
+new sections
+additional features
+decorative elements
+
+The objective is simply to make the existing landing page look more premium and more confident.
+
+Think of this as moving from an MVP appearance toward the visual polish expected of a professional AI SaaS product.
+
+Success Criteria
+
+Someone visiting the page on a desktop should immediately feel:
+
+"This looks like a serious AI platform."
+
+without adding any new features.
+
+Build Process
+
+After implementation:
+
+Test desktop and mobile responsiveness.
+Build successfully.
+Commit.
+Push.
+Publish.
+Provide a completion report.

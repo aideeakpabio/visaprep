@@ -254,21 +254,21 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
         <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
 
           {/* Hero content */}
-          <div className="relative z-10 w-full max-w-2xl flex flex-col items-center text-center pt-12 sm:pt-14 pb-10 px-5 sm:px-8">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-6 tracking-tight">VisaPrep</h1>
+          <div className="relative z-10 w-full max-w-3xl flex flex-col items-center text-center pt-16 sm:pt-24 pb-16 px-5 sm:px-10">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 tracking-tight">VisaPrep</h1>
 
-            <p className="text-lg sm:text-xl font-medium text-gray-800 mb-1 leading-tight sm:leading-snug">
+            <p className="text-xl sm:text-2xl font-medium text-gray-800 mb-2 leading-tight sm:leading-snug">
               Your interview starts with your application.
             </p>
-            <p className="text-base sm:text-lg italic text-gray-400 mb-5">
+            <p className="text-lg sm:text-xl italic text-gray-400 mb-8">
               So do we.
             </p>
-            <p className="text-gray-500 max-w-sm text-sm leading-relaxed mb-5">
+            <p className="text-gray-500 max-w-md text-sm sm:text-base leading-relaxed mb-8">
               VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity and confidence during your interview.
             </p>
-            <div className="flex flex-col items-center gap-1.5">
+            <div className="flex flex-col items-center gap-2.5">
               {["Understand your application.", "Prepare with clarity.", "Interview with confidence."].map((phrase) => (
-                <p key={phrase} className="text-sm font-medium text-green-600 tracking-wide">
+                <p key={phrase} className="text-sm sm:text-base font-medium text-green-600 tracking-wide">
                   {phrase}
                 </p>
               ))}
@@ -276,9 +276,9 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           </div>
 
           {/* Upload widget */}
-          <div className="relative z-10 w-full max-w-md px-4 sm:px-8 pb-16">
+          <div className="relative z-10 w-full max-w-lg px-4 sm:px-6 pb-20">
             {!analyzing && (
-              <div className="border border-gray-200 rounded-2xl p-6 sm:p-8 text-center bg-white shadow-sm">
+              <div className="border border-gray-200 rounded-2xl p-8 sm:p-10 text-center bg-white shadow">
                 {/* Line 1: label text OR checkmark + filename — same height in both states */}
                 <div className="mb-5 flex items-center justify-center min-h-[20px]">
                   {!pendingFile ? (
