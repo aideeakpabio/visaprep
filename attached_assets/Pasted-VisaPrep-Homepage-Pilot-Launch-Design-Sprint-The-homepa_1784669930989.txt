@@ -1,0 +1,231 @@
+VisaPrep Homepage — Pilot Launch Design Sprint
+
+The homepage currently works, but it does not yet feel like a polished, credible platform on desktop.
+
+This sprint should improve the above-the-fold experience, strengthen visual hierarchy, and make the upload action immediately visible when a user lands on the page.
+
+Do not change the product flow, analysis logic, payment flow, report UI, or existing brand colors.
+
+1. Create a fixed top navigation bar
+
+Move the VisaPrep text logo from the centered hero area to the top-left corner of the page.
+
+The logo should remain visible when the user scrolls.
+
+Desktop layout:
+
+[VisaPrep logo]                                      [optional right-side space]
+
+Requirements:
+
+fixed or sticky at the top;
+full-width;
+high enough z-index to remain above page content;
+subtle solid or lightly translucent background;
+light bottom border or very subtle shadow;
+no large navigation menu is required for the pilot;
+clicking the VisaPrep logo should return the user to the homepage or scroll to the top.
+
+The header should feel clean, professional, and platform-like—not like a promotional banner.
+
+Recommended dimensions:
+
+desktop height: approximately 64–72px;
+mobile height: approximately 56–64px;
+desktop horizontal padding: 32–48px;
+mobile horizontal padding: 18–24px.
+
+Preserve the existing VisaPrep wordmark styling.
+
+2. Rebuild the hero around the primary message
+
+The hero message should become the dominant visual element on the page.
+
+Headline:
+
+Your interview starts with your application. So do we.
+
+Supporting text:
+
+VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity, so you can walk into your visa interview with confidence.
+
+Requirements:
+
+significantly increase the headline size on desktop;
+use bold or semibold weight;
+improve line-height and spacing;
+limit the text width so it reads confidently rather than stretching across the screen;
+make the headline visually imposing without becoming oversized or theatrical.
+
+Suggested desktop headline sizing:
+
+font-size: clamp(3rem, 5vw, 5rem);
+line-height: 1.02–1.1;
+
+Suggested mobile headline sizing:
+
+font-size: clamp(2.25rem, 10vw, 3.4rem);
+line-height: 1.05–1.12;
+
+The supporting paragraph should remain readable and secondary:
+
+desktop: approximately 18–21px;
+mobile: approximately 16–18px;
+maximum width: around 650–760px.
+
+Do not add gradients, animations, illustrations, stock photos, flags, or decorative clutter.
+
+3. Keep the upload action visible above the fold
+
+The upload card or upload button must be visible on a standard laptop screen immediately after the page loads.
+
+The user should not need to scroll before seeing where to upload their DS-160.
+
+Target desktop viewports:
+
+1366 × 768
+1440 × 900
+1920 × 1080
+
+On a 1366 × 768 screen, the user should see:
+
+fixed logo/header;
+full headline;
+supporting copy;
+the upload card and primary upload action.
+
+Reduce excessive vertical spacing that pushes the uploader below the fold.
+
+The hero should use the available viewport efficiently:
+
+min-height: calc(100vh - header-height);
+
+However, do not force awkward stretching on smaller laptop screens.
+
+The upload card should sit immediately beneath the supporting copy with a clear but compact gap.
+
+4. Make the upload card the visual focal action
+
+The upload experience should look like the first step of a serious digital platform.
+
+Improve prominence through:
+
+slightly wider desktop card;
+clearer border;
+polished spacing;
+stronger upload button;
+visible supported-file guidance;
+subtle security reassurance.
+
+Keep the approved security note:
+
+🔒 Your document is analyzed securely.
+
+The card should remain centered relative to the hero content.
+
+Suggested desktop width:
+
+width: min(100%, 620px);
+
+The primary upload control must be clearly visible without interaction.
+
+Do not hide the primary action inside a collapsed element or secondary dialog.
+
+5. Strengthen desktop composition
+
+Desktop should no longer feel like a stretched mobile layout.
+
+Use a deliberate desktop hero composition.
+
+Preferred structure:
+
+Fixed header
+
+Large centered hero message
+Supporting sentence
+Upload card
+Small reassurance text
+
+A centered composition is acceptable, but the content must have:
+
+stronger width;
+clearer hierarchy;
+less unused empty space;
+consistent vertical rhythm.
+
+Do not create a two-column layout unless it clearly improves the current design without requiring new graphics.
+
+For this sprint, a strong centered platform-style hero is preferred.
+
+6. Mobile behavior
+
+The fixed logo should also remain visible on mobile.
+
+Ensure:
+
+no content is hidden beneath the fixed header;
+the headline wraps naturally;
+the upload card remains fully usable;
+the upload button is visible within the first screen or immediately below it;
+no horizontal scrolling;
+safe spacing at 320px, 375px and 390px widths.
+
+Do not shrink the mobile headline so much that it loses impact.
+
+7. Preserve the current flow
+
+Do not modify:
+
+upload functionality;
+file validation;
+analysis state;
+progress messages;
+Application Insights results;
+premium modal;
+Paystack integration;
+API routes;
+AI prompts;
+schema;
+colors;
+server logic.
+
+This is a homepage presentation sprint only.
+
+8. Remove duplicate branding
+
+Once the VisaPrep logo is placed in the fixed header, remove any duplicate large logo or wordmark currently occupying space inside the hero.
+
+The hero should begin with the headline, not another logo.
+
+9. Validation requirements
+
+Test the homepage at:
+
+320 × 568
+375 × 667
+390 × 844
+768 × 1024
+1366 × 768
+1440 × 900
+1920 × 1080
+
+Confirm that:
+
+the logo remains fixed at the top-left;
+no hero content sits beneath the header;
+the headline is visually dominant;
+the upload control is visible without scrolling at 1366 × 768;
+the upload interaction still works;
+no layout shifts occur during file selection;
+the page remains clean and professional;
+TypeScript and production build pass.
+Success criterion
+
+When a test user lands on VisaPrep from a desktop computer, the first screen should immediately communicate:
+
+This is a real and credible platform.
+VisaPrep starts with the applicant’s DS-160.
+The user knows exactly what to do next.
+The upload action is visible without scrolling.
+
+The homepage should feel focused, confident, and ready for pilot users.

@@ -248,40 +248,54 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
     analysis !== null && analysis.documentAssessment?.isLikelyDS160 === false;
 
   return (
-    <main className="min-h-screen flex flex-col items-center bg-white">
+    <>
+      {/* ── Fixed navigation bar ─────────────────────────────────────────── */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+        <div className="flex items-center h-16 sm:h-[68px] px-5 sm:px-10">
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight select-none"
+          >
+            VisaPrep
+          </a>
+        </div>
+      </header>
+
+      <main className="min-h-screen flex flex-col items-center bg-white pt-16 sm:pt-[68px]">
 
       {/* ── Hero — upload / analyzing ────────────────────────────────────── */}
       {!analysis && (
-        <div className="relative overflow-hidden w-full flex flex-col items-center min-h-screen">
+        <div className="w-full flex flex-col items-center sm:min-h-[calc(100vh-68px)]">
 
           {/* Hero content */}
-          <div className="relative z-10 w-full max-w-3xl flex flex-col items-center text-center pt-16 sm:pt-24 pb-16 px-5 sm:px-10">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 tracking-tight">VisaPrep</h1>
-
-            <p className="text-xl sm:text-2xl font-medium text-gray-800 mb-2 leading-tight sm:leading-snug">
-              Your interview starts with your application.
+          <div className="relative z-10 w-full max-w-3xl flex flex-col items-center text-center pt-10 sm:pt-14 pb-5 px-5 sm:px-10">
+            <h1
+              style={{ fontSize: "clamp(2.25rem, 5vw, 4.5rem)", lineHeight: "1.06" }}
+              className="font-bold text-gray-900 mb-5 tracking-tight max-w-2xl"
+            >
+              Your interview starts with your application. So do we.
+            </h1>
+            <p
+              style={{ fontSize: "clamp(1rem, 1.4vw, 1.15rem)" }}
+              className="text-gray-500 max-w-[680px] leading-relaxed"
+            >
+              VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity, so you can walk into your visa interview with confidence.
             </p>
-            <p className="text-lg sm:text-xl italic text-gray-400 mb-8">
-              So do we.
-            </p>
-            <p className="text-gray-500 max-w-md text-sm sm:text-base leading-relaxed mb-8">
-              VisaPrep helps you understand what your application communicates and prepares you to explain it with clarity and confidence during your interview.
-            </p>
-            <div className="flex flex-col items-center gap-2.5">
-              {["Understand your application.", "Prepare with clarity.", "Interview with confidence."].map((phrase) => (
-                <p key={phrase} className="text-sm sm:text-base font-medium text-green-600 tracking-wide">
-                  {phrase}
-                </p>
-              ))}
-            </div>
           </div>
 
           {/* Upload widget */}
-          <div className="relative z-10 w-full max-w-lg px-4 sm:px-6 pb-20">
+          <div className="relative z-10 w-full max-w-[620px] px-4 sm:px-6 pb-10 mt-6">
             {!analyzing && (
-              <div className="border border-gray-200 rounded-2xl p-8 sm:p-10 text-center bg-white shadow">
+              <div className="border border-gray-300 rounded-2xl p-7 sm:p-9 text-center bg-white shadow-sm">
+                {/* Supported file guidance */}
+                <p className="text-xs text-gray-400 mb-5">PDF only · Your completed DS-160 application</p>
+
                 {/* Line 1: label text OR checkmark + filename — same height in both states */}
-                <div className="mb-5 flex items-center justify-center min-h-[20px]">
+                <div className="mb-4 flex items-center justify-center min-h-[20px]">
                   {!pendingFile ? (
                     <p className="text-sm text-gray-500 leading-relaxed">Upload your DS-160 to begin</p>
                   ) : (
@@ -296,7 +310,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
 
                 {/* Line 2: action button — same size in both states */}
                 {!pendingFile ? (
-                  <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-6 py-3 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+                  <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-7 py-3.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="w-4 h-4 opacity-70"
@@ -655,6 +669,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           </p>
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }
