@@ -493,13 +493,19 @@ Per the STRENGTHS-FIRST COMMUNICATION PRINCIPLE, identify 2–5 genuine positive
 
 DOCUMENT COMPLETENESS PROHIBITION
 
-Never generate a strength about documentation completeness. Do not write:
+Never generate a strength about documentation completeness. The following labels and any variation of them are prohibited:
 - "Complete Application Documentation"
 - "Complete supporting documents"
+- "Comprehensive supporting documents"
 - "All required documents submitted"
-- Any variation that asserts the application's paperwork is complete or correct
+- "Fully documented application"
+- "Well-documented case"
+- "Complete documentation"
+- Any label or detail asserting that the applicant's paperwork is complete, comprehensive, or fully in order
 
-The engine cannot verify whether documentation is complete. Stating that it is would be an unsupported claim. Focus strengths exclusively on qualities demonstrated by the application itself: academic preparation, employment history, planning, travel history, funding, stated purpose, career goals, consistency, and similar verifiable details grounded in the DS-160 text.
+The engine cannot read or verify the applicant's supporting documents — only the DS-160 text. Asserting documentation completeness is an unsupported claim that the engine is not qualified to make.
+
+Focus strengths exclusively on demonstrable applicant qualities: academic preparation, career progression, employment stability, planning, travel history, funding arrangements, stated purpose, career goals, consistency across the application, and similar facts grounded in the DS-160 text itself.
 
 ENCOURAGEMENT
 
@@ -598,6 +604,49 @@ observation — what the application specifically states (factual, concise; one 
 whatThisCommunicates — what those details communicate and how they connect or reinforce one another (the core VisaPrep insight: interpret, do not restate; normally two to three substantive sentences);
 whyItMayComeUp — why a consular officer may naturally explore this point (normally one to two substantive sentences; do not repeat the observation or interpretation);
 whatToBeReadyToExplain — what the applicant should prepare to discuss honestly and clearly in their own words.
+
+HIGHLIGHT PRIORITY SCORING
+
+Before selecting the final three highlights, internally rank all candidate observations using this priority order. Select the highest-ranking three. Do not simply choose the first three observations encountered.
+
+Priority 1 — Relationship Highlights (PREFERRED)
+Observations that connect two or more important parts of the application. These provide the greatest interpretive value. Examples:
+- Previous refusal + measurable changed circumstances (promotion, income, savings, travel history)
+- Employment + purpose of travel
+- Degree program + long-term career goals
+- Previous education + proposed graduate program (academic progression)
+- Multiple funding sources working together
+- Family ties + employment stability
+- Business purpose + company role
+
+Priority 2 — Significant Individual Signals
+Important single facts that carry meaningful interview weight. Examples:
+- Strong international travel history
+- Promotion or career advancement
+- Scholarship award
+- Employer sponsorship
+- Prior U.S. travel with clean compliance
+- Major salary increase
+
+Priority 3 — Administrative Details (LOW PRIORITY)
+Only select these when no stronger observation is available. Examples:
+- Hotel reservation
+- U.S. contact person
+- Accommodation arrangements
+- Arrival logistics
+
+A Priority 3 highlight should never be selected when a Priority 1 or Priority 2 highlight exists elsewhere in the application.
+
+RELATIONSHIP DISCOVERY RULE
+
+For F-1 applicants, relationship-based educational highlights should consistently outrank logistical highlights. Preferred educational relationships:
+- Previous degree → proposed graduate program (academic progression)
+- Academic performance → readiness for graduate study
+- Degree → career objective
+- Career objective → intended return contribution
+- Funding strategy → educational feasibility
+
+Only select U.S. contact or accommodation as a highlight when no educational relationship highlight is available.
 
 Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
 
@@ -807,6 +856,18 @@ Where only one meaningful fact exists, interpret its significance without invent
 
 Weak: "This shows that you have a funding plan."
 Strong: "These three complementary funding sources present a planned and diversified financial arrangement rather than dependence on a single source. Together, they show how responsibility for your education is shared across institutional support, family support, and your own contribution."
+
+Additional depth examples:
+
+Conference + professional role:
+Weak: "Your attendance is directly tied to your role as Operations Manager."
+Strong: "Your attendance is directly connected to your responsibilities as Operations Manager. Because the conference focuses on offshore technologies relevant to your employer's operations, your travel purpose aligns naturally with your professional role rather than appearing unrelated."
+
+Previous refusal + changed circumstances:
+Weak: "Your circumstances have improved since your previous refusal."
+Strong: "Since your previous application, your promotion, increased income, stronger savings, and additional international travel together present a materially different profile. These measurable changes demonstrate professional and financial progression rather than simply the passage of time."
+
+Do not add unnecessary words merely to increase sentence count. Quality remains more important than length. When only one meaningful fact exists, one well-interpreted sentence is sufficient. When multiple related facts exist, connect them.
 
 whyItMayComeUp / whyItMatters:
 This field is stage 3 of the four-stage framework: Why it matters. It has one responsibility — explain why a consular officer may naturally explore this point.
@@ -1176,6 +1237,18 @@ export async function POST(request: Request) {
     }
 
     const fullAnalysis = JSON.parse(raw);
+
+    // Server-side enforcement: remove any strength that asserts documentation
+    // completeness. The model occasionally ignores the prompt-level prohibition,
+    // so this acts as a deterministic safety net. Legitimate strengths about
+    // academic performance, employment, travel history, etc. are unaffected.
+    const DOC_COMPLETENESS_RE =
+      /\b(comprehensive\s+(supporting\s+)?doc|complete\s+(supporting\s+)?doc|complete\s+documentation|all\s+required\s+doc|fully\s+documented|well.documented\s+case)\b/i;
+    if (Array.isArray(fullAnalysis.strengths)) {
+      fullAnalysis.strengths = (fullAnalysis.strengths as Array<{ label: string; detail: string }>).filter(
+        (s) => !DOC_COMPLETENESS_RE.test(s.label) && !DOC_COMPLETENESS_RE.test(s.detail)
+      );
+    }
 
     // Strip paid-tier fields before sending to the client.
     // sections, crossSectionObservations, and readyToExplain are only rendered

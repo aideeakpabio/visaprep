@@ -1,0 +1,197 @@
+VisaPrep Pilot Readiness Refinement
+
+The Application Highlights architecture is now working as intended.
+
+Testing across six benchmark applicants confirms that:
+
+whatThisCommunicates is generated consistently;
+the interpretive layer is now visible;
+the free/paid boundary remains intact;
+factual accuracy has been preserved.
+
+This refinement is not intended to redesign the system or introduce new features.
+
+The objective is simply to make the AI consistently select and communicate the highest-value insights before pilot launch.
+
+1. Introduce Highlight Priority Scoring
+
+Not every valid observation is equally valuable.
+
+When more than three meaningful observations are available, the AI should prioritize the three that best help the applicant understand what their application communicates.
+
+The priority order should be:
+
+Priority 1 — Relationship Highlights
+
+Prefer observations that connect two or more important parts of the application.
+
+Examples:
+
+Previous refusal + measurable changed circumstances
+Employment + purpose of travel
+Degree + long-term career goals
+Previous education + proposed program
+Multiple funding sources working together
+Family ties + employment stability
+Business purpose + company role
+
+These provide the greatest interpretive value.
+
+Priority 2 — Significant Individual Signals
+
+Examples:
+
+Strong travel history
+Promotion
+Scholarship
+Employer sponsorship
+Prior U.S. travel
+Major salary increase
+
+These are important but may not involve relationships.
+
+Priority 3 — Administrative Details
+
+Examples:
+
+Hotel reservation
+U.S. contact
+Accommodation
+Arrival logistics
+
+These should only appear if stronger relationship-based highlights are unavailable.
+
+The AI should therefore avoid selecting a lower-priority administrative highlight when a stronger relationship highlight exists elsewhere in the application.
+
+2. Encourage Relationship Discovery
+
+Before selecting the final three highlights, perform an internal comparison of all candidate observations.
+
+Prefer observations that:
+
+explain why information matters;
+connect multiple facts;
+help applicants understand the story their application communicates.
+
+Do not simply choose the first three observations encountered during analysis.
+
+3. Strengthen Interpretation Depth
+
+The current implementation already separates:
+
+Observation
+
+↓
+
+What this communicates
+
+↓
+
+Why this may come up
+
+Maintain this structure.
+
+However, improve consistency.
+
+When multiple related facts exist, whatThisCommunicates should normally contain two or three meaningful sentences.
+
+Example:
+
+Instead of:
+
+Your attendance is directly tied to your role as Operations Manager.
+
+Prefer:
+
+Your attendance is directly connected to your responsibilities as Operations Manager. Because the conference focuses on offshore technologies relevant to your employer's operations, your travel purpose aligns naturally with your professional role rather than appearing unrelated.
+
+Likewise:
+
+Instead of:
+
+Your circumstances have improved since your previous refusal.
+
+Prefer:
+
+Since your previous application, your promotion, increased income, stronger savings, and additional international travel together present a materially different profile. These measurable changes demonstrate professional and financial progression rather than simply the passage of time.
+
+Do not add unnecessary words merely to increase sentence count.
+
+Quality remains more important than length.
+
+4. Enforce the Document Completeness Prohibition
+
+The AI must never infer that an applicant possesses complete or comprehensive supporting documentation unless the applicant explicitly states this.
+
+Examples that must never appear:
+
+Comprehensive supporting documents
+Complete documentation
+Fully documented application
+All required documents
+Well-documented case
+
+If such language is generated, suppress or regenerate that strength before returning the response.
+
+This prohibition should be enforced even if the language model occasionally ignores the prompt.
+
+5. Improve Highlight Selection for F-1 Applicants
+
+For F-1 applicants, relationship-based educational highlights should generally outrank logistical highlights.
+
+Preferred educational relationships include:
+
+Previous degree → proposed graduate program
+Academic performance → readiness for graduate study
+Degree → career objective
+Career objective → intended return contribution
+Funding strategy → educational feasibility
+
+Only select U.S. contact or accommodation when stronger educational relationships do not exist.
+
+6. Preserve Everything Else
+
+Do not modify:
+
+JSON schema
+UI
+Color system
+Typography
+Application flow
+Prompt philosophy
+AI Constitution
+Free/Paid separation
+Session version
+Model selection
+Temperature
+
+This refinement should focus only on:
+
+better highlight prioritization;
+richer interpretation where appropriate;
+stronger enforcement of the documentation rule.
+Validation
+
+Re-run the existing benchmark applicants.
+
+Confirm:
+
+Michael
+Promotion, income, savings, and travel history are explicitly identified as changed circumstances.
+Offshore Technology Conference is explicitly connected to DeltaMarine's offshore engineering operations.
+No unsupported documentation strength appears.
+Grace
+Funding remains selected.
+Degree → career goal remains selected.
+Computer Science → Data Analytics progression replaces U.S. contact/accommodation as the third highlight.
+All applicants
+Relationship-based highlights consistently outrank administrative details.
+No unsupported assumptions are introduced.
+Free/Paid boundary remains unchanged.
+Success Criterion
+
+Application Highlights should consistently surface the three most insightful aspects of an applicant's DS-160—not merely three correct observations.
+
+A user should finish reading the free Application Insights thinking:
+
+"I understand not just what I entered in my DS-160, but which parts matter most, how they connect, and why they may become discussion points during my interview."
