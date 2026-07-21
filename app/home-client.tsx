@@ -424,7 +424,10 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               {/* 3 — Personalized opening encouragement */}
               <p className="text-sm text-gray-600 leading-relaxed px-1">
                 {analysis.encouragement
-                  ?? (analysis.firstName
+                  ? (analysis.firstName
+                    ? `${analysis.firstName}, ${analysis.encouragement.charAt(0).toLowerCase()}${analysis.encouragement.slice(1)}`
+                    : analysis.encouragement)
+                  : (analysis.firstName
                     ? `${analysis.firstName}, you're off to a good start. Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.`
                     : "You're off to a good start. Understanding what your application communicates is the first step towards preparing to explain it clearly and confidently.")}
               </p>
@@ -512,7 +515,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                       </span>
                     )}
                     <h2 className="text-base font-semibold text-gray-900 leading-snug pr-4">
-                      Continue with Your Full VisaPrep Assessment
+                      Your Personalized Visa Interview Preparation Starts Here
                     </h2>
                   </div>
                   {!paySubmitting && (
@@ -532,16 +535,16 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                   {/* Supporting copy */}
                   <div className="flex flex-col gap-2">
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      Your free Application Insights are a great start.
+                      Your free Application Insights have already given you valuable insight into what your application communicates.
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      Your Full VisaPrep Assessment helps you understand your application more deeply and prepares you to explain it with clarity and confidence during your interview.
+                      Now let&rsquo;s build on that foundation and help you prepare to explain it clearly and confidently during your interview.
                     </p>
                   </div>
 
-                  {/* Philosophy bridge */}
+                  {/* Bridge before checklist */}
                   <p className="text-sm text-gray-700 font-medium leading-relaxed">
-                    Your interview will be based on your application. Here&rsquo;s what we&rsquo;ll help you prepare for next:
+                    Here&rsquo;s everything you&rsquo;ll unlock:
                   </p>
 
                   {/* Benefits list */}
