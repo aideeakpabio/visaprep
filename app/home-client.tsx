@@ -284,7 +284,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               Upload your DS-160 and receive your personalized Application Insights in minutes.
             </p>
             <p className="text-sm sm:text-base font-medium text-green-600 tracking-wide">
-              Understand your application. Prepare with clarity. Interview with confidence.
+              Understand your application · Prepare with clarity · Interview with confidence
             </p>
           </div>
 
