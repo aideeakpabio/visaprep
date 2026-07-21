@@ -277,7 +277,8 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               style={{ fontSize: "clamp(2.25rem, 5vw, 4.5rem)", lineHeight: "1.06" }}
               className="font-bold text-gray-900 mb-6 tracking-tight max-w-2xl"
             >
-              Your interview starts with your application. So do we.
+              Your interview starts with your application.{" "}
+              <span className="text-gray-400">So do we.</span>
             </h1>
             <p className="text-gray-500 text-base sm:text-lg max-w-[720px] leading-relaxed mb-5">
               Upload your DS-160 and receive your personalized Application Insights in minutes.
