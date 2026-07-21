@@ -493,19 +493,35 @@ Per the STRENGTHS-FIRST COMMUNICATION PRINCIPLE, identify 2–5 genuine positive
 
 DOCUMENT COMPLETENESS PROHIBITION
 
-Never generate a strength about documentation completeness. The following labels and any variation of them are prohibited:
-- "Complete Application Documentation"
+VisaPrep only analyzes the applicant's DS-160 form. It cannot read, access, or verify any supporting documents. Every insight must be grounded exclusively in information that appears in the DS-160 text.
+
+Never generate a strength that references or implies the existence of external documents. The following labels, and any variation of them, are completely prohibited:
+
+Documentation existence:
+- "Supporting documents"
 - "Complete supporting documents"
 - "Comprehensive supporting documents"
 - "All required documents submitted"
-- "Fully documented application"
-- "Well-documented case"
+- "Supporting documentation in place"
+
+Documentation quality:
 - "Complete documentation"
-- Any label or detail asserting that the applicant's paperwork is complete, comprehensive, or fully in order
+- "Complete Application Documentation"
+- "Fully documented application"
+- "Well-documented application"
+- "Well-documented case"
+- "Well-prepared documents"
 
-The engine cannot read or verify the applicant's supporting documents — only the DS-160 text. Asserting documentation completeness is an unsupported claim that the engine is not qualified to make.
+Specific document types:
+- "Employer letters" / "Employer letter available"
+- "Financial statements" / "Financial statement provided"
+- "Bank statements" / "Bank statement provided"
+- "Sufficient evidence" / "Convincing paperwork"
+- "Verified documents"
 
-Focus strengths exclusively on demonstrable applicant qualities: academic preparation, career progression, employment stability, planning, travel history, funding arrangements, stated purpose, career goals, consistency across the application, and similar facts grounded in the DS-160 text itself.
+Rule: If the strength label or detail mentions a supporting document by name, type, or assertion of completeness — remove it. Do not replace it with another fabricated strength. If fewer valid strengths remain, return fewer strengths. Never fabricate strengths to reach a target count.
+
+Focus strengths exclusively on demonstrable applicant qualities derived from DS-160 text: academic preparation, career progression, employment stability, planning, travel history, funding arrangements (as stated in the DS-160), stated purpose, career goals, consistency across the application, and similar facts that are directly readable from the form itself.
 
 ENCOURAGEMENT
 
@@ -598,7 +614,7 @@ FAMILY INFORMATION RULE
 Where appropriate, acknowledge immediate family information factually. Example: "Your application includes immediate family members in Nigeria. Be comfortable discussing your family circumstances if questions naturally arise during your interview." Never speculate about how family circumstances will be interpreted by a consular officer.
 
 TOP PREPARATION AREAS
-After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Frame these as preparation opportunities — topics where additional familiarity will help the applicant speak confidently — not as weaknesses, problems, or concerns. Each item must have a short specific title and four distinct fields:
+After analyzing all sections, synthesize exactly 3 Application Highlights for the free report. Do not generate 2, 4, or 5 — always exactly 3. Frame these as preparation opportunities — topics where additional familiarity will help the applicant speak confidently — not as weaknesses, problems, or concerns. Each item must have a short specific title and four distinct fields:
 
 observation — what the application specifically states (factual, concise; one sentence or two when necessary);
 whatThisCommunicates — what those details communicate and how they connect or reinforce one another (the core VisaPrep insight: interpret, do not restate; normally two to three substantive sentences);
@@ -646,7 +662,28 @@ For F-1 applicants, relationship-based educational highlights should consistentl
 - Career objective → intended return contribution
 - Funding strategy → educational feasibility
 
+The highest-value educational relationship is the full progression chain:
+Previous field of study → New degree program → Career goal → Contribution upon return
+
+Example for a Computer Science graduate pursuing a Master's in Data Analytics with a healthcare/agriculture AI career goal:
+Do not write: "Your chosen program aligns with your goals."
+Do write: explain why the prior Computer Science foundation specifically positions the applicant to succeed in Data Analytics, how the degree directly enables the stated career goal (AI-powered analytics), and how that career goal serves a concrete purpose upon return to Nigeria. Each link in the chain should be made explicit, not assumed.
+
 Only select U.S. contact or accommodation as a highlight when no educational relationship highlight is available.
+
+RELATIONSHIP SPECIFICITY RULE
+
+When a relationship highlight exists, name the specific facts — never use vague abstractions.
+
+Conference + employer operations:
+Do not write: "Your role relates to the conference."
+Do write: "Because the conference focuses on offshore technologies relevant to your employer's operations, your attendance aligns naturally with your current responsibilities as [Job Title] at [Employer]."
+
+Previous refusal + changed circumstances:
+Do not write: "Your circumstances have improved."
+Do write: "Since your previous application, your [specific change: promotion to X role / income increase / strengthened savings / additional international travel] together present a materially different profile. These named improvements demonstrate progression rather than simply the passage of time."
+
+When multiple related facts exist, connect them explicitly. Specificity is always preferred over abstraction.
 
 Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
 
@@ -1242,8 +1279,16 @@ export async function POST(request: Request) {
     // completeness. The model occasionally ignores the prompt-level prohibition,
     // so this acts as a deterministic safety net. Legitimate strengths about
     // academic performance, employment, travel history, etc. are unaffected.
+    // Enforce document completeness prohibition deterministically.
+    // The model occasionally generates strengths that assert the existence or
+    // quality of supporting documents (employer letters, financial statements,
+    // bank statements, etc.) despite the prompt-level prohibition. VisaPrep
+    // only reads DS-160 text and cannot verify any external documents.
+    // Any strength whose label OR detail matches the pattern below is removed.
+    // Legitimate strengths about financial position, career, or academic
+    // record derived from DS-160 text are not affected.
     const DOC_COMPLETENESS_RE =
-      /\b(comprehensive\s+(supporting\s+)?doc|complete\s+(supporting\s+)?doc|complete\s+documentation|all\s+required\s+doc|fully\s+documented|well.documented\s+case)\b/i;
+      /\b(supporting\s+doc(ument)?s?|comprehensive\s+(supporting\s+)?doc|complete\s+(supporting\s+)?doc|complete\s+documentation|all\s+required\s+doc|fully\s+documented|well.documented|employer\s+letter|financial\s+statement|bank\s+statement|verified\s+doc(ument)?|sufficient\s+evidence|convincing\s+paperwork|well.prepared\s+doc(ument)?)\b/i;
     if (Array.isArray(fullAnalysis.strengths)) {
       fullAnalysis.strengths = (fullAnalysis.strengths as Array<{ label: string; detail: string }>).filter(
         (s) => !DOC_COMPLETENESS_RE.test(s.label) && !DOC_COMPLETENESS_RE.test(s.detail)

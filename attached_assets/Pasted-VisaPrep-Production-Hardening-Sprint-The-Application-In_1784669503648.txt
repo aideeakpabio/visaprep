@@ -1,0 +1,357 @@
+VisaPrep Production Hardening Sprint
+
+
+
+The Application Insights engine is now considered feature-complete for pilot.
+
+
+
+This sprint is not intended to improve prompting, add new features, or change the product philosophy.
+
+
+
+Its purpose is to eliminate production bugs and ensure the live experience matches the intended architecture.
+
+
+
+1. Fix the Document Completeness Filter
+
+
+
+The report still occasionally generates strengths such as:
+
+
+
+Comprehensive supporting documents
+
+Complete documentation
+
+Well-documented application
+
+Employer letters
+
+Financial statements
+
+Supporting documents
+
+
+
+These must never appear because VisaPrep only analyzes the applicant's DS-160.
+
+
+
+The previous server-side filter appears to be incomplete or is not executing consistently.
+
+
+
+Investigate and correct the issue.
+
+
+
+Verify:
+
+
+
+the filter executes before the response is returned;
+
+every strength is checked;
+
+both the title and description are inspected;
+
+regex matching is case-insensitive;
+
+wording variations are also removed.
+
+
+
+If such a strength is detected:
+
+
+
+remove it completely;
+
+do not replace it with another fabricated strength.
+
+
+
+If fewer than five strengths remain after filtering, simply return fewer strengths.
+
+
+
+Never invent new strengths to reach a target count.
+
+
+
+2. Verify the Filter Is Running
+
+
+
+After fixing the bug:
+
+
+
+Run Michael.
+
+
+
+Confirm that no strength related to documentation appears anywhere in the response.
+
+
+
+3. Review Other Hallucination Risks
+
+
+
+Search the prompt and server logic for similar unsupported claims, including:
+
+
+
+complete documentation
+
+well prepared documents
+
+sufficient evidence
+
+verified documents
+
+convincing paperwork
+
+employer letter available
+
+bank statement provided
+
+
+
+If any unsupported wording exists, prohibit it.
+
+
+
+VisaPrep must discuss only information contained within the DS-160.
+
+
+
+4. Production Validation
+
+
+
+Run all benchmark applicants again.
+
+
+
+Confirm:
+
+
+
+no documentation-related strengths;
+
+no fabricated evidence;
+
+no unsupported assumptions.
+
+Prompt 2 — Insight Quality Polish (Run after Prompt 1)
+
+VisaPrep Insight Quality Polish
+
+
+
+The architecture is complete.
+
+
+
+Do not change:
+
+
+
+schema;
+
+UI;
+
+prompt philosophy;
+
+AI Constitution;
+
+session version;
+
+temperature;
+
+free/paid boundary.
+
+
+
+This sprint only improves the quality of selected insights.
+
+
+
+1. Strengthen Relationship Interpretation
+
+
+
+When a relationship exists, prefer naming the specific connected facts.
+
+
+
+Avoid:
+
+
+
+Your circumstances have improved.
+
+
+
+Prefer:
+
+
+
+Your promotion, increased income, stronger savings, and additional international travel together present a materially different profile.
+
+
+
+Avoid:
+
+
+
+Your role relates to the conference.
+
+
+
+Prefer:
+
+
+
+Because the conference focuses on offshore technologies relevant to your employer's operations, your attendance aligns naturally with your current responsibilities.
+
+
+
+Specificity should always be preferred over abstraction.
+
+
+
+2. Improve Educational Relationships
+
+
+
+When analyzing F-1 applications:
+
+
+
+Prefer relationship-based educational insights over descriptive educational summaries.
+
+
+
+Highest priority:
+
+
+
+Computer Science
+
+
+
+↓
+
+
+
+Data Analytics
+
+
+
+↓
+
+
+
+Career Goal
+
+
+
+↓
+
+
+
+Contribution in Nigeria
+
+
+
+Avoid generic wording like:
+
+
+
+Your chosen program aligns with your goals.
+
+
+
+Instead explain:
+
+
+
+why the previous education,
+
+
+
+the new degree,
+
+
+
+and the future career
+
+
+
+reinforce one another.
+
+
+
+3. Improve Highlight Selection Quality
+
+
+
+Maintain exactly three Application Highlights for the free Application Insights report.
+
+
+
+Do not increase or decrease the number of highlights.
+
+
+
+Instead, improve the quality of the three selected highlights.
+
+
+
+When multiple valid highlights exist, always prefer the three that provide the greatest interpretive value to the applicant.
+
+
+
+Relationship-based insights should generally outrank descriptive or administrative observations.
+
+
+
+The objective is not to show more highlights, but to ensure the three shown are the most meaningful.
+
+4. Benchmark Validation
+
+
+
+Michael:
+
+
+
+conference explicitly connected to offshore engineering operations;
+
+changed circumstances list promotion, income, savings, and travel history.
+
+
+
+Grace:
+
+
+
+funding remains;
+
+degree → career relationship remains;
+
+Computer Science → Data Analytics progression is selected whenever it provides more insight than administrative details.
+
+
+
+Do not fabricate information.
+
+
+
+Maintain factual accuracy.
