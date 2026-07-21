@@ -278,7 +278,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               className="font-bold text-gray-900 mb-6 tracking-tight max-w-2xl"
             >
               Your interview starts with your application.
-              <span className="block text-gray-400">So do we.</span>
+              <span className="block text-gray-400 mt-2">So do we.</span>
             </h1>
             <p className="text-gray-500 text-base sm:text-lg max-w-[720px] leading-relaxed mb-5">
               Upload your DS-160 and receive your personalized Application Insights in minutes.
