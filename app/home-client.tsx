@@ -250,7 +250,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
   return (
     <>
       {/* ── Fixed navigation bar ─────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
         <div className="flex items-center h-16 sm:h-[68px] px-5 sm:px-10">
           <a
             href="/"
@@ -281,7 +281,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               <span className="block text-gray-400 mt-2">So do we.</span>
             </h1>
             <p className="text-gray-500 text-base sm:text-lg max-w-[720px] leading-relaxed mb-5">
-              Upload your DS-160 and receive your personalized Application Insights in minutes.
+              VisaPrep helps you fully understand what your application communicates and prepares you to be able to explain it with clarity and confidence during your interview.
             </p>
             <p className="text-sm sm:text-base font-medium text-green-600 tracking-wide text-center">
               <span className="block sm:inline whitespace-nowrap">Understand your application</span>
@@ -299,11 +299,10 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                 {!pendingFile ? (
                   <>
                     {/* Call-to-action hierarchy */}
-                    <p className="text-base font-semibold text-gray-900 mb-1.5">Upload your completed DS-160</p>
-                    <p className="text-sm text-gray-500 mb-4 leading-relaxed">
+                    <p className="text-base font-semibold text-gray-900 mb-1.5">Upload your completed DS-160 (PDF only)</p>
+                    <p className="text-sm text-gray-500 mb-5 leading-relaxed">
                       Receive your personalized Application Insights in minutes.
                     </p>
-                    <p className="text-xs text-gray-400 mb-5">PDF only</p>
                     <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-8 py-3.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
