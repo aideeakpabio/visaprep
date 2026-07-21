@@ -283,8 +283,12 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
             <p className="text-gray-500 text-base sm:text-lg max-w-[720px] leading-relaxed mb-5">
               Upload your DS-160 and receive your personalized Application Insights in minutes.
             </p>
-            <p className="text-sm sm:text-base font-medium text-green-600 tracking-wide">
-              Understand your application · Prepare with clarity · Interview with confidence
+            <p className="text-sm sm:text-base font-medium text-green-600 tracking-wide text-center">
+              <span className="block sm:inline whitespace-nowrap">Understand your application</span>
+              <span className="hidden sm:inline mx-2">·</span>
+              <span className="block sm:inline whitespace-nowrap">Prepare with clarity</span>
+              <span className="hidden sm:inline mx-2">·</span>
+              <span className="block sm:inline whitespace-nowrap">Interview with confidence</span>
             </p>
           </div>
 
