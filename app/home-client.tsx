@@ -79,6 +79,7 @@ interface DocumentAssessment {
 interface TopPreparationArea {
   title: string;
   observation: string;
+  whatThisCommunicates: string;
   whyItMayComeUp: string;
   whatToBeReadyToExplain: string;
 }
@@ -160,7 +161,7 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 // ── Main Page ────────────────────────────────────────────────────────────────
 
 // v4 key — bumped when encouragement field was added to the schema
-const SESSION_KEY = "visaprep_analysis_v4";
+const SESSION_KEY = "visaprep_analysis_v5";
 
 function readSaved(): { analysis: Analysis | null; fileName: string } {
   try {
@@ -468,6 +469,12 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                         {i > 0 && <div className="border-t border-gray-100 mt-4" />}
                         <p className="font-semibold text-sm text-gray-900">{area.title}</p>
                         <p className="text-sm text-gray-700 leading-relaxed">{area.observation}</p>
+                        {area.whatThisCommunicates && (
+                          <div className="mt-1">
+                            <FieldLabel>What this communicates</FieldLabel>
+                            <p className="text-sm text-gray-700 leading-relaxed">{area.whatThisCommunicates}</p>
+                          </div>
+                        )}
                         <div className="mt-1">
                           <FieldLabel>Why this may come up</FieldLabel>
                           <p className="text-sm text-gray-700 leading-relaxed">{area.whyItMayComeUp}</p>

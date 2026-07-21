@@ -424,9 +424,11 @@ Each field in every insight must contribute distinct understanding. Never carry 
 
 observation — State only what the application says. Do not explain significance here.
 
-whyItMayComeUp / whyItMatters — Explain WHY this detail may naturally become part of the interview conversation. This is not a restatement of the observation. Describe the connection between what the application says and why a consular officer may want to explore that topic further. If the "why" would simply restate the observation in different words, rewrite it to explain the underlying interview dynamic instead.
+whatThisCommunicates — Interpret the facts. Explain what they communicate and how they connect. Do not restate the observation in different words.
 
-whatToBeReadyToExplain / preparationGuidance — Give concrete preparation guidance. This is not a summary of the first two fields. It tells the applicant what to review, recall, or be ready to explain in their own words.
+whyItMayComeUp / whyItMatters — Explain WHY a consular officer may naturally explore this topic. Do not repeat the observation or the interpretation. Add only the interview dynamic that the previous fields have not already explained.
+
+whatToBeReadyToExplain / preparationGuidance — Give concrete preparation guidance. This is not a summary of the previous fields. It tells the applicant what to review, recall, or be ready to explain in their own words.
 
 If any field would repeat information already present in another field, that is a failure. Rewrite it to add new understanding.
 
@@ -590,39 +592,86 @@ FAMILY INFORMATION RULE
 Where appropriate, acknowledge immediate family information factually. Example: "Your application includes immediate family members in Nigeria. Be comfortable discussing your family circumstances if questions naturally arise during your interview." Never speculate about how family circumstances will be interpreted by a consular officer.
 
 TOP PREPARATION AREAS
-After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Frame these as preparation opportunities — topics where additional familiarity will help the applicant speak confidently — not as weaknesses, problems, or concerns. Each item must have a short specific title and three distinct fields: observation (what the application specifically states), whyItMayComeUp (why this may naturally arise in the interview), and whatToBeReadyToExplain (what the applicant should prepare to discuss honestly and clearly in their own words). Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
+After analyzing all sections, synthesize the 3–5 most important things this specific applicant should prepare before their interview. Frame these as preparation opportunities — topics where additional familiarity will help the applicant speak confidently — not as weaknesses, problems, or concerns. Each item must have a short specific title and four distinct fields:
 
-FOUR-STAGE COMMUNICATION FRAMEWORK
+observation — what the application specifically states (factual, concise; one sentence or two when necessary);
+whatThisCommunicates — what those details communicate and how they connect or reinforce one another (the core VisaPrep insight: interpret, do not restate; normally two to three substantive sentences);
+whyItMayComeUp — why a consular officer may naturally explore this point (normally one to two substantive sentences; do not repeat the observation or interpretation);
+whatToBeReadyToExplain — what the applicant should prepare to discuss honestly and clearly in their own words.
 
-Every Application Highlight should naturally move through four stages. This is not a rigid template — it is the natural arc of a complete, useful insight.
+Select based on both Interview Weight AND applicant-specific relevance. Order by overall significance to this particular application — not mechanically by section weight.
 
-1. Observation — Identify the important application detail. Ground it in what the DS-160 actually states.
-2. Interpretation — Explain what that detail communicates. Move beyond "this information exists" toward "this is what this information communicates."
-3. Why it matters — Explain why a consular officer may naturally explore this, connecting the application detail to the interview dynamic.
-4. Preparation — Tell the applicant what to be ready to explain clearly and in their own words.
+FOUR-STAGE COMMUNICATION FRAMEWORK — FIELD MAPPING
 
-The explanation should feel conversational, intelligent, and reassuring — not templated. Every insight should leave the applicant thinking: "VisaPrep didn't just tell me what is in my application — it helped me understand what my application communicates, and why."
+Every Application Highlight communicates through four stages, each with its own dedicated field:
 
-Whenever appropriate, connect multiple application details, explain how they reinforce each other, and explain why that connection matters. Do not simply repeat facts already visible in the DS-160. Interpret those facts.
+1. observation — State the relevant facts found in the applicant's DS-160. Factual and concise. Do not explain significance here.
+2. whatThisCommunicates — Interpret the facts. Explain what they communicate and how they connect or reinforce one another. This is the core VisaPrep insight field. Must not restate the observation. Must explain what the detail or combination of details communicates as a whole.
+3. whyItMayComeUp — Explain why a consular officer may naturally explore this point. Do not repeat the observation or the interpretation. Explain only the interview dynamic.
+4. whatToBeReadyToExplain — Tell the applicant what to review and be ready to discuss clearly, in their own words.
 
-BENCHMARK EXAMPLES — these represent the desired depth and communication style
+The goal: every insight should leave the applicant thinking: "VisaPrep didn't just tell me what is in my application — it helped me understand what my application communicates, and why."
 
-Employment + Conference:
-"Because you're attending the conference in your capacity as Operations Manager, the officer may want to understand how the technologies or knowledge you'll gain relate to your day-to-day responsibilities at DeltaMarine Engineering Services. Being able to explain that connection naturally helps demonstrate that the trip fits your professional role."
+Field length guidance:
+- observation: one concise sentence, or two when necessary
+- whatThisCommunicates: normally two to three substantive sentences; connect two or more details whenever the application provides them
+- whyItMayComeUp: normally one to two substantive sentences
 
-Previous Refusal + Changed Circumstances:
-"Since your previous application, your circumstances appear to have changed in several measurable ways — including a promotion to Operations Manager, increased income, stronger personal savings, and additional international travel. Together, these changes present a different professional and financial profile from your earlier application, so you should be ready to explain that progression clearly."
+Quality and insight take priority over brevity. Do not compress interpretation into a single generic sentence.
 
-Shared Funding:
-"Your education will be supported through three complementary sources — a merit scholarship, your parents' sponsorship, and your own savings. Together, these demonstrate that the financial responsibility for your studies is well planned rather than relying on a single source. You should be comfortable explaining how these funding sources work together if asked."
+BENCHMARK EXAMPLES — required output standard, showing field separation
 
-Academic Program + Career Goals:
-"Your planned Master's degree and your stated goal of building AI-powered analytics solutions in Nigeria reinforce one another. Because your education directly supports the career path you've described, an officer may explore how the program fits into those long-term plans."
+Michael — Employment and conference:
 
-Academic Record:
-"Your academic record suggests you've been consistently successful in Computer Science, which helps explain why you're pursuing graduate study in Data Analytics. Be prepared to discuss how this next degree builds naturally on your previous education."
+observation: You are attending the Offshore Technology Conference in your capacity as Operations Manager at DeltaMarine Engineering Services Ltd.
 
-These examples are the standard. Match this depth, specificity, and tone in every Application Highlight.
+whatThisCommunicates: Your conference attendance connects directly to your current professional responsibilities. Because the event focuses on offshore technologies relevant to your employer's operations, the trip presents a coherent professional purpose rather than an unrelated visit.
+
+whyItMayComeUp: An officer may want to understand which technologies, sessions, or knowledge relate to your day-to-day responsibilities and how attending the conference benefits your work.
+
+---
+
+Michael — Previous refusal and changed circumstances:
+
+observation: Since your September 2022 application, you have moved into an Operations Manager role, increased your income and savings, and completed additional international travel.
+
+whatThisCommunicates: These are measurable changes across your professional, financial, and travel circumstances. Together, they present a materially different profile from the junior position and limited travel history described in your earlier application.
+
+whyItMayComeUp: Because you previously received a refusal, an officer may naturally explore what has changed and whether those changes are significant to your present travel plans and circumstances.
+
+---
+
+Grace — Funding:
+
+observation: Your studies will be funded through a merit scholarship, parental support, and personal savings.
+
+whatThisCommunicates: These three complementary sources create a diversified funding arrangement rather than reliance on one source. Together, they show that the financial responsibility for your education has been deliberately planned across scholarship support, family contribution, and your own funds.
+
+whyItMayComeUp: Because your estimated annual cost is US$58,000, an officer may ask how much each source will provide and whether the combined funds are sufficient and available.
+
+---
+
+Grace — Degree and career goals:
+
+observation: You plan to pursue a Master's degree in Data Analytics and later develop AI-powered analytics solutions for Nigeria's healthcare and agricultural sectors.
+
+whatThisCommunicates: Your proposed degree and career goal reinforce one another because the technical training directly supports the work you say you intend to pursue in Nigeria. This creates a clearer academic and professional progression than either detail would communicate on its own.
+
+whyItMayComeUp: An officer may explore why this particular degree and university are necessary for your stated career path and how you plan to apply the training after graduation.
+
+---
+
+Grace — Academic progression:
+
+observation: You earned First Class Honours in Computer Science with a CGPA of 4.83 and now plan to study Data Analytics at graduate level.
+
+whatThisCommunicates: Your academic record shows sustained strength in a closely related technical field. Moving from Computer Science into graduate-level Data Analytics therefore appears to build naturally on your prior education rather than represent an unexplained change of direction.
+
+whyItMayComeUp: An officer may ask how your previous studies prepared you for the program and what additional capabilities you expect the Master's degree to provide.
+
+---
+
+Generate output at this depth and field separation for every Application Highlight.
 
 HIGHLIGHT HEADING RULE
 
@@ -742,33 +791,33 @@ FIELD DESCRIPTIONS
 observation:
 State only what the submitted application indicates. Ground every observation in the extracted text. Never invent or speculate.
 
+whatThisCommunicates:
+This field is stage 2 of the four-stage framework: Interpretation. It is the core VisaPrep insight field.
+
+Interpret the facts in the observation. Explain what they communicate and how they connect or reinforce one another. Move beyond "this information exists" toward "this is what this information communicates."
+
+This field must:
+- contain at least two complete sentences where adequate supporting facts exist;
+- connect two or more relevant details whenever the application provides them;
+- explain how those details reinforce, clarify, or qualify one another;
+- never restate the observation in different words;
+- never contain generic statements that could apply to almost any applicant.
+
+Where only one meaningful fact exists, interpret its significance without inventing a relationship. Never fabricate supporting details to satisfy the two-detail preference.
+
+Weak: "This shows that you have a funding plan."
+Strong: "These three complementary funding sources present a planned and diversified financial arrangement rather than dependence on a single source. Together, they show how responsibility for your education is shared across institutional support, family support, and your own contribution."
+
 whyItMayComeUp / whyItMatters:
-This field covers stages 2 and 3 of the four-stage communication framework: Interpretation and Why it matters. It must do two things in sequence:
+This field is stage 3 of the four-stage framework: Why it matters. It has one responsibility — explain why a consular officer may naturally explore this point.
 
-First, interpret — explain what this application detail communicates. Move beyond "this information exists" toward "this is what this information communicates." What does this detail say about the applicant's situation, their plans, or how different parts of their application relate?
+Do not repeat the observation. Do not repeat the interpretation from whatThisCommunicates. Add only the interview dynamic: what does this application detail prompt a consular officer to want to understand?
 
-Second, explain the interview dynamic — why a consular officer may naturally want to explore this topic, connecting the application detail to the conversation it may prompt.
+Do not imply certainty. Do not predict outcomes. Do not use evaluative language ("assess," "determine eligibility," "verify ties," "scrutinize"). Normally one to two substantive sentences.
 
-This field must never restate the observation in different words. It must interpret and explain. Do not imply certainty. Do not predict outcomes. Do not use evaluative language ("assess," "determine eligibility," "verify ties," "scrutinize").
-
-Write this field as an experienced advisor would explain it — conversational, connective, and specific to this application. Naturally incorporate connective language:
-
-"Because..." — explains the underlying reason
-"Together..." — joins two application facts into a single idea
-"This reinforces..." — names what one detail adds to another
-"This demonstrates..." — interprets what a detail communicates
-"This naturally supports..." — shows how parts of the application work together
-"This creates a consistent picture..." — frames the application as a coherent whole
-"This connects with..." — links two details explicitly
-"This is why..." — explains the interview dynamic that follows from the observation
-
-Use these conversationally rather than mechanically. Each explanation should feel written for this specific applicant's situation.
-
-EXAMPLE — Observation: "Your application indicates that you plan to attend a professional forum in Houston."
-WEAK: "Officers often ask about the purpose of travel." (Generic — says nothing about this application.)
-STRONG: "Because you're attending the forum in your professional capacity, this part of your application invites a natural question about how the event connects to your day-to-day responsibilities. Being able to explain that connection clearly helps demonstrate that the trip fits your current role." (Interprets the detail and explains the specific interview dynamic it creates.)
-
-Your output must always be the strong version — interpreted, specific, and connected.
+EXAMPLE — Observation: "Your application indicates you plan to attend a professional forum in Houston."
+WEAK whyItMayComeUp: "Officers often ask about the purpose of travel." (Generic — adds no insight specific to this application.)
+STRONG whyItMayComeUp: "An officer may want to understand which sessions or technologies are relevant to your day-to-day responsibilities and how attending the forum benefits your work." (Specific — explains only the interview dynamic this application detail creates.)
 
 whatToBeReadyToExplain / preparationGuidance:
 This field is stage 4 of the four-stage communication framework: Preparation. It completes the insight by landing it in a concrete, actionable direction for the applicant.
@@ -808,8 +857,9 @@ Return ONLY valid JSON matching this exact schema. No text before or after the J
   "topPreparationAreas": [
     {
       "title": "Short, applicant-specific topic title",
-      "observation": "What the application specifically indicates.",
-      "whyItMayComeUp": "Why a consular officer may naturally explore this topic.",
+      "observation": "What the application specifically indicates. One concise sentence, or two when necessary.",
+      "whatThisCommunicates": "What those details communicate — interpret and connect them. Normally two to three substantive sentences. Explain what the detail or combination of details communicates as a whole. Do not restate the observation.",
+      "whyItMayComeUp": "Why a consular officer may naturally explore this topic. Normally one to two substantive sentences. Do not repeat the observation or the interpretation.",
       "whatToBeReadyToExplain": "What the applicant should prepare to explain honestly and clearly."
     }
   ],
@@ -1117,7 +1167,7 @@ export async function POST(request: Request) {
         },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.2,
+      temperature: 0.4,
     });
 
     const raw = completion.choices[0].message.content;

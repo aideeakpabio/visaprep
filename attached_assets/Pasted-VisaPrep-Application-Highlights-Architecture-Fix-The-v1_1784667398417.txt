@@ -1,0 +1,333 @@
+VisaPrep Application Highlights Architecture Fix
+
+The v1.2 prompt changes were implemented correctly, but repeated benchmark tests show that the model still compresses its interpretation into short, generic whyItMayComeUp sentences.
+
+This confirms that the current output architecture does not provide a clear, enforceable place for the model to communicate what an application detail means.
+
+The goal of this sprint is to fix that structural limitation.
+
+Primary objective
+
+Each Application Highlight must separately communicate:
+
+What the application states
+What those details communicate
+Why the relationship may come up during the interview
+
+The model must no longer be expected to combine interpretation and interview relevance inside one field.
+
+1. Update the Application Highlight schema
+
+Locate the current Application Highlight structure.
+
+It may currently resemble:
+
+{
+  title: string;
+  observation: string;
+  whyItMayComeUp: string;
+  whatToBeReadyToExplain?: string;
+}
+
+Add a required field:
+
+whatThisCommunicates: string;
+
+The updated structure should resemble:
+
+{
+  title: string;
+  observation: string;
+  whatThisCommunicates: string;
+  whyItMayComeUp: string;
+  whatToBeReadyToExplain?: string;
+}
+
+Update every relevant TypeScript type, JSON schema, parser, validation rule, and response contract accordingly.
+
+Do not create this field only in the prompt. It must be part of the enforced structured output.
+
+2. Give each field one distinct responsibility
+
+Update the generation instructions so the fields do not overlap.
+
+observation
+
+State the relevant facts found in the applicant's DS-160.
+
+This field should remain factual and concise.
+
+Example:
+
+Your application shows that your studies will be funded through a merit scholarship, parental support, and personal savings.
+
+whatThisCommunicates
+
+Interpret the facts and explain how they connect or reinforce one another.
+
+This is the core VisaPrep insight field.
+
+It should explain what the applicant's information communicates as a whole, not repeat the observation.
+
+Example:
+
+These three complementary funding sources present a planned and diversified financial arrangement rather than dependence on a single source. Together, they show how responsibility for your education is shared across institutional support, family support, and your own contribution.
+
+whyItMayComeUp
+
+Explain why a consular officer may naturally explore this point or relationship.
+
+It should not repeat the observation or the interpretation.
+
+Example:
+
+Because your estimated cost of attendance is substantial, an officer may ask how each source contributes and whether the combined funding will remain available throughout your studies.
+
+whatToBeReadyToExplain
+
+When this field is included in the paid output, provide clear preparation guidance.
+
+Example:
+
+Be ready to explain the amount expected from each source, who will provide it, and how the combined plan covers your tuition and living expenses.
+
+3. Enforce meaningful interpretation
+
+The whatThisCommunicates field must be required and substantive.
+
+It must:
+
+contain at least two complete sentences where adequate supporting facts exist;
+connect two or more relevant details whenever the application provides them;
+explain how those details reinforce, clarify, or qualify one another;
+avoid merely restating the observation;
+avoid generic statements that could apply to almost any applicant.
+
+Weak:
+
+This shows that you have a funding plan.
+
+Strong:
+
+These three complementary funding sources present a planned and diversified financial arrangement rather than dependence on a single source. Together, they show how responsibility for your education is shared across institutional support, family support, and your own contribution.
+
+Where only one meaningful fact exists, interpret its significance without inventing a relationship.
+
+Never fabricate supporting details merely to satisfy the two-detail preference.
+
+4. Use the benchmark examples as required output standards
+Michael — Employment and conference
+
+Observation
+
+You are attending the Offshore Technology Conference in your capacity as Operations Manager at DeltaMarine Engineering Services Ltd.
+
+What this communicates
+
+Your conference attendance connects directly to your current professional responsibilities. Because the event focuses on offshore technologies relevant to your employer's operations, the trip presents a coherent professional purpose rather than an unrelated visit.
+
+Why this may come up
+
+An officer may want to understand which technologies, sessions, or knowledge relate to your day-to-day responsibilities and how attending the conference benefits your work.
+
+Michael — Previous refusal and changed circumstances
+
+Observation
+
+Since your September 2022 application, you have moved into an Operations Manager role, increased your income and savings, and completed additional international travel.
+
+What this communicates
+
+These are measurable changes across your professional, financial, and travel circumstances. Together, they present a materially different profile from the junior position and limited travel history described in your earlier application.
+
+Why this may come up
+
+Because you previously received a refusal, an officer may naturally explore what has changed and whether those changes are significant to your present travel plans and circumstances.
+
+Grace — Funding
+
+Observation
+
+Your studies will be funded through a merit scholarship, parental support, and personal savings.
+
+What this communicates
+
+These three complementary sources create a diversified funding arrangement rather than reliance on one source. Together, they show that the financial responsibility for your education has been deliberately planned across scholarship support, family contribution, and your own funds.
+
+Why this may come up
+
+Because your estimated annual cost is US$58,000, an officer may ask how much each source will provide and whether the combined funds are sufficient and available.
+
+Grace — Degree and career goals
+
+Observation
+
+You plan to pursue a Master's degree in Data Analytics and later develop AI-powered analytics solutions for Nigeria's healthcare and agricultural sectors.
+
+What this communicates
+
+Your proposed degree and career goal reinforce one another because the technical training directly supports the work you say you intend to pursue in Nigeria. This creates a clearer academic and professional progression than either detail would communicate on its own.
+
+Why this may come up
+
+An officer may explore why this particular degree and university are necessary for your stated career path and how you plan to apply the training after graduation.
+
+Grace — Academic progression
+
+Observation
+
+You earned First Class Honours in Computer Science with a CGPA of 4.83 and now plan to study Data Analytics at graduate level.
+
+What this communicates
+
+Your academic record shows sustained strength in a closely related technical field. Moving from Computer Science into graduate-level Data Analytics therefore appears to build naturally on your prior education rather than represent an unexplained change of direction.
+
+Why this may come up
+
+An officer may ask how your previous studies prepared you for the program and what additional capabilities you expect the Master's degree to provide.
+
+5. Update the free-results UI
+
+In every Application Highlight card, display the fields in this order:
+
+Contextual highlight title
+
+[Observation text]
+
+What this communicates
+[whatThisCommunicates text]
+
+Why this may come up
+[whyItMayComeUp text]
+
+The observation does not need an additional visible heading unless the existing design requires one.
+
+Add the visible subheading:
+
+What this communicates
+
+Use the existing typography, spacing, colors, and visual language.
+
+Do not redesign the cards.
+
+Do not add new colors, icons, animations, or decorative elements.
+
+Ensure the new content remains readable on mobile.
+
+6. Preserve the free/paid boundary
+
+Do not expose paid-only preparation guidance merely because the schema is changing.
+
+The free Application Insights response should contain only the fields currently approved for the free tier, plus the new:
+
+whatThisCommunicates
+
+If whatToBeReadyToExplain is currently removed from the free server response, keep it removed.
+
+This sprint must not weaken the server-enforced free/paid boundary.
+
+7. Remove conflicting brevity instructions
+
+Audit the complete prompt and schema instructions for Application Highlights.
+
+Remove or revise any instruction that tells the model to:
+
+keep whyItMayComeUp to one short sentence;
+combine interpretation and interview relevance in the same sentence;
+be extremely brief;
+avoid detailed explanations;
+produce only a generic reason an officer may ask.
+
+Do not remove general clarity or concision standards from unrelated parts of the report.
+
+For these fields, use:
+
+observation: one concise sentence, or two when necessary;
+whatThisCommunicates: normally two to three substantive sentences;
+whyItMayComeUp: normally one to two substantive sentences.
+
+Quality and insight should take priority over artificial brevity.
+
+8. API generation settings
+
+Inspect the model call used for this analysis.
+
+If a temperature is explicitly set very low, such as 0, 0.1, or 0.2, increase it modestly to approximately:
+
+temperature: 0.4
+
+Only do this if the selected model and API endpoint support the temperature parameter.
+
+Do not increase it beyond 0.5.
+
+Do not change models solely for this sprint.
+
+The structured schema, field separation, and prompt requirements are the primary fix. Temperature is only a secondary adjustment.
+
+If the current model does not support temperature, leave the generation settings unchanged and state that in the completion report.
+
+9. Validation and fallback handling
+
+Ensure older cached results or stored sessions without whatThisCommunicates do not crash the UI.
+
+Choose one safe approach:
+
+invalidate the previous analysis cache/session version so reports regenerate using the new schema; or
+provide a temporary backward-compatible fallback.
+
+Prefer bumping the analysis/session schema version so previous cached outputs are not mistaken for the updated report.
+
+Do not silently derive whatThisCommunicates from whyItMayComeUp, because that would preserve the same weakness we are fixing.
+
+10. Test cases
+
+After implementation, run fresh analyses for:
+
+Michael Chinedu Nwosu
+Grace Oluwaseun Adeyemi
+
+Do not use cached outputs.
+
+Confirm that:
+
+whatThisCommunicates is generated and displayed;
+it interprets rather than repeats;
+Michael's role is explicitly connected to the conference;
+Michael's promotion, income, savings, and travel history are connected as changed circumstances;
+Grace's three funding sources are interpreted as one coordinated plan;
+Grace's degree is connected to her career goal;
+Grace's Computer Science background is connected to Data Analytics;
+whyItMayComeUp remains distinct;
+factual accuracy is preserved;
+no unsupported assumptions are introduced;
+no paid fields leak into the free response.
+Success criterion
+
+A user should be able to distinguish clearly between:
+
+What my application says
+
+and:
+
+What my application communicates
+
+The second layer is the distinctive value VisaPrep must provide.
+
+The sprint is successful only when the generated output visibly contains that interpretive layer—not merely when the prompt contains instructions requesting it.
+
+Build and deployment
+
+After implementation:
+
+run TypeScript checks;
+run the production build;
+confirm mobile and desktop rendering;
+commit;
+push;
+publish;
+provide a completion report containing:
+the schema changes;
+prompt conflicts removed;
+model generation settings before and after;
+cache/session version change;
+the fresh Michael and Grace validation results.
