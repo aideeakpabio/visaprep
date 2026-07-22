@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 
 // ── Analyzing state ──────────────────────────────────────────────────────────
 
-// Stage 1 — generic, shown while the document is being checked (~7s)
 const STAGE_1_MESSAGES = [
   "Uploading your document...",
   "Checking the file...",
@@ -12,7 +11,6 @@ const STAGE_1_MESSAGES = [
   "Preparing your file for analysis...",
 ];
 
-// Stage 2 — DS-160-specific, shown once the document is confirmed usable
 const STAGE_2_MESSAGES = [
   "Reviewing your application details...",
   "Understanding your travel plans...",
@@ -28,7 +26,6 @@ function AnalyzingState() {
   const [stage, setStage] = useState<1 | 2>(1);
   const [msgIndex, setMsgIndex] = useState(0);
 
-  // Transition from stage 1 → stage 2 after a fixed delay
   useEffect(() => {
     const timer = setTimeout(() => {
       setStage(2);
@@ -37,7 +34,6 @@ function AnalyzingState() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Advance message within the current stage
   useEffect(() => {
     const messages = stage === 1 ? STAGE_1_MESSAGES : STAGE_2_MESSAGES;
     const id = setInterval(() => {
@@ -130,6 +126,12 @@ interface Analysis {
   readyToExplain: ReadyToExplainItem[];
 }
 
+interface PremiumReport {
+  sections?: Section[];
+  crossSectionObservations?: CrossSectionObservation[];
+  readyToExplain?: ReadyToExplainItem[];
+}
+
 // ── Sub-components ───────────────────────────────────────────────────────────
 
 function Card({
@@ -160,20 +162,23 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 
-// v4 key — bumped when encouragement field was added to the schema
 const SESSION_KEY = "visaprep_analysis_v5";
 
-function readSaved(): { analysis: Analysis | null; fileName: string } {
+function readSaved(): { analysis: Analysis | null; fileName: string; analysisId: string | null } {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed?.analysis?.documentAssessment !== undefined) {
-        return { analysis: parsed.analysis, fileName: parsed.fileName ?? "" };
+        return {
+          analysis: parsed.analysis,
+          fileName: parsed.fileName ?? "",
+          analysisId: parsed.analysisId ?? null,
+        };
       }
     }
   } catch { /* ignore */ }
-  return { analysis: null, fileName: "" };
+  return { analysis: null, fileName: "", analysisId: null };
 }
 
 export default function HomeClient({ testMode = false }: { testMode?: boolean }) {
@@ -187,21 +192,93 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
   const [payError, setPayError] = useState("");
   const [paySubmitting, setPaySubmitting] = useState(false);
 
-  // Restore from sessionStorage after mount. Initial state is null so SSR and
-  // the first client render both show the upload page — no hydration mismatch.
+  // ── New: application-linked access state ──────────────────────────────────
+  const [analysisId, setAnalysisId] = useState<string | null>(null);
+  const [premiumReport, setPremiumReport] = useState<PremiumReport | null>(null);
+  const [premiumLoading, setPremiumLoading] = useState(false);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+
+  // ── New: Access My Preparation modal state ────────────────────────────────
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessStep, setAccessStep] = useState<"email" | "code">("email");
+  const [accessEmail, setAccessEmail] = useState("");
+  const [accessOtp, setAccessOtp] = useState("");
+  const [accessError, setAccessError] = useState("");
+  const [accessSubmitting, setAccessSubmitting] = useState(false);
+
+  // ── Restore session + saved analysis on mount ─────────────────────────────
   useEffect(() => {
+    // Restore sessionStorage
     const saved = readSaved();
     if (saved.analysis) {
       setAnalysis(saved.analysis);
       setFileName(saved.fileName);
+      setAnalysisId(saved.analysisId);
+    }
+
+    // Check for active session
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.authenticated && data.email) {
+          setSessionEmail(data.email);
+        }
+      })
+      .catch(() => {});
+
+    // Handle URL params
+    const params = new URLSearchParams(window.location.search);
+    const urlAnalysisId = params.get("analysisId");
+    const shouldPay = params.get("pay") === "1";
+    const shouldSignIn = params.get("signin") === "1";
+
+    if (shouldSignIn) {
+      setShowAccessModal(true);
+    }
+
+    // Load analysis by URL param (e.g. returning from my-preparations)
+    if (urlAnalysisId && urlAnalysisId !== saved.analysisId) {
+      fetch(`/api/analysis/${urlAnalysisId}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.freeReport) {
+            setAnalysis(data.freeReport as Analysis);
+            setAnalysisId(urlAnalysisId);
+            setFileName(`Application ${urlAnalysisId}`);
+            if (shouldPay) setShowPayment(true);
+          }
+        })
+        .catch(() => {});
     }
   }, []);
+
+  // ── Auto-fetch premium when analysisId + session are known ────────────────
+  useEffect(() => {
+    if (!analysisId || !sessionEmail) return;
+    let cancelled = false;
+    setPremiumLoading(true);
+    fetch(`/api/analysis/${analysisId}/premium`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled) return;
+        if (data?.premiumReport) {
+          setPremiumReport(data.premiumReport as PremiumReport);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setPremiumLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [analysisId, sessionEmail]);
 
   async function handleUpload(file: File) {
     setFileName(file.name);
     setPendingFile(null);
     setAnalyzing(true);
     setAnalysis(null);
+    setAnalysisId(null);
+    setPremiumReport(null);
     setError("");
     try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
 
@@ -221,11 +298,18 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
         return;
       }
 
+      const newAnalysisId: string | null = data.analysisId ?? null;
       setAnalysis(data.analysis);
+      setAnalysisId(newAnalysisId);
+
       try {
         sessionStorage.setItem(
           SESSION_KEY,
-          JSON.stringify({ analysis: data.analysis, fileName: file.name })
+          JSON.stringify({
+            analysis: data.analysis,
+            fileName: file.name,
+            analysisId: newAnalysisId,
+          })
         );
       } catch { /* ignore storage errors */ }
     } catch (err) {
@@ -247,11 +331,65 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
   const isInvalidDoc =
     analysis !== null && analysis.documentAssessment?.isLikelyDS160 === false;
 
+  // ── Access My Preparation modal handlers ──────────────────────────────────
+  async function handleRequestCode() {
+    const trimmed = accessEmail.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setAccessError("Please enter a valid email address.");
+      return;
+    }
+    setAccessError("");
+    setAccessSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/request-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setAccessError(data.error ?? "Could not send the sign-in code. Please try again.");
+      } else {
+        setAccessStep("code");
+      }
+    } catch {
+      setAccessError("Network error. Please check your connection and try again.");
+    } finally {
+      setAccessSubmitting(false);
+    }
+  }
+
+  async function handleVerifyCode() {
+    if (!/^\d{6}$/.test(accessOtp.trim())) {
+      setAccessError("Enter your 6-digit sign-in code.");
+      return;
+    }
+    setAccessError("");
+    setAccessSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/verify-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: accessEmail.trim(), code: accessOtp.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setAccessError(data.error ?? "Verification failed. Please try again.");
+      } else {
+        window.location.href = "/my-preparations";
+      }
+    } catch {
+      setAccessError("Network error. Please check your connection and try again.");
+    } finally {
+      setAccessSubmitting(false);
+    }
+  }
+
   return (
     <>
       {/* ── Fixed navigation bar ─────────────────────────────────────────── */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center h-16 sm:h-[68px] px-5 sm:px-10">
+        <div className="flex items-center justify-between h-16 sm:h-[68px] px-5 sm:px-10">
           <a
             href="/"
             onClick={(e) => {
@@ -262,6 +400,18 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
           >
             VisaPrep
           </a>
+          <button
+            onClick={() => {
+              setShowAccessModal(true);
+              setAccessStep("email");
+              setAccessError("");
+              setAccessEmail("");
+              setAccessOtp("");
+            }}
+            className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+          >
+            Access My Preparation
+          </button>
         </div>
       </header>
 
@@ -298,34 +448,20 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               <div className="border border-gray-200 rounded-3xl p-8 sm:p-10 text-center bg-white shadow-sm">
                 {!pendingFile ? (
                   <>
-                    {/* Call-to-action hierarchy */}
                     <p className="text-base font-semibold text-gray-900 mb-1.5">Upload your completed DS-160 (PDF only)</p>
                     <p className="text-sm text-gray-500 mb-5 leading-relaxed">
                       Receive your personalized Application Insights in minutes.
                     </p>
                     <label className="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-700 text-white px-8 py-3.5 rounded-lg text-sm font-semibold cursor-pointer transition-colors">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 opacity-70"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12V4m0 0L8 8m4-4l4 4" />
                       </svg>
                       Select DS-160 PDF
-                      <input
-                        type="file"
-                        accept=".pdf"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
+                      <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
                     </label>
                   </>
                 ) : (
                   <>
-                    {/* File selected */}
                     <div className="mb-5 flex items-center justify-center">
                       <label className="inline-flex items-center gap-2 text-sm cursor-pointer group">
                         <span className="text-green-500 shrink-0">✓</span>
@@ -339,14 +475,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                       className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white px-8 py-3.5 rounded-lg text-sm font-semibold transition-colors shadow-sm"
                     >
                       Analyze My DS-160
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 opacity-90"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                       </svg>
                     </button>
@@ -399,6 +528,13 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               />
             </label>
           </div>
+
+          {/* Application ID badge */}
+          {analysisId && (
+            <p className="text-xs text-gray-400 font-mono">
+              Application ID: {analysisId}
+            </p>
+          )}
 
           {/* ── Invalid document ──────────────────────────────────────────── */}
           {isInvalidDoc && (
@@ -476,7 +612,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
               )}
 
               {/* 5 — Application Highlights */}
-              {analysis.topPreparationAreas.length > 0 && (
+              {analysis.topPreparationAreas?.length > 0 && (
                 <Card>
                   <SectionHeading>Application Highlights</SectionHeading>
                   <p className="text-xs text-gray-400 mb-5 leading-relaxed">
@@ -498,27 +634,187 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                           <FieldLabel>Why this may come up</FieldLabel>
                           <p className="text-sm text-gray-700 leading-relaxed">{area.whyItMayComeUp}</p>
                         </div>
+                        <div className="mt-1">
+                          <FieldLabel>What to be ready to explain</FieldLabel>
+                          <p className="text-sm text-gray-700 leading-relaxed">{area.whatToBeReadyToExplain}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </Card>
               )}
 
-              {/* 6 — Premium Preparation CTA */}
-              <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
-                <p className="text-sm text-gray-700 leading-relaxed max-w-md">
-                  Your free Application Insights are a good start, but they cover only a part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply and prepare to explain it clearly and confidently during your interview.
-                </p>
-                <button
-                  onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
-                  className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
-                >
-                  Start My Personalized Interview Preparation
-                </button>
-                <p className="text-xs text-gray-400 italic">
-                  Your interview starts with your application. So do we.
-                </p>
-              </div>
+              {/* ── Premium content (unlocked after payment) ─────────────── */}
+              {premiumLoading && (
+                <div className="border border-gray-100 rounded-xl p-6 text-center">
+                  <p className="text-sm text-gray-400">Loading your full assessment…</p>
+                </div>
+              )}
+
+              {premiumReport && !premiumLoading && (
+                <>
+                  {/* Full Sections */}
+                  {premiumReport.sections && premiumReport.sections.length > 0 && (
+                    <Card>
+                      <SectionHeading>Full Application Assessment</SectionHeading>
+                      <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                        A section-by-section review of your DS-160 application.
+                      </p>
+                      <div className="space-y-8">
+                        {premiumReport.sections.map((section, i) => (
+                          <div key={i}>
+                            {i > 0 && <div className="border-t border-gray-100 mb-6" />}
+                            <div className="flex items-center gap-3 mb-3">
+                              <p className="font-semibold text-sm text-gray-900">{section.lesson}</p>
+                              <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                                {section.interviewWeight} Weight
+                              </span>
+                            </div>
+                            {section.keySignals?.length > 0 && (
+                              <div className="mb-3">
+                                <FieldLabel>Key signals</FieldLabel>
+                                <ul className="space-y-1">
+                                  {section.keySignals.map((sig, j) => (
+                                    <li key={j} className="text-xs text-gray-600 flex gap-2">
+                                      <span className="text-gray-300 shrink-0">—</span>
+                                      {sig}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {section.insights?.length > 0 && (
+                              <div className="space-y-4">
+                                {section.insights.map((insight, j) => (
+                                  <div key={j} className="space-y-2">
+                                    {j > 0 && <div className="border-t border-gray-50 mt-3" />}
+                                    <p className="text-sm text-gray-700 leading-relaxed">{insight.observation}</p>
+                                    {insight.whyItMatters && (
+                                      <div>
+                                        <FieldLabel>Why it matters</FieldLabel>
+                                        <p className="text-sm text-gray-700 leading-relaxed">{insight.whyItMatters}</p>
+                                      </div>
+                                    )}
+                                    {insight.preparationGuidance && (
+                                      <div>
+                                        <FieldLabel>Preparation guidance</FieldLabel>
+                                        <p className="text-sm text-gray-700 leading-relaxed">{insight.preparationGuidance}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Cross-section Observations */}
+                  {premiumReport.crossSectionObservations && premiumReport.crossSectionObservations.length > 0 && (
+                    <Card>
+                      <SectionHeading>Cross-Section Observations</SectionHeading>
+                      <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                        Important connections between different parts of your application.
+                      </p>
+                      <div className="space-y-6">
+                        {premiumReport.crossSectionObservations.map((obs, i) => (
+                          <div key={i}>
+                            {i > 0 && <div className="border-t border-gray-100 mt-4" />}
+                            <p className="font-semibold text-sm text-gray-900 mb-2">{obs.title}</p>
+                            <p className="text-sm text-gray-700 leading-relaxed mb-2">{obs.connection}</p>
+                            {obs.whyItMatters && (
+                              <div className="mt-1">
+                                <FieldLabel>Why this matters</FieldLabel>
+                                <p className="text-sm text-gray-700 leading-relaxed">{obs.whyItMatters}</p>
+                              </div>
+                            )}
+                            {obs.whatToReview && (
+                              <div className="mt-1">
+                                <FieldLabel>What to review</FieldLabel>
+                                <p className="text-sm text-gray-700 leading-relaxed">{obs.whatToReview}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Ready to Explain */}
+                  {premiumReport.readyToExplain && premiumReport.readyToExplain.length > 0 && (
+                    <Card>
+                      <SectionHeading>Areas to Be Ready to Explain</SectionHeading>
+                      <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                        Topics from your application that may naturally come up during your interview.
+                      </p>
+                      <div className="space-y-6">
+                        {premiumReport.readyToExplain.map((item, i) => (
+                          <div key={i}>
+                            {i > 0 && <div className="border-t border-gray-100 mt-4" />}
+                            <p className="font-semibold text-sm text-gray-900 mb-2">{item.topic}</p>
+                            {item.whyItMayComeUp && (
+                              <div className="mb-2">
+                                <FieldLabel>Why it may come up</FieldLabel>
+                                <p className="text-sm text-gray-700 leading-relaxed">{item.whyItMayComeUp}</p>
+                              </div>
+                            )}
+                            {item.whatToBeReadyToExplain && (
+                              <div className="mb-2">
+                                <FieldLabel>What to be ready to explain</FieldLabel>
+                                <p className="text-sm text-gray-700 leading-relaxed">{item.whatToBeReadyToExplain}</p>
+                              </div>
+                            )}
+                            {item.possibleQuestions?.length > 0 && (
+                              <div>
+                                <FieldLabel>Possible questions</FieldLabel>
+                                <ul className="space-y-1.5">
+                                  {item.possibleQuestions.map((q, j) => (
+                                    <li key={j} className="text-sm text-gray-600 flex gap-2">
+                                      <span className="text-gray-400 shrink-0 mt-0.5">›</span>
+                                      {q}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+
+                  {/* Premium confirmation notice */}
+                  <div className="border border-green-100 rounded-xl p-5 bg-green-50 text-center">
+                    <p className="text-sm text-green-700 font-medium mb-1">Full VisaPrep Assessment</p>
+                    <p className="text-xs text-green-600 leading-relaxed">
+                      Your premium access is linked to this application. A new or materially revised DS-160 requires a separate analysis and purchase.
+                    </p>
+                    {analysisId && (
+                      <p className="text-xs text-green-500 font-mono mt-2">{analysisId}</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* 6 — Premium Preparation CTA (only when premium not yet loaded) */}
+              {!premiumReport && !premiumLoading && (
+                <div className="border border-gray-200 rounded-xl p-6 bg-gray-50 flex flex-col items-center text-center gap-4">
+                  <p className="text-sm text-gray-700 leading-relaxed max-w-md">
+                    Your free Application Insights are a good start, but they cover only a part of your application. Continue with your full VisaPrep Assessment to understand your application more deeply and prepare to explain it clearly and confidently during your interview.
+                  </p>
+                  <button
+                    onClick={() => { setShowPayment(true); setPayError(""); setPayEmail(""); }}
+                    className="w-full sm:w-auto px-8 py-3 bg-gray-900 hover:bg-gray-700 active:bg-gray-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 shadow-sm"
+                  >
+                    Start My Personalized Interview Preparation
+                  </button>
+                  <p className="text-xs text-gray-400 italic">
+                    Your interview starts with your application. So do we.
+                  </p>
+                </div>
+              )}
             </>
           )}
 
@@ -532,7 +828,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                 className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl mx-0 sm:mx-4 max-w-sm w-full flex flex-col max-h-[92vh] sm:max-h-[90vh]"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Sticky top bar — always visible */}
+                {/* Sticky top bar */}
                 <div className="flex items-start justify-between px-6 pt-5 pb-3 shrink-0">
                   <div className="flex flex-col gap-1">
                     {testMode && (
@@ -557,8 +853,6 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
 
                 {/* Scrollable content */}
                 <div className="overflow-y-auto flex-1 px-6 pb-6 flex flex-col gap-5">
-
-                  {/* Supporting copy */}
                   <div className="flex flex-col gap-2">
                     <p className="text-sm text-gray-600 leading-relaxed">
                       Your free Application Insights have already given you valuable insight into what your application communicates.
@@ -568,12 +862,10 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     </p>
                   </div>
 
-                  {/* Bridge before checklist */}
                   <p className="text-sm text-gray-700 font-medium leading-relaxed">
                     Here&rsquo;s everything you&rsquo;ll unlock:
                   </p>
 
-                  {/* Benefits list */}
                   <ul className="flex flex-col gap-3">
                     {[
                       { label: "Comprehensive Application Assessment", detail: "Understand the strengths, connections, and interview implications across your full application." },
@@ -581,7 +873,7 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                       { label: "Areas You Should Be Ready to Explain", detail: "Understand what a consular officer may naturally want to explore further in your application." },
                       { label: "Personalized Interview Questions", detail: "Questions generated specifically from your own DS-160 — not a generic question bank." },
                       { label: "Personalized Preparation Roadmap", detail: "A clear plan showing what to review and understand before your interview." },
-                      { label: "AI Interview Practice", detail: "Practice realistic visa interview conversations based on your own application and receive personalized feedback after every session.", soon: true },
+                      { label: "AI Interview Practice", detail: "Practice realistic visa interview conversations based on your own application and receive personalised feedback after every session.", soon: true },
                     ].map(({ label, detail, soon }) => (
                       <li key={label} className="flex gap-3 items-start">
                         <span className="mt-0.5 text-green-500 shrink-0 text-sm">✓</span>
@@ -595,14 +887,16 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     ))}
                   </ul>
 
-                  {/* Divider */}
                   <div className="border-t border-gray-100" />
 
-                  {/* Price */}
                   <div className="flex items-baseline gap-2">
                     <p className="text-2xl font-bold text-gray-900">₦20,000</p>
                     <p className="text-sm text-gray-400">one-time</p>
                   </div>
+
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    Your purchase unlocks the complete preparation package for this application, permanent access to your saved materials, and five personalised interview-practice sessions available for 90 days.
+                  </p>
 
                   {/* Email field */}
                   <div className="flex flex-col gap-1">
@@ -633,13 +927,17 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                         setPayError("Please enter a valid email address.");
                         return;
                       }
+                      if (!analysisId) {
+                        setPayError("Your analysis session has expired. Please upload your DS-160 again.");
+                        return;
+                      }
                       setPayError("");
                       setPaySubmitting(true);
                       try {
                         const res = await fetch("/api/payment/initialize", {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email: trimmed }),
+                          body: JSON.stringify({ email: trimmed, analysisId }),
                         });
                         const data = await res.json();
                         if (!res.ok || data.error) {
@@ -647,7 +945,6 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                           setPaySubmitting(false);
                           return;
                         }
-                        // Redirect to Paystack hosted checkout
                         window.location.href = data.authorization_url;
                       } catch {
                         setPayError("Network error. Please check your connection and try again.");
@@ -659,7 +956,6 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                     {paySubmitting ? "Redirecting to payment…" : "Continue to Payment"}
                   </button>
 
-                  {/* Security note */}
                   <p className="text-xs text-gray-400 text-center leading-relaxed">
                     Payment is processed securely by Paystack. VisaPrep does not store your card details.
                   </p>
@@ -675,6 +971,106 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
         </div>
       )}
       </main>
+
+      {/* ── Access My Preparation Modal ───────────────────────────────────── */}
+      {showAccessModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => { if (!accessSubmitting) setShowAccessModal(false); }}
+        >
+          <div
+            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl mx-0 sm:mx-4 max-w-sm w-full flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between px-6 pt-5 pb-3">
+              <h2 className="text-base font-semibold text-gray-900 pr-4">
+                {accessStep === "email" ? "Access My Preparation" : "Enter your sign-in code"}
+              </h2>
+              {!accessSubmitting && (
+                <button
+                  onClick={() => setShowAccessModal(false)}
+                  className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="px-6 pb-6 flex flex-col gap-4">
+              {accessStep === "email" ? (
+                <>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Enter the email address you used when purchasing your preparation. We&apos;ll send you a sign-in code.
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="access-email" className="text-xs font-medium text-gray-700">
+                      Email address
+                    </label>
+                    <input
+                      id="access-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={accessEmail}
+                      onChange={(e) => { setAccessEmail(e.target.value); setAccessError(""); }}
+                      disabled={accessSubmitting}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleRequestCode(); }}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
+                    />
+                    {accessError && <p className="text-xs text-red-600">{accessError}</p>}
+                  </div>
+                  <button
+                    disabled={accessSubmitting}
+                    onClick={handleRequestCode}
+                    className="w-full py-3 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {accessSubmitting ? "Sending…" : "Send Sign-In Code"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    We sent a 6-digit code to <span className="font-medium text-gray-800">{accessEmail}</span>. Enter it below. The code expires in 15 minutes.
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="access-otp" className="text-xs font-medium text-gray-700">
+                      Sign-in code
+                    </label>
+                    <input
+                      id="access-otp"
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      placeholder="000000"
+                      value={accessOtp}
+                      onChange={(e) => { setAccessOtp(e.target.value.replace(/\D/g, "").slice(0, 6)); setAccessError(""); }}
+                      disabled={accessSubmitting}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleVerifyCode(); }}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-center font-mono tracking-widest text-gray-900 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
+                    />
+                    {accessError && <p className="text-xs text-red-600">{accessError}</p>}
+                  </div>
+                  <button
+                    disabled={accessSubmitting || accessOtp.length !== 6}
+                    onClick={handleVerifyCode}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {accessSubmitting ? "Verifying…" : "Verify & Access My Preparations"}
+                  </button>
+                  <button
+                    disabled={accessSubmitting}
+                    onClick={() => { setAccessStep("email"); setAccessOtp(""); setAccessError(""); }}
+                    className="text-xs text-gray-400 hover:text-gray-600 transition-colors text-center"
+                  >
+                    Use a different email
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { queryOne, query } from "@/lib/db";
+import { normalizeEmail } from "@/lib/access";
 
 // ── Constants — defined server-side only; never accepted from the client ──────
 const AMOUNT = 2_000_000; // NGN kobo (₦20,000)
@@ -10,6 +12,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const email: unknown = body?.email;
+    const analysisId: unknown = body?.analysisId;
 
     if (
       typeof email !== "string" ||
@@ -19,6 +22,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "A valid email address is required." },
         { status: 400 }
+      );
+    }
+
+    const normalisedEmail = normalizeEmail(email.trim());
+
+    // analysisId is required for application-linked payments
+    if (typeof analysisId !== "string" || !analysisId.trim()) {
+      return NextResponse.json(
+        { error: "Your analysis session has expired. Please upload your DS-160 again." },
+        { status: 400 }
+      );
+    }
+
+    // Verify the application exists and is not already paid
+    const app = await queryOne<{ analysis_id: string; premium_unlocked: boolean }>(
+      "SELECT analysis_id, premium_unlocked FROM applications WHERE analysis_id = $1",
+      [analysisId.trim()]
+    );
+
+    if (!app) {
+      return NextResponse.json(
+        { error: "Your analysis session has expired. Please upload your DS-160 again." },
+        { status: 404 }
+      );
+    }
+
+    if (app.premium_unlocked) {
+      return NextResponse.json(
+        { error: "This application is already paid. Use 'Access My Preparation' to continue." },
+        { status: 409 }
       );
     }
 
@@ -43,24 +76,33 @@ export async function POST(req: NextRequest) {
     const callbackUrl = `${origin}/payment/callback`;
 
     const payload = {
-      email: email.trim(),
+      email: normalisedEmail,
       amount: AMOUNT,
       currency: CURRENCY,
       reference,
       callback_url: callbackUrl,
       metadata: {
+        // Trusted metadata retrieved server-side on verify — not from browser
+        analysisId: analysisId.trim(),
+        paymentType: "premium_application",
+        email: normalisedEmail,
         custom_fields: [
           {
             display_name: "Product",
             variable_name: "product",
             value: PRODUCT,
           },
+          {
+            display_name: "Application ID",
+            variable_name: "analysis_id",
+            value: analysisId.trim(),
+          },
         ],
       },
     };
 
     console.log(
-      `[payment/initialize] Initializing transaction ref=${reference} callback=${callbackUrl}`
+      `[payment/initialize] Initializing transaction ref=${reference} analysisId=${analysisId.trim()} callback=${callbackUrl}`
     );
 
     const paystackRes = await fetch(
@@ -95,6 +137,25 @@ export async function POST(req: NextRequest) {
         { error: "Could not initialize payment. Please try again." },
         { status: 502 }
       );
+    }
+
+    // Record pending payment in DB (idempotent — reference is unique)
+    try {
+      const paymentId = `pay_${crypto.randomBytes(8).toString("hex")}`;
+      await query(
+        `INSERT INTO payments (payment_id, analysis_id, email, payment_type, paystack_reference, amount, currency, status)
+         VALUES ($1, $2, $3, 'premium_application', $4, $5, $6, 'pending')
+         ON CONFLICT (paystack_reference) DO NOTHING`,
+        [paymentId, analysisId.trim(), normalisedEmail, reference, AMOUNT, CURRENCY]
+      );
+
+      // Link email to application now so returning users can find it
+      await query(
+        `UPDATE applications SET email = COALESCE(email, $1), updated_at = NOW() WHERE analysis_id = $2`,
+        [normalisedEmail, analysisId.trim()]
+      );
+    } catch (dbErr) {
+      console.error("[payment/initialize] DB error (non-fatal):", dbErr);
     }
 
     console.log(`[payment/initialize] Transaction initialized ref=${reference}`);

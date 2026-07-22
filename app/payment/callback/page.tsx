@@ -1,91 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { verifyAndUnlockPayment } from "@/lib/payment";
+import { queryOne } from "@/lib/db";
+import { createSessionCookie, COOKIE_NAME, SESSION_DURATION_DAYS } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Payment — VisaPrep" };
 export const dynamic = "force-dynamic";
-
-// ── Constants — must match the initializer exactly ────────────────────────────
-const AMOUNT_KOBO = 2_000_000;
-const CURRENCY = "NGN";
-
-// ── Verification ──────────────────────────────────────────────────────────────
-
-type VerifyStatus =
-  | "success"
-  | "cancelled"
-  | "pending"
-  | "failed"
-  | "mismatch"
-  | "network"
-  | "no-reference";
-
-async function verifyTransaction(reference: string): Promise<VerifyStatus> {
-  const secretKey = process.env.PAYSTACK_SECRET_KEY;
-  if (!secretKey) {
-    console.error("[payment/callback] PAYSTACK_SECRET_KEY is not configured");
-    return "network";
-  }
-
-  try {
-    const res = await fetch(
-      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-      {
-        headers: { Authorization: `Bearer ${secretKey}` },
-        cache: "no-store",
-      }
-    );
-
-    if (!res.ok) {
-      console.error(
-        `[payment/callback] Paystack verify HTTP ${res.status} ref=${reference}`
-      );
-      return "network";
-    }
-
-    const json = await res.json();
-
-    if (!json.status || !json.data) {
-      console.error(
-        `[payment/callback] Unexpected Paystack response ref=${reference}`
-      );
-      return "network";
-    }
-
-    const tx = json.data as {
-      status: string;
-      amount: number;
-      currency: string;
-      reference: string;
-    };
-
-    if (tx.status === "abandoned") return "cancelled";
-    if (tx.status === "pending") return "pending";
-    if (tx.status !== "success") return "failed";
-
-    if (tx.amount !== AMOUNT_KOBO || tx.currency !== CURRENCY) {
-      console.error(
-        `[payment/callback] Amount/currency mismatch amount=${tx.amount} currency=${tx.currency} ref=${reference}`
-      );
-      return "mismatch";
-    }
-
-    if (tx.reference !== reference) {
-      console.error(
-        `[payment/callback] Reference mismatch expected=${reference} got=${tx.reference}`
-      );
-      return "mismatch";
-    }
-
-    console.log(`[payment/callback] Payment verified successfully ref=${reference}`);
-    return "success";
-  } catch (err) {
-    console.error(
-      "[payment/callback] Network error:",
-      err instanceof Error ? err.message : String(err)
-    );
-    return "network";
-  }
-}
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
 
@@ -109,11 +30,22 @@ function Card({ children }: { children: React.ReactNode }) {
   );
 }
 
-function HomeButton({ label = "Back to VisaPrep" }: { label?: string }) {
+function HomeButton({ label = "Back to VisaPrep", href = "/" }: { label?: string; href?: string }) {
   return (
     <Link
-      href="/"
+      href={href}
       className="inline-block px-6 py-2.5 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150"
+    >
+      {label}
+    </Link>
+  );
+}
+
+function GreenButton({ label, href }: { label: string; href: string }) {
+  return (
+    <Link
+      href={href}
+      className="inline-block px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-xl transition-colors duration-150"
     >
       {label}
     </Link>
@@ -146,39 +78,76 @@ export default async function PaymentCallbackPage({
     );
   }
 
-  const result = await verifyTransaction(reference);
+  // ── Server-side verify + unlock ───────────────────────────────────────────
+  const result = await verifyAndUnlockPayment(reference);
 
-  // ── Success ──────────────────────────────────────────────────────────────
+  // ── Success ───────────────────────────────────────────────────────────────
+  if (result.status === "success" || result.status === "already_processed") {
+    // Set session cookie so the user can access their preparation immediately
+    let sessionEmail = "";
+    try {
+      const payRow = await queryOne<{ email: string }>(
+        "SELECT email FROM payments WHERE paystack_reference = $1 LIMIT 1",
+        [reference]
+      );
+      if (payRow?.email) {
+        sessionEmail = payRow.email;
+        const token = await createSessionCookie(sessionEmail);
+        const cookieStore = await cookies();
+        cookieStore.set(COOKIE_NAME, token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
+          path: "/",
+        });
+      }
+    } catch (e) {
+      console.error("[callback] Could not set session cookie:", e);
+    }
 
-  if (result === "success") {
+    const alreadyDone = result.status === "already_processed";
+    const isPremium = result.paymentType === "premium_application";
+
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-white">
         <Card>
           <TestModeBadge />
           <div className="text-4xl">✅</div>
-          <h1 className="text-xl font-semibold text-gray-900">Payment confirmed</h1>
+          <h1 className="text-xl font-semibold text-gray-900">
+            {alreadyDone ? "Payment already confirmed" : "Payment confirmed"}
+          </h1>
           <p className="text-sm text-gray-700 leading-relaxed">
-            Your payment has been confirmed. Your VisaPrep Full Assessment will
-            be prepared from your application.
+            {isPremium
+              ? "Your purchase unlocks the complete preparation package for this application, permanent access to your saved materials, and five personalised interview-practice sessions available for 90 days."
+              : "Your 30-day Practice Extension has been added — three additional personalised interview-practice sessions are now available for this application."}
           </p>
-          <div className="border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-sm text-gray-500">
-            <span className="font-medium text-gray-700">Full Assessment access</span>
-            <span className="ml-2 inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
-              Coming soon
-            </span>
-            <p className="mt-1 text-xs text-gray-400 leading-relaxed">
-              We will notify you as soon as your assessment is ready.
-            </p>
+
+          {result.analysisId && (
+            <div className="border border-gray-100 rounded-xl px-4 py-3 bg-gray-50 text-left">
+              <p className="text-xs text-gray-500 mb-0.5">Application ID</p>
+              <p className="text-sm font-mono font-medium text-gray-800">{result.analysisId}</p>
+              <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+                Keep this ID. Your premium access is permanently linked to this application.
+              </p>
+            </div>
+          )}
+
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Your premium access is linked to this application. A new or materially revised DS-160 requires a separate analysis and purchase.
+          </p>
+
+          <div className="flex flex-col gap-3">
+            <GreenButton label="Access My Preparation" href="/my-preparations" />
+            <HomeButton label="Back to VisaPrep" href="/" />
           </div>
-          <HomeButton label="Back to VisaPrep" />
         </Card>
       </main>
     );
   }
 
   // ── Cancelled ─────────────────────────────────────────────────────────────
-
-  if (result === "cancelled") {
+  if (result.status === "cancelled") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-white">
         <Card>
@@ -196,8 +165,7 @@ export default async function PaymentCallbackPage({
   }
 
   // ── Pending ───────────────────────────────────────────────────────────────
-
-  if (result === "pending") {
+  if (result.status === "pending") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-white">
         <Card>
@@ -215,8 +183,7 @@ export default async function PaymentCallbackPage({
   }
 
   // ── Failed ────────────────────────────────────────────────────────────────
-
-  if (result === "failed") {
+  if (result.status === "failed") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-white">
         <Card>
@@ -234,8 +201,7 @@ export default async function PaymentCallbackPage({
   }
 
   // ── Mismatch (security) ───────────────────────────────────────────────────
-
-  if (result === "mismatch") {
+  if (result.status === "mismatch") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-white">
         <Card>
@@ -254,7 +220,6 @@ export default async function PaymentCallbackPage({
   }
 
   // ── Network / default error ───────────────────────────────────────────────
-
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-white">
       <Card>

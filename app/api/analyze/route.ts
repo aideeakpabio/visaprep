@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { extractTextFromPDF } from "@/lib/pdf";
+import { query, queryOne } from "@/lib/db";
 import OpenAI from "openai";
+import crypto from "crypto";
 
 const SYSTEM_PROMPT = `You are the Application Intelligence Engine™, built by VisaPrep and governed by the Application Intelligence Manual (AIM).
 
@@ -1301,9 +1303,56 @@ export async function POST(request: Request) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { sections, crossSectionObservations, readyToExplain, ...freeAnalysis } = fullAnalysis;
 
+    // ── Persist analysis to DB and generate a permanent analysisId ────────────
+    // Fingerprint: HMAC-SHA256 of normalised text so re-uploads of the same DS-160
+    // return the same analysisId without storing the raw document.
+    const normalizedText = extracted.text.toLowerCase().replace(/\s+/g, " ").trim();
+    const fingerprint = crypto
+      .createHmac("sha256", process.env.SESSION_SECRET ?? "visaprep-dev-salt")
+      .update(normalizedText)
+      .digest("hex");
+
+    let analysisId = "";
+    try {
+      const existingRow = await queryOne<{ analysis_id: string }>(
+        "SELECT analysis_id FROM applications WHERE fingerprint = $1",
+        [fingerprint]
+      );
+
+      if (existingRow) {
+        analysisId = existingRow.analysis_id;
+        // Refresh the stored reports in case the model has improved
+        await query(
+          `UPDATE applications SET free_report = $1, premium_report = $2, applicant_first_name = $3, updated_at = NOW() WHERE analysis_id = $4`,
+          [JSON.stringify(freeAnalysis), JSON.stringify(fullAnalysis), (fullAnalysis as Record<string, unknown>).firstName ?? null, analysisId]
+        );
+      } else {
+        const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        const randomPart = Array.from(crypto.randomBytes(6))
+          .map((b) => CHARS[b % CHARS.length])
+          .join("");
+        analysisId = `VP-${datePart}-${randomPart}`;
+        await query(
+          `INSERT INTO applications (analysis_id, fingerprint, applicant_first_name, free_report, premium_report) VALUES ($1, $2, $3, $4, $5)`,
+          [
+            analysisId,
+            fingerprint,
+            (fullAnalysis as Record<string, unknown>).firstName ?? null,
+            JSON.stringify(freeAnalysis),
+            JSON.stringify(fullAnalysis),
+          ]
+        );
+      }
+    } catch (dbErr) {
+      // DB errors must not break the free analysis response
+      console.error("[analyze] DB error (non-fatal):", dbErr);
+    }
+
     return NextResponse.json({
       pages: extracted.pages,
       analysis: freeAnalysis,
+      analysisId,
       model: completion.model,
       usage: completion.usage,
     });
