@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, PoolClient } from "pg";
 
 // Singleton connection pool — reused across hot-reload in dev
 const globalForPg = globalThis as unknown as { _pgPool?: Pool };

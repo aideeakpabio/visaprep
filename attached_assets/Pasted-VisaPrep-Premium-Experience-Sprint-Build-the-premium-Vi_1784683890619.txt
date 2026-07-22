@@ -1,0 +1,749 @@
+VisaPrep Premium Experience Sprint
+
+Build the premium VisaPrep experience as a personalized preparation workspace for one paid DS-160 application.
+
+The premium experience must not feel like a long report or a wall of text.
+
+It should feel like a calm, supportive, guided coaching journey that helps the applicant understand:
+
+what their application communicates;
+how different sections connect;
+why certain questions or follow-up questions may arise;
+how to explain their own circumstances with greater clarity and confidence.
+
+The user already knows most of the facts in their application.
+
+VisaPrep’s job is not to reteach those facts or provide scripts.
+
+VisaPrep’s job is to help the user understand the meaning, relationships, and interview relevance of those facts.
+
+The core product philosophy is:
+
+Understanding before memorization.
+Familiarity before rehearsal.
+Preparation, not prediction.
+
+1. Emotional design principle
+
+The premium experience must actively manage how the user feels.
+
+A user should never feel:
+
+overwhelmed;
+frightened by the number of questions;
+as though every highlighted area is a problem;
+as though every practice question will be asked;
+pressured to memorize prepared answers;
+judged or predicted.
+
+The experience should repeatedly reassure the user that:
+
+not every possible question will be asked;
+highlighted areas are not necessarily weaknesses;
+the goal is understanding, not memorization;
+questions may be phrased differently;
+confidence comes from understanding their own application;
+their application details are already familiar to them;
+VisaPrep is helping them see what those details communicate and how they connect.
+
+These reassurances should appear naturally throughout the journey, not only once at the beginning.
+
+2. Premium experience structure
+
+Build the premium journey in this order:
+
+Personalized welcome
+Complete Application Assessment
+Application Connections
+Areas to Be Ready to Explain
+Personalized Interview Question Bank
+Readiness Check
+AI Interview Practice
+Preparation Progress
+Encouraging completion state
+
+Do not display all sections as one continuous wall of content.
+
+Use:
+
+clearly separated cards;
+short introductions;
+collapsible sections where appropriate;
+progressive disclosure;
+visible progress;
+frequent reassurance;
+generous spacing;
+concise paragraphs;
+“Continue” actions between major stages.
+
+The user should feel guided from one step to the next.
+
+3. Personalized welcome
+
+The premium experience should begin with:
+
+Heading
+
+Welcome to Your Personalized Interview Preparation
+
+Supporting copy
+
+Your preparation is based on the application you submitted. We’ll help you understand what it communicates, how the important parts connect, and what you should be ready to explain clearly.
+
+Then include a personalized encouragement using the applicant’s first name when available.
+
+Example:
+
+Michael, you already know the facts in your application.
+Our job is to help you understand what those facts may communicate during your interview, so you can explain your own circumstances naturally and confidently.
+
+Include a compact overview showing:
+
+visa category;
+application date;
+premium status;
+practice sessions remaining;
+practice expiry date.
+
+Do not expose sensitive details unnecessarily.
+
+4. First reassurance block
+
+Before the user sees the detailed assessment, display a calm reassurance card.
+
+Heading
+
+Don’t feel overwhelmed
+
+Copy
+
+You are unlikely to be asked every question in this preparation guide. The purpose of this assessment is not to make you memorize answers. It is to help you understand why certain questions and follow-up questions may arise, and how the different parts of your application connect.
+
+Once you understand your own application clearly, you will be better prepared to answer questions naturally, even when they are phrased differently.
+
+This reassurance should be visually distinct from analytical content.
+
+Use a supportive icon and soft presentation.
+
+It must not look like a warning.
+
+5. Complete Application Assessment
+
+Build a deeper premium assessment based on the paid application.
+
+Each major area should follow this structure:
+
+{
+  title: string;
+  observation: string;
+  whatThisCommunicates: string;
+  howItConnects: string;
+  whyItMayComeUp: string;
+  whatToBeReadyToExplain: string;
+  encouragement?: string;
+}
+Observation
+
+State the relevant fact or pattern in the application.
+
+What this communicates
+
+Explain what the detail may communicate about the applicant’s circumstances, travel plans, background, or intentions.
+
+Do not make approval predictions.
+
+How it connects
+
+Explain how this part relates to another section of the application.
+
+Examples:
+
+employment and trip funding;
+education and proposed field of study;
+previous refusal and changed circumstances;
+conference purpose and professional background;
+trip duration and stated activities;
+family circumstances and return plans.
+
+This relationship layer is essential.
+
+Why it may come up
+
+Explain why an interviewer may naturally ask about it or ask a follow-up question.
+
+What to be ready to explain
+
+Provide preparation guidance focused on:
+
+knowing dates;
+understanding relationships;
+explaining changes;
+being consistent;
+communicating naturally;
+answering honestly and directly.
+
+Do not provide scripts or ideal answers.
+
+Encouragement
+
+Where appropriate, end the section with a short reassurance such as:
+
+You do not need a perfect speech. You only need to understand this part of your application well enough to explain it clearly in your own words.
+
+6. Application Connections
+
+Create a dedicated section titled:
+
+How Your Application Connects
+
+This should become a signature VisaPrep feature.
+
+Its purpose is to show the applicant that their DS-160 is not a collection of unrelated answers.
+
+Use a visual or card-based relationship map.
+
+Examples:
+
+Professional Background
+        ↓
+Purpose of Travel
+        ↓
+Conference Relevance
+        ↓
+Trip Funding
+        ↓
+Return to Employment
+
+Or:
+
+Previous Refusal
+        ↓
+Changed Circumstances
+        ↓
+Current Employment
+        ↓
+Travel Purpose
+        ↓
+Return Plans
+
+Each connection should include:
+
+the two or more related sections;
+what the relationship communicates;
+why the relationship may lead to follow-up questions;
+what the applicant should understand.
+
+Do not claim these questions will definitely be asked.
+
+Use phrases such as:
+
+“may naturally lead to”;
+“could provide context for”;
+“may help an interviewer understand”;
+“is worth being familiar with.”
+7. Reassurance after Application Connections
+
+Add another encouragement block:
+
+Heading
+
+You don’t need to memorize the connections
+
+Copy
+
+These connections are already part of your real circumstances. VisaPrep is simply helping you see them more clearly.
+
+When you understand how your travel purpose, work, finances, education, family, and previous travel fit together, it becomes easier to answer follow-up questions without sounding rehearsed.
+
+This section should reduce anxiety before the next detailed stage.
+
+8. Areas to Be Ready to Explain
+
+Title:
+
+Areas You Should Be Ready to Explain
+
+Immediately under the heading, include:
+
+This is not a list of problems.
+
+Then:
+
+These are parts of your application that may deserve extra attention because they provide useful context or may naturally lead to follow-up questions. Being familiar with them will help you explain your circumstances with greater clarity.
+
+Each area should include:
+
+the application detail;
+what it communicates;
+why clarification may be useful;
+what the user should understand;
+a short preparation action.
+
+Example preparation actions:
+
+Review the exact dates involved.
+Be clear about what changed since your previous application.
+Understand how the trip relates to your current work.
+Be familiar with how the trip will be funded.
+Be ready to explain the relationship between your previous course and proposed course.
+
+Do not use fear-based language such as:
+
+red flag;
+danger;
+likely refusal;
+suspicious;
+weak case;
+high risk.
+9. Personalized Interview Question Bank
+
+Generate a structured question bank based only on the specific application.
+
+Group questions by category, such as:
+
+Purpose of travel
+Employment
+Education
+Funding
+Travel plans
+Family and home circumstances
+Previous travel
+Previous refusal
+Application connections
+Follow-up questions
+
+Do not simply generate 40–60 questions as one list.
+
+Use collapsible categories with a visible question count.
+
+Before the question bank, display:
+
+Heading
+
+These questions are for preparation, not prediction
+
+Copy
+
+You are unlikely to be asked all of these questions. They are included to help you become comfortable discussing the important parts of your own application.
+
+Focus on understanding why each question could arise. Do not memorize fixed answers. Questions may be shorter, longer, or phrased differently during a real interview.
+
+For each question, include:
+
+{
+  question: string;
+  basedOn: string;
+  whyThisMayBeAsked: string;
+  whatTheInterviewerMayBeTryingToUnderstand: string;
+  relatedApplicationSections: string[];
+  readinessStatus?: "not_reviewed" | "ready" | "needs_review";
+}
+
+The user should be able to mark:
+
+Ready
+Needs Review
+Review Later
+
+Do not require AI generation when merely changing readiness status.
+
+Persist readiness status.
+
+10. Encouragement within the question bank
+
+Insert short encouragement after every several question groups.
+
+Examples:
+
+You are not expected to sound rehearsed.
+Clear, direct, honest answers are more valuable than memorized speeches.
+
+Take your time.
+The purpose of these questions is to make your own application feel more familiar—not to create anxiety.
+
+You already know the facts.
+Focus now on understanding what those facts communicate and how to explain them simply.
+
+Not every follow-up question means something is wrong.
+Interviewers often ask follow-up questions simply to understand context more clearly.
+
+Do not show the exact same encouragement repeatedly.
+
+Rotate appropriate messages based on the section.
+
+11. Readiness Check
+
+Create a section titled:
+
+How Ready Do You Feel?
+
+This must not be a visa approval score.
+
+Do not calculate or display:
+
+approval probability;
+refusal probability;
+visa chances;
+risk percentage;
+case strength score.
+
+Instead, assess preparation confidence across topics:
+
+Purpose of travel — Ready
+Employment — Needs review
+Funding — Ready
+Previous refusal — Needs review
+Application connections — Not reviewed
+
+Explain:
+
+This is a preparation check, not an assessment of your chances. It helps you identify where to focus your remaining preparation time.
+
+Allow the user to revisit any section directly.
+
+12. AI Interview Practice introduction
+
+Before a practice session begins, display:
+
+Heading
+
+You’re ready to practice
+
+Copy
+
+No real interview follows a perfect script, and neither does this practice session.
+
+You may be asked questions based on your application and follow-up questions based on your responses. The goal is not to give a perfect answer. The goal is to become more comfortable explaining your own circumstances clearly, honestly, and confidently.
+
+Also show:
+
+sessions remaining;
+access expiry date;
+expected session length;
+saved progress information.
+
+Use:
+
+Starting a new practice session will use one of your available sessions.
+
+Do not deduct a session until the server successfully creates and starts the session.
+
+13. Practice feedback style
+
+After each answer, feedback must be constructive and emotionally safe.
+
+Use this structure:
+
+{
+  whatWasClear: string;
+  whatCouldBeClearer: string;
+  connectionToApplication: string;
+  followUpReason: string;
+  practicalPreparationTip: string;
+  encouragement: string;
+}
+
+Feedback should focus on:
+
+clarity;
+consistency;
+relevance;
+completeness;
+connection to the DS-160;
+whether the answer directly addressed the question.
+
+Do not coach deception.
+
+Do not recommend hiding information.
+
+Do not write a perfect scripted answer for the user to memorize.
+
+Where an example is necessary, label it as a structure or approach, not a script.
+
+For example:
+
+A clearer structure would be: state the purpose directly, briefly explain why it relates to your work, and confirm the planned duration.
+
+Do not say:
+
+Say exactly this: …
+
+14. Progress dashboard
+
+Create a premium progress view showing:
+
+Application reviewed
+Application connections explored
+Preparation areas reviewed
+Question groups reviewed
+Readiness areas completed
+Practice sessions completed
+Practice sessions remaining
+
+Use a calm progress indicator.
+
+Do not make incomplete sections feel like failure.
+
+Use language such as:
+
+Not started
+In progress
+Reviewed
+Ready to revisit
+
+Avoid:
+
+Failed
+Weak
+Poor
+Inadequate
+15. Final encouragement
+
+At the end of the preparation journey, display:
+
+Heading
+
+You’re better prepared than when you started
+
+Copy
+
+Your application has not changed—but your understanding of it has.
+
+You now have a clearer view of what your application communicates, how its important sections connect, and why certain questions or follow-up questions may arise.
+
+You do not need to memorize every question. Focus on understanding your own circumstances and explaining them clearly in your own words.
+
+Final line:
+
+Walk into your interview prepared to communicate with clarity and confidence.
+
+Do not make any promise of visa approval.
+
+16. Content-density rules
+
+Avoid long uninterrupted text.
+
+Apply these rules throughout:
+
+paragraphs should usually be no more than 2–3 sentences;
+use one main idea per card;
+break long assessment sections into smaller units;
+use accordions for deeper explanations;
+show summaries before details;
+use “Why this matters” and “How to prepare” labels;
+allow users to continue without opening every accordion;
+preserve reading progress;
+include encouragement between analytical sections;
+keep the primary action visible;
+use generous vertical spacing;
+optimize fully for mobile.
+
+Do not reduce substance merely to make the page shorter.
+
+Use progressive disclosure to preserve depth without overwhelming the user.
+
+17. Encouragement content system
+
+Create a reusable encouragement component.
+
+Example data structure:
+
+type EncouragementContext =
+  | "welcome"
+  | "before_assessment"
+  | "after_assessment"
+  | "before_connections"
+  | "after_connections"
+  | "before_questions"
+  | "during_questions"
+  | "before_practice"
+  | "after_practice"
+  | "completion";
+
+Each context should have several approved messages so the experience does not feel repetitive.
+
+Encouragement should be:
+
+calm;
+respectful;
+specific;
+truthful;
+brief;
+non-predictive;
+non-patronizing.
+
+Do not use empty motivational language such as:
+
+You’ve got this!
+Success is guaranteed.
+Believe and you will achieve.
+Your visa is within reach.
+
+Encouragement must remain grounded in preparation.
+
+18. Core language to preserve
+
+Use these ideas consistently throughout the product:
+
+Understand, don’t memorize.
+
+Confidence comes from understanding, not memorization.
+
+You already know the facts in your application. VisaPrep helps you understand what they communicate.
+
+These questions are for preparation, not prediction.
+
+Not every question will be asked.
+
+Follow-up questions often help provide context; they do not automatically mean something is wrong.
+
+Your interview starts with your application. So do we.
+
+Do not over-repeat any one phrase.
+
+19. AI-generation requirements
+
+Update or extend the premium generation schema so the AI produces:
+
+deep assessment areas;
+cross-section relationships;
+personalized preparation guidance;
+categorized interview questions;
+reasons for questions;
+interviewer-understanding objectives;
+readiness topics;
+practice follow-up logic;
+supportive transitions.
+
+The AI must remain grounded only in the uploaded application.
+
+It must not:
+
+invent missing facts;
+predict outcomes;
+label legal eligibility;
+recommend deceptive answers;
+create fear;
+treat every unusual detail as a problem;
+assume every generated question will be asked.
+
+Save generated premium content persistently.
+
+Do not regenerate it every time the user opens the premium workspace.
+
+20. Preserve existing architecture
+
+Do not change:
+
+Application Insights architecture;
+free versus paid boundary;
+₦20,000 premium price;
+five-session initial practice allowance;
+90-day active practice period;
+₦5,000 extension;
+three-session extension allowance;
+Paystack;
+application-linked entitlement model;
+email retrieval model;
+AI Constitution;
+current homepage;
+current brand colors and visual language.
+
+This sprint should build the actual premium user experience on top of the application-linked access infrastructure.
+
+21. Development sequence
+
+Implement in this order:
+
+Phase 1
+
+Create the premium workspace shell and navigation using mock premium data.
+
+Phase 2
+
+Build all sections, transitions, encouragement components, progress tracking, responsive layout, and saved readiness states.
+
+Phase 3
+
+Connect the workspace to the actual saved premium application record.
+
+Phase 4
+
+Connect premium AI output to the new schema.
+
+Phase 5
+
+Connect personalized question bank and practice-session access.
+
+Phase 6
+
+Test with all benchmark applicants.
+
+Do not generate fresh AI content repeatedly during UI development.
+
+Use fixtures or mock data until integration testing.
+
+22. Required prototype review
+
+Before finalizing the AI prompt or production generation logic, build the complete premium experience with realistic mock data for:
+
+Michael;
+Grace;
+one applicant with a previous refusal;
+one applicant with limited application complexity.
+
+The product owner must be able to review:
+
+the welcome;
+emotional tone;
+assessment depth;
+application connections;
+reassurance placement;
+question-bank structure;
+readiness check;
+practice introduction;
+progress dashboard;
+completion state.
+
+Do not proceed directly from requirements to final production AI integration without this visual review stage.
+
+23. Validation criteria
+
+Confirm that:
+
+the user never sees a single overwhelming report page;
+encouragement appears throughout the journey;
+reassurance appears before high-density sections;
+the experience explains that not every question will be asked;
+the experience discourages memorization;
+application relationships are clearly explained;
+questions explain why they may arise;
+users can mark readiness without consuming AI credits;
+saved premium content loads without regeneration;
+mobile layout remains calm and readable;
+premium access applies only to the correct application;
+no approval prediction appears anywhere;
+no content implies that a highlighted area is automatically a problem.
+Completion report
+
+After implementation, provide:
+
+premium workspace structure;
+screenshots of every major stage;
+encouragement component and message library;
+content-density and progressive-disclosure decisions;
+premium AI schema;
+application-connections logic;
+question-bank structure;
+readiness-state persistence;
+practice integration;
+benchmark results;
+mobile validation;
+TypeScript result;
+production build result;
+commit hash and push confirmation.
+Success criterion
+
+A paying user should not feel that they purchased a longer report.
+
+They should feel that VisaPrep has taken their own application, helped them understand what it communicates, shown them how its important parts connect, prepared them for likely areas of discussion, and guided them calmly toward greater clarity and confidence.
