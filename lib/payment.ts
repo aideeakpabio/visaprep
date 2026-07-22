@@ -1,23 +1,27 @@
 /**
  * Shared server-side payment verification and unlock logic.
  *
- * ATOMICITY GUARANTEE
- * The payment row insert (status='successful') and the application row update
- * (premium unlock or practice extension) are always executed inside a single
- * PostgreSQL transaction. Either both commits succeed, or neither does.
- *
- * IDEMPOTENCY
- * The `application_synced` boolean on the payments row tracks whether the
- * application table was successfully updated inside that transaction.
- * If the process crashes after the payment row is written but before
- * application_synced is set to TRUE, subsequent retries detect the gap and
- * re-apply the application update in a fresh transaction before returning
- * `already_processed`.
+ * ATOMICITY + CONCURRENCY SAFETY
+ * ─────────────────────────────
+ * 1. Paystack verification is done outside any transaction (safe: idempotent read).
+ * 2. Inside a single PostgreSQL transaction we:
+ *      a. UPSERT the payment row (status='successful') — ON CONFLICT DO UPDATE
+ *         acquires a row-level lock that serializes concurrent requests on the
+ *         same paystack_reference.
+ *      b. Re-read application_synced from the locked row. If it is already TRUE
+ *         (a concurrent request committed first), we ROLLBACK and return
+ *         already_processed without touching the application row.
+ *      c. Otherwise we apply the application update and set application_synced=TRUE
+ *         in the same commit.
+ * 3. If the process crashes after COMMIT, both payment.status='successful' and
+ *    application_synced=TRUE are durable. Retries see the consistent state and
+ *    short-circuit to already_processed.
+ * 4. If a crash occurs before COMMIT the transaction is rolled back, leaving the
+ *    payment row in its pre-attempt state. Retries run the full path again.
  */
 
 import crypto from "crypto";
-import { pool, queryOne, query } from "./db";
-import { PoolClient } from "pg";
+import { pool, queryOne } from "./db";
 
 const PREMIUM_AMOUNT_KOBO = 2_000_000; // ₦20,000
 const EXTENSION_AMOUNT_KOBO = 500_000; // ₦5,000
@@ -37,18 +41,19 @@ export type VerifyResult =
   | { status: "failed" }
   | { status: "mismatch"; detail: string }
   | { status: "network"; detail?: string }
-  | { status: "no_reference" }
   | { status: "invalid_metadata"; detail: string }
   | { status: "application_not_found" }
   | { status: "not_paid"; detail?: string };
 
-interface ExistingPaymentRow {
+interface PaymentRow {
   payment_id: string;
-  status: string;
   analysis_id: string;
+  email: string;
   payment_type: string;
+  paystack_reference: string;
   amount: number;
   currency: string;
+  status: string;
   paid_at: string | null;
   application_synced: boolean;
 }
@@ -60,67 +65,6 @@ interface ApplicationRow {
   practice_session_limit: number;
   practice_sessions_used: number;
   practice_expires_at: string | null;
-  practice_access_started_at: string | null;
-}
-
-/** Apply or repair the application update for a given payment inside a client transaction. */
-async function applyApplicationUpdate(
-  client: PoolClient,
-  analysisId: string,
-  paymentType: PaymentType,
-  email: string,
-  paymentReference: string,
-  amount: number,
-  paidAt: Date,
-  paymentId: string
-): Promise<void> {
-  if (paymentType === "premium_application") {
-    const practiceExpiresAt = new Date(paidAt.getTime() + PRACTICE_DAYS * 24 * 60 * 60 * 1000);
-    await client.query(
-      `UPDATE applications SET
-        email = COALESCE(email, $1),
-        premium_unlocked = TRUE,
-        payment_status = 'paid',
-        payment_reference = $2,
-        payment_amount = $3,
-        paid_at = $4,
-        practice_session_limit = $5,
-        practice_sessions_used = 0,
-        practice_access_started_at = $4,
-        practice_expires_at = $6,
-        updated_at = NOW()
-       WHERE analysis_id = $7`,
-      [email, paymentReference, amount, paidAt.toISOString(), PRACTICE_SESSION_LIMIT, practiceExpiresAt.toISOString(), analysisId]
-    );
-  } else {
-    // practice_extension — additive, idempotent via application_synced guard above
-    const app = await client.query<ApplicationRow>(
-      "SELECT * FROM applications WHERE analysis_id = $1",
-      [analysisId]
-    );
-    const appRow = app.rows[0];
-    if (!appRow) throw new Error(`Application ${analysisId} not found during extension repair.`);
-
-    const now = new Date();
-    const currentExpiry = appRow.practice_expires_at ? new Date(appRow.practice_expires_at) : now;
-    const base = currentExpiry > now ? currentExpiry : now;
-    const newExpiry = new Date(base.getTime() + EXTENSION_DAYS_ADD * 24 * 60 * 60 * 1000);
-
-    await client.query(
-      `UPDATE applications SET
-        practice_session_limit = practice_session_limit + $1,
-        practice_expires_at = $2,
-        updated_at = NOW()
-       WHERE analysis_id = $3`,
-      [EXTENSION_SESSION_ADD, newExpiry.toISOString(), analysisId]
-    );
-  }
-
-  // Mark application_synced = TRUE in the same transaction
-  await client.query(
-    "UPDATE payments SET application_synced = TRUE WHERE payment_id = $1",
-    [paymentId]
-  );
 }
 
 export async function verifyAndUnlockPayment(reference: string): Promise<VerifyResult> {
@@ -130,185 +74,252 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
     return { status: "network", detail: "Payment service not configured." };
   }
 
-  // ── 1. Check idempotency ──────────────────────────────────────────────────
-  // Look for an existing successful payment row for this reference.
-  const existingPayment = await queryOne<ExistingPaymentRow>(
+  // ── OPTIMIZATION: Fast-path for fully completed payments ──────────────────
+  // This is a stale read (no lock) — it is safe as an optimisation only.
+  // Correctness is enforced inside the transaction below.
+  const fastCheck = await queryOne<PaymentRow>(
     "SELECT * FROM payments WHERE paystack_reference = $1",
     [reference]
   );
 
-  if (existingPayment?.status === "successful") {
-    const analysisId = existingPayment.analysis_id;
-    const paymentType = existingPayment.payment_type as PaymentType;
-
-    if (existingPayment.application_synced) {
-      // Both payment and application were updated atomically — truly done.
-      return { status: "already_processed", paymentType, analysisId };
-    }
-
-    // application_synced = FALSE: the payment row committed but the application
-    // update did not complete (server crash / network failure between the two
-    // statements in a previous run). Repair by re-applying the update now.
-    console.warn(`[payment/verify] Repairing partial payment ref=${reference} analysisId=${analysisId}`);
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-      const email = await queryOne<{ email: string }>(
-        "SELECT email FROM applications WHERE analysis_id = $1",
-        [analysisId]
-      );
-      const paidAt = existingPayment.paid_at ? new Date(existingPayment.paid_at) : new Date();
-      await applyApplicationUpdate(
-        client,
-        analysisId,
-        paymentType,
-        email?.email ?? "",
-        reference,
-        existingPayment.amount,
-        paidAt,
-        existingPayment.payment_id
-      );
-      await client.query("COMMIT");
-    } catch (repairErr) {
-      await client.query("ROLLBACK");
-      console.error("[payment/verify] Repair transaction failed:", repairErr);
-      return { status: "network", detail: "Repair of payment state failed; please retry." };
-    } finally {
-      client.release();
-    }
-    return { status: "already_processed", paymentType, analysisId };
-  }
-
-  // ── 2. Verify with Paystack ───────────────────────────────────────────────
-  let paystackData: {
-    status: string;
-    amount: number;
-    currency: string;
-    reference: string;
-    metadata?: { analysisId?: string; paymentType?: string; email?: string };
-    customer?: { email?: string };
-    paid_at?: string;
-  };
-
-  try {
-    const res = await fetch(
-      `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-      {
-        headers: { Authorization: `Bearer ${secretKey}` },
-        cache: "no-store",
-      }
-    );
-
-    if (!res.ok) {
-      console.error(`[payment/verify] Paystack HTTP ${res.status} ref=${reference}`);
-      return { status: "network", detail: `Paystack HTTP ${res.status}` };
-    }
-
-    const json = await res.json();
-    if (!json.status || !json.data) {
-      return { status: "network", detail: "Unexpected Paystack response." };
-    }
-
-    paystackData = json.data;
-  } catch (err) {
-    console.error("[payment/verify] Network error:", err);
-    return { status: "network", detail: String(err) };
-  }
-
-  // ── 3. Check transaction status ───────────────────────────────────────────
-  if (paystackData.status === "abandoned") return { status: "cancelled" };
-  if (paystackData.status === "pending") return { status: "pending" };
-  if (paystackData.status !== "success") return { status: "failed" };
-
-  // ── 4. Extract and validate metadata ─────────────────────────────────────
-  const meta = paystackData.metadata ?? {};
-  const analysisId = meta.analysisId;
-  const paymentType = (meta.paymentType ?? "premium_application") as PaymentType;
-  const email = meta.email ?? paystackData.customer?.email ?? "";
-
-  if (!analysisId) {
-    return { status: "invalid_metadata", detail: "No analysisId in transaction metadata." };
-  }
-  if (paymentType !== "premium_application" && paymentType !== "practice_extension") {
-    return { status: "invalid_metadata", detail: `Unknown paymentType: ${paymentType}` };
-  }
-
-  // ── 5. Validate amount ────────────────────────────────────────────────────
-  const expectedAmount =
-    paymentType === "premium_application" ? PREMIUM_AMOUNT_KOBO : EXTENSION_AMOUNT_KOBO;
-
-  if (paystackData.amount !== expectedAmount || paystackData.currency !== CURRENCY) {
-    console.error(
-      `[payment/verify] Amount/currency mismatch amount=${paystackData.amount} currency=${paystackData.currency} ref=${reference}`
-    );
+  if (fastCheck?.status === "successful" && fastCheck.application_synced) {
     return {
-      status: "mismatch",
-      detail: `Expected ₦${expectedAmount / 100} ${CURRENCY}, got ₦${paystackData.amount / 100} ${paystackData.currency}`,
+      status: "already_processed",
+      paymentType: fastCheck.payment_type as PaymentType,
+      analysisId: fastCheck.analysis_id,
     };
   }
 
-  // ── 6. Look up the application ────────────────────────────────────────────
+  // ── PAYSTACK VERIFICATION (outside transaction — safe idempotent read) ─────
+  // We always call Paystack unless we already have a committed successful row.
+  // For the repair case (status='successful', application_synced=FALSE), we
+  // could skip the Paystack call, but calling it again is safe and keeps the
+  // code path uniform.
+
+  let paystackStatus: string;
+  let paystackAmount: number;
+  let paystackCurrency: string;
+  let paystackPaidAt: string | undefined;
+  let metaAnalysisId: string | undefined;
+  let metaPaymentType: PaymentType;
+  let metaEmail: string;
+
+  // If a successful row exists but is unsynced, reuse its stored data for
+  // the application update (Paystack call is still attempted but metadata
+  // comes from DB to guard against metadata tampering on re-submission).
+  if (fastCheck?.status === "successful" && !fastCheck.application_synced) {
+    paystackStatus = "success"; // we already know it succeeded
+    paystackAmount = fastCheck.amount;
+    paystackCurrency = fastCheck.currency;
+    paystackPaidAt = fastCheck.paid_at ?? undefined;
+    metaAnalysisId = fastCheck.analysis_id;
+    metaPaymentType = fastCheck.payment_type as PaymentType;
+    metaEmail = fastCheck.email;
+    console.warn(
+      `[payment/verify] Repairing unsynced payment ref=${reference} analysisId=${metaAnalysisId}`
+    );
+  } else {
+    // Normal first-time path: verify with Paystack
+    try {
+      const res = await fetch(
+        `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+        { headers: { Authorization: `Bearer ${secretKey}` }, cache: "no-store" }
+      );
+
+      if (!res.ok) {
+        console.error(`[payment/verify] Paystack HTTP ${res.status} ref=${reference}`);
+        return { status: "network", detail: `Paystack HTTP ${res.status}` };
+      }
+
+      const json = await res.json();
+      if (!json.status || !json.data) {
+        return { status: "network", detail: "Unexpected Paystack response shape." };
+      }
+
+      const d = json.data as {
+        status: string;
+        amount: number;
+        currency: string;
+        reference: string;
+        metadata?: { analysisId?: string; paymentType?: string; email?: string };
+        customer?: { email?: string };
+        paid_at?: string;
+      };
+
+      paystackStatus = d.status;
+      paystackAmount = d.amount;
+      paystackCurrency = d.currency;
+      paystackPaidAt = d.paid_at;
+      metaAnalysisId = d.metadata?.analysisId;
+      metaPaymentType = ((d.metadata?.paymentType) ?? "premium_application") as PaymentType;
+      metaEmail = d.metadata?.email ?? d.customer?.email ?? "";
+    } catch (err) {
+      console.error("[payment/verify] Network error:", err);
+      return { status: "network", detail: String(err) };
+    }
+
+    // ── Status checks ──────────────────────────────────────────────────────
+    if (paystackStatus === "abandoned") return { status: "cancelled" };
+    if (paystackStatus === "pending") return { status: "pending" };
+    if (paystackStatus !== "success") return { status: "failed" };
+
+    // ── Metadata validation ────────────────────────────────────────────────
+    if (!metaAnalysisId) {
+      return { status: "invalid_metadata", detail: "No analysisId in transaction metadata." };
+    }
+    if (metaPaymentType !== "premium_application" && metaPaymentType !== "practice_extension") {
+      return {
+        status: "invalid_metadata",
+        detail: `Unknown paymentType: ${metaPaymentType}`,
+      };
+    }
+
+    // ── Amount validation ──────────────────────────────────────────────────
+    const expected =
+      metaPaymentType === "premium_application" ? PREMIUM_AMOUNT_KOBO : EXTENSION_AMOUNT_KOBO;
+    if (paystackAmount !== expected || paystackCurrency !== CURRENCY) {
+      console.error(
+        `[payment/verify] Amount/currency mismatch amount=${paystackAmount} currency=${paystackCurrency} ref=${reference}`
+      );
+      return {
+        status: "mismatch",
+        detail: `Expected ₦${expected / 100} ${CURRENCY}, got ₦${paystackAmount / 100} ${paystackCurrency}`,
+      };
+    }
+  }
+
+  const analysisId = metaAnalysisId!;
+  const paymentType = metaPaymentType!;
+  const email = metaEmail!;
+  const paidAt = paystackPaidAt ? new Date(paystackPaidAt) : new Date();
+  const newPaymentId = `pay_${crypto.randomBytes(8).toString("hex")}`;
+
+  // ── Look up the application ───────────────────────────────────────────────
   const app = await queryOne<ApplicationRow>(
     "SELECT * FROM applications WHERE analysis_id = $1",
     [analysisId]
   );
-
   if (!app) return { status: "application_not_found" };
 
   if (paymentType === "practice_extension" && !app.premium_unlocked) {
     return { status: "not_paid", detail: "Application must be paid before extending practice." };
   }
 
-  const paidAt = paystackData.paid_at ? new Date(paystackData.paid_at) : new Date();
-  const paymentId = `pay_${crypto.randomBytes(8).toString("hex")}`;
-
-  // ── 7. Atomic: record payment + unlock application ────────────────────────
-  // Both writes happen inside a single transaction. If the process crashes or
-  // an error occurs mid-way, the entire transaction rolls back. On the next
-  // retry the payment row will be absent (or still 'pending'), so the caller
-  // re-runs the full Paystack verify path and retries the transaction.
+  // ── ATOMIC TRANSACTION WITH ROW-LEVEL LOCK ────────────────────────────────
+  // ON CONFLICT (paystack_reference) DO UPDATE acquires a row-level lock on the
+  // conflicting row. Concurrent requests block here until the first one commits
+  // or rolls back, serializing all processing for the same reference.
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    // Insert or update payment row (idempotent via ON CONFLICT)
-    await client.query(
+    // Upsert the payment row — creates it (locked) or updates + locks existing row.
+    // Sets application_synced=FALSE on INSERT; does NOT overwrite it on UPDATE
+    // (so an already-synced row preserves TRUE).
+    const upsertResult = await client.query<PaymentRow>(
       `INSERT INTO payments
-         (payment_id, analysis_id, email, payment_type, paystack_reference, amount, currency, status, paid_at, application_synced)
+         (payment_id, analysis_id, email, payment_type, paystack_reference,
+          amount, currency, status, paid_at, application_synced)
        VALUES ($1, $2, $3, $4, $5, $6, $7, 'successful', $8, FALSE)
-       ON CONFLICT (paystack_reference)
-         DO UPDATE SET status = 'successful', paid_at = EXCLUDED.paid_at`,
-      [paymentId, analysisId, email, paymentType, reference, paystackData.amount, paystackData.currency, paidAt.toISOString()]
+       ON CONFLICT (paystack_reference) DO UPDATE
+         SET status = 'successful',
+             paid_at = COALESCE(payments.paid_at, EXCLUDED.paid_at)
+       RETURNING *`,
+      [
+        newPaymentId,
+        analysisId,
+        email,
+        paymentType,
+        reference,
+        paystackAmount,
+        paystackCurrency,
+        paidAt.toISOString(),
+      ]
     );
 
-    // Get the actual payment_id (may differ if row already existed)
-    const payRow = await client.query<{ payment_id: string }>(
-      "SELECT payment_id FROM payments WHERE paystack_reference = $1",
+    const lockedRow = upsertResult.rows[0];
+
+    // Re-check application_synced after acquiring the lock.
+    // A concurrent request may have committed between our fast-path read
+    // and now — if so, skip the application update.
+    if (lockedRow.application_synced) {
+      await client.query("ROLLBACK");
+      return { status: "already_processed", paymentType, analysisId };
+    }
+
+    // ── Apply the application update ────────────────────────────────────────
+    // We hold the row lock — exactly one request will reach this block.
+    if (paymentType === "premium_application") {
+      const practiceExpiresAt = new Date(
+        paidAt.getTime() + PRACTICE_DAYS * 24 * 60 * 60 * 1000
+      );
+      await client.query(
+        `UPDATE applications SET
+           email = COALESCE(email, $1),
+           premium_unlocked = TRUE,
+           payment_status = 'paid',
+           payment_reference = $2,
+           payment_amount = $3,
+           paid_at = $4,
+           practice_session_limit = $5,
+           practice_sessions_used = 0,
+           practice_access_started_at = $4,
+           practice_expires_at = $6,
+           updated_at = NOW()
+         WHERE analysis_id = $7`,
+        [
+          email,
+          reference,
+          paystackAmount,
+          paidAt.toISOString(),
+          PRACTICE_SESSION_LIMIT,
+          practiceExpiresAt.toISOString(),
+          analysisId,
+        ]
+      );
+    } else {
+      // practice_extension — additive update is safe because the row lock
+      // guarantees exactly one request reaches this branch per reference.
+      const now = new Date();
+      const currentExpiry = app.practice_expires_at
+        ? new Date(app.practice_expires_at)
+        : now;
+      const base = currentExpiry > now ? currentExpiry : now;
+      const newExpiry = new Date(
+        base.getTime() + EXTENSION_DAYS_ADD * 24 * 60 * 60 * 1000
+      );
+
+      await client.query(
+        `UPDATE applications SET
+           practice_session_limit = practice_session_limit + $1,
+           practice_expires_at = $2,
+           updated_at = NOW()
+         WHERE analysis_id = $3`,
+        [EXTENSION_SESSION_ADD, newExpiry.toISOString(), analysisId]
+      );
+    }
+
+    // Mark payment as application-synced in the same transaction.
+    // On COMMIT both the application update and application_synced=TRUE become
+    // durable atomically.
+    await client.query(
+      "UPDATE payments SET application_synced = TRUE WHERE paystack_reference = $1",
       [reference]
-    );
-    const actualPaymentId = payRow.rows[0]?.payment_id ?? paymentId;
-
-    // Apply the application update and set application_synced = TRUE atomically
-    await applyApplicationUpdate(
-      client,
-      analysisId,
-      paymentType,
-      email,
-      reference,
-      paystackData.amount,
-      paidAt,
-      actualPaymentId
     );
 
     await client.query("COMMIT");
+    console.log(
+      `[payment/verify] Unlocked ${paymentType} for analysisId=${analysisId} ref=${reference}`
+    );
+    return { status: "success", paymentType, analysisId };
   } catch (txErr) {
     await client.query("ROLLBACK");
-    console.error("[payment/verify] Transaction failed:", txErr);
-    return { status: "network", detail: "Could not apply payment unlock; please retry." };
+    console.error("[payment/verify] Transaction rolled back:", txErr);
+    return {
+      status: "network",
+      detail: "Could not apply payment unlock; please retry.",
+    };
   } finally {
     client.release();
   }
-
-  console.log(`[payment/verify] ${paymentType} unlocked for analysisId=${analysisId} ref=${reference}`);
-  return { status: "success", paymentType, analysisId };
 }

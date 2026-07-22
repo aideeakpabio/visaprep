@@ -26,8 +26,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, status: "mismatch", detail: result.detail }, { status: 200 });
       case "network":
         return NextResponse.json({ error: "Could not reach the payment provider." }, { status: 502 });
-      case "no_reference":
-        return NextResponse.json({ error: "No reference provided." }, { status: 400 });
       case "invalid_metadata":
         return NextResponse.json({ error: "Invalid payment metadata.", detail: result.detail }, { status: 422 });
       case "application_not_found":
