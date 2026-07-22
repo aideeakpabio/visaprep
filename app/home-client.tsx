@@ -223,15 +223,28 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
       setAnalysisId(saved.analysisId);
     }
 
-    // Check for active session
+    // Check for active session — also used to pre-fill extension modal
     fetch("/api/auth/session")
       .then((r) => r.json())
       .then((data) => {
         if (data.authenticated && data.email) {
           setSessionEmail(data.email);
+          setExtEmail(data.email); // pre-fill extension modal with verified email
+        }
+        // Open extension modal only after session check completes
+        // (extId is set earlier; modal opens here so sessionEmail is available)
+        const extParam = new URLSearchParams(window.location.search).get("extend");
+        if (extParam) {
+          setShowExtensionModal(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // Even on failure, open extension modal if param present
+        const extParam = new URLSearchParams(window.location.search).get("extend");
+        if (extParam) {
+          setShowExtensionModal(true);
+        }
+      });
 
     // Handle URL params
     const params = new URLSearchParams(window.location.search);
@@ -244,10 +257,11 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
     }
 
     // Extension purchase flow: ?extend=VP-XXX (from my-preparations "30-day Extension" link)
+    // Only opens after session check completes — sessionEmail is populated in the
+    // same useEffect, so we defer modal open to after the session fetch below.
     const extId = params.get("extend");
     if (extId) {
       setExtensionAnalysisId(extId);
-      setShowExtensionModal(true);
     }
 
     // Load analysis by URL param (e.g. returning from my-preparations)
@@ -400,22 +414,23 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
   }
 
   async function handleExtensionPayment() {
-    const trimmed = extEmail.trim();
-    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setExtError("Please enter a valid email address.");
-      return;
-    }
     if (!extensionAnalysisId) {
       setExtError("Application not found. Please return to My Preparations.");
+      return;
+    }
+    if (!sessionEmail) {
+      setExtError("You must be signed in to purchase an extension. Please use 'Access My Preparation' to sign in first.");
       return;
     }
     setExtError("");
     setExtSubmitting(true);
     try {
+      // The extension API requires a verified session and ignores body email entirely.
+      // Identity is derived exclusively from the server-side session cookie.
       const res = await fetch("/api/payment/extension", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmed, analysisId: extensionAnalysisId }),
+        body: JSON.stringify({ analysisId: extensionAnalysisId }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
@@ -1058,30 +1073,45 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
                 <p className="text-sm text-gray-400">one-time</p>
               </div>
               <p className="text-xs text-gray-400 font-mono">{extensionAnalysisId}</p>
-              <div className="flex flex-col gap-1">
-                <label htmlFor="ext-email" className="text-xs font-medium text-gray-700">
-                  Email address (must match the one used at purchase)
-                </label>
-                <input
-                  id="ext-email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={extEmail}
-                  onChange={(e) => { setExtEmail(e.target.value); setExtError(""); }}
-                  disabled={extSubmitting}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleExtensionPayment(); }}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
-                />
-                {extError && <p className="text-xs text-red-600">{extError}</p>}
-              </div>
-              <button
-                disabled={extSubmitting}
-                onClick={handleExtensionPayment}
-                className="w-full py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {extSubmitting ? "Redirecting to payment…" : "Continue to Payment — ₦5,000"}
-              </button>
+
+              {sessionEmail ? (
+                <>
+                  {/* Show verified session email — not editable, identity from cookie only */}
+                  <div className="border border-gray-100 rounded-xl px-4 py-3 bg-gray-50">
+                    <p className="text-xs text-gray-400 mb-0.5">Signed in as</p>
+                    <p className="text-sm font-medium text-gray-800">{sessionEmail}</p>
+                  </div>
+                  {extError && <p className="text-xs text-red-600">{extError}</p>}
+                  <button
+                    disabled={extSubmitting}
+                    onClick={handleExtensionPayment}
+                    className="w-full py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {extSubmitting ? "Redirecting to payment…" : "Continue to Payment — ₦5,000"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="border border-amber-200 rounded-xl px-4 py-3 bg-amber-50">
+                    <p className="text-sm text-amber-800 font-medium mb-1">Sign in required</p>
+                    <p className="text-xs text-amber-700 leading-relaxed">
+                      You must be signed in to purchase an extension. Use the button below to sign in first, then try again.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowExtensionModal(false);
+                      setShowAccessModal(true);
+                      setAccessStep("email");
+                      setAccessError("");
+                      setAccessOtp("");
+                    }}
+                    className="w-full py-3 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold rounded-xl transition-colors"
+                  >
+                    Access My Preparation to Sign In
+                  </button>
+                </>
+              )}
               <p className="text-xs text-gray-400 text-center leading-relaxed">
                 Payment is processed securely by Paystack. VisaPrep does not store your card details.
               </p>

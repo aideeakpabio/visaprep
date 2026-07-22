@@ -84,26 +84,31 @@ export default async function PaymentCallbackPage({
   // ── Success ───────────────────────────────────────────────────────────────
   if (result.status === "success" || result.status === "already_processed") {
     // Set session cookie so the user can access their preparation immediately
-    let sessionEmail = "";
-    try {
-      const payRow = await queryOne<{ email: string }>(
-        "SELECT email FROM payments WHERE paystack_reference = $1 LIMIT 1",
-        [reference]
-      );
-      if (payRow?.email) {
-        sessionEmail = payRow.email;
-        const token = await createSessionCookie(sessionEmail);
-        const cookieStore = await cookies();
-        cookieStore.set(COOKIE_NAME, token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "lax",
-          maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
-          path: "/",
-        });
+    // Only issue a session cookie for premium_application purchases.
+    // Extension payments require an existing authenticated session (enforced in
+    // /api/payment/extension), so we never derive identity from extension metadata.
+    // Issuing a cookie from body-controlled extension metadata would allow session
+    // issuance for arbitrary emails.
+    if (result.paymentType === "premium_application") {
+      try {
+        const payRow = await queryOne<{ email: string }>(
+          "SELECT email FROM payments WHERE paystack_reference = $1 AND payment_type = 'premium_application' LIMIT 1",
+          [reference]
+        );
+        if (payRow?.email) {
+          const token = await createSessionCookie(payRow.email);
+          const cookieStore = await cookies();
+          cookieStore.set(COOKIE_NAME, token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
+            path: "/",
+          });
+        }
+      } catch (e) {
+        console.error("[callback] Could not set session cookie:", e);
       }
-    } catch (e) {
-      console.error("[callback] Could not set session cookie:", e);
     }
 
     const alreadyDone = result.status === "already_processed";

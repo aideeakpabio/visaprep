@@ -1,29 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
-import { queryOne } from "@/lib/db";
 import { getSession } from "@/lib/session";
-import { normalizeEmail, canAccessPremium } from "@/lib/access";
+import { canAccessPremium } from "@/lib/access";
 
 const EXTENSION_AMOUNT_KOBO = 500_000; // ₦5,000
 const CURRENCY = "NGN";
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Identity MUST come from the verified session cookie only ─────────────
+    // We never trust a client-supplied email for authorization.
+    const session = await getSession();
+    if (!session?.email) {
+      return NextResponse.json(
+        { error: "You must be signed in to purchase an extension. Use 'Access My Preparation' to sign in." },
+        { status: 401 }
+      );
+    }
+
+    const verifiedEmail = session.email; // cryptographically verified via JWT
+
     const body = await req.json().catch(() => ({}));
-    const { analysisId, email } = body as { analysisId?: string; email?: string };
+    const { analysisId } = body as { analysisId?: string };
 
     if (!analysisId || typeof analysisId !== "string") {
       return NextResponse.json({ error: "analysisId is required." }, { status: 400 });
     }
-    if (!email || typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      return NextResponse.json({ error: "A valid email address is required." }, { status: 400 });
-    }
 
-    // Application must be paid before extending
-    const session = await getSession();
-    const verifiedEmail = session?.email ?? email.trim();
+    // Premium access must be verified against the session email
     const access = await canAccessPremium(analysisId, verifiedEmail);
     if (!access.allowed) {
-      return NextResponse.json({ error: "Premium access is required before purchasing an extension." }, { status: 403 });
+      return NextResponse.json(
+        { error: access.reason ?? "Premium access is required before purchasing an extension." },
+        { status: 403 }
+      );
     }
 
     const secretKey = process.env.PAYSTACK_SECRET_KEY;
@@ -39,7 +48,8 @@ export async function POST(req: NextRequest) {
         : new URL(req.url).origin);
 
     const payload = {
-      email: normalizeEmail(email.trim()),
+      // Use the session-verified email for Paystack — never the request body
+      email: verifiedEmail,
       amount: EXTENSION_AMOUNT_KOBO,
       currency: CURRENCY,
       reference,
@@ -47,7 +57,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         analysisId,
         paymentType: "practice_extension",
-        email: normalizeEmail(email.trim()),
+        // Do not embed a separate email field — the session email is the identity source
         custom_fields: [
           { display_name: "Product", variable_name: "product", value: "VisaPrep Practice Extension" },
           { display_name: "Application", variable_name: "analysis_id", value: analysisId },
