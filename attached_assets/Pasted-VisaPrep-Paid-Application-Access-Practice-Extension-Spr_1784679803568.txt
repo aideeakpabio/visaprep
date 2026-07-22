@@ -1,0 +1,516 @@
+VisaPrep Paid Application Access & Practice Extension Sprint
+
+VisaPrep’s premium purchase must be tied to one specific DS-160 application, not to the user generally.
+
+A paid user must be able to return later using the same email address and continue accessing the preparation materials for that application without paying again.
+
+At the same time, ongoing AI-powered generation must be limited so one payment does not create unlimited API usage.
+
+This sprint should build the full application-linked access system described below.
+
+1. Core access model
+
+Each uploaded DS-160 analysis must receive a unique permanent internal identifier:
+
+analysisId
+
+Example display format:
+
+VP-20260721-A8K3P7
+
+A premium payment must unlock only the application associated with that analysisId.
+
+The same payment must not unlock:
+
+another DS-160;
+a revised application;
+a different visa category;
+future uploads using the same email.
+
+The governing rule is:
+
+One payment unlocks one application.
+
+2. Application record
+
+Create or extend the persistent application record to include:
+
+{
+  analysisId: string;
+  email: string | null;
+
+  applicationFingerprint: string;
+  applicantFirstName?: string;
+  visaCategory?: string;
+
+  freeReport: object;
+  premiumReport?: object;
+  personalizedQuestions?: object;
+
+  paymentStatus: "unpaid" | "paid";
+  paymentReference?: string;
+  paymentAmount?: number;
+  paidAt?: string;
+
+  premiumUnlocked: boolean;
+
+  practiceAccessStartedAt?: string;
+  practiceExpiresAt?: string;
+
+  practiceSessionLimit: number;
+  practiceSessionsUsed: number;
+
+  reportVersion: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+Use the project’s existing database or persistent storage architecture.
+
+Do not store the uploaded DS-160 file itself unless the application already intentionally does so.
+
+Store only the minimum information needed to identify, retrieve, and support the analysis.
+
+3. Application fingerprint
+
+Generate a secure fingerprint for each uploaded DS-160.
+
+The fingerprint should help distinguish one application from another without exposing the original document contents.
+
+Use a cryptographic hash derived from the normalized document contents and an application-side secret or salt.
+
+Do not expose the raw fingerprint publicly.
+
+A materially different or newly uploaded DS-160 should create a new analysisId, even when the email address is the same.
+
+4. Payment linkage
+
+When the user opens the premium payment flow, include the current analysisId in the server-side payment metadata.
+
+The Paystack transaction should be linked to:
+
+analysisId
+email
+paymentType
+
+For the initial premium purchase:
+
+paymentType: "premium_application"
+
+When payment verification succeeds:
+
+verify the transaction server-side with Paystack;
+confirm the amount and currency;
+confirm the transaction reference has not already been used;
+retrieve the analysisId from trusted metadata;
+mark only that application as paid;
+save the Paystack reference;
+save the payment timestamp;
+unlock premium access;
+initialize the practice allowance.
+
+Do not rely solely on the browser callback to unlock access.
+
+Premium access must be granted only after server-side verification.
+
+5. Initial premium entitlement
+
+A successful ₦20,000 payment should provide:
+
+Permanent access to saved premium materials
++
+Up to 5 complete AI interview-practice sessions
++
+90 days to use the included AI practice sessions
+
+On successful initial payment, set:
+
+premiumUnlocked = true
+practiceSessionLimit = 5
+practiceSessionsUsed = 0
+practiceAccessStartedAt = paidAt
+practiceExpiresAt = paidAt + 90 days
+
+If a different initial practice allowance already exists in the product, replace it with this approved policy.
+
+6. Permanent access versus active AI access
+Permanent access
+
+The user should retain indefinite access to already generated and saved content for that application, including:
+
+Application Insights;
+Full VisaPrep Assessment;
+Personalized Preparation Roadmap;
+saved personalized interview questions;
+completed practice-session feedback;
+previous preparation history.
+
+Viewing saved content must not consume additional AI credits.
+
+Limited active AI access
+
+New AI-powered activity should require:
+
+a paid application;
+an active practice period;
+an unused practice session.
+
+This includes a complete adaptive interview-practice session and its generated feedback.
+
+The system must not regenerate the full assessment every time the user returns.
+
+Retrieve saved content instead.
+
+7. Practice-session counting
+
+A complete AI Interview Practice session should consume one session allowance.
+
+The session must not be counted merely because the user opened the practice page.
+
+Count it when the session meaningfully begins, using a clear server-side event such as:
+
+the first interview question is generated and delivered; or
+the user explicitly clicks Start Practice and a persistent session record is successfully created.
+
+Choose the safest approach based on the current architecture.
+
+Do not consume multiple allowances because the page refreshes or the user reconnects to the same unfinished session.
+
+Each practice session should have its own unique ID and status:
+
+{
+  practiceSessionId: string;
+  analysisId: string;
+  status: "started" | "in_progress" | "completed" | "abandoned";
+  startedAt: string;
+  completedAt?: string;
+}
+
+An existing unfinished session should be resumable where practical.
+
+8. Practice Extension product
+
+Add a separate extension purchase:
+
+30-day Practice Extension — ₦5,000
+
+A successful extension should:
+
+apply only to one paid analysisId;
+add 30 days of active AI-practice access;
+add 3 additional complete practice sessions.
+
+Approved extension entitlement:
+
+30 additional days
++
+3 additional AI interview-practice sessions
+
+Use:
+
+paymentType: "practice_extension"
+
+When an extension payment is verified:
+
+practiceSessionLimit += 3
+
+For the expiry date:
+
+if the existing practiceExpiresAt is still in the future, add 30 days to it;
+if it has already expired, set it to 30 days from the verified extension payment date.
+
+Do not reset practiceSessionsUsed.
+
+Allow users to purchase additional extensions later if needed.
+
+Each extension must have its own unique Paystack reference and payment record.
+
+9. Payment records
+
+Create a separate payment record or equivalent audit structure:
+
+{
+  paymentId: string;
+  analysisId: string;
+  email: string;
+  paymentType: "premium_application" | "practice_extension";
+  paystackReference: string;
+  amount: number;
+  currency: "NGN";
+  status: "pending" | "successful" | "failed";
+  paidAt?: string;
+  createdAt: string;
+}
+
+Enforce uniqueness on paystackReference.
+
+Do not permit a successful transaction reference to unlock more than one application or entitlement.
+
+10. Returning-user access by email
+
+Add a clear homepage or header action:
+
+Access My Preparation
+
+This should allow a returning user to enter the email address used during payment.
+
+Do not reveal whether arbitrary email addresses exist in the system.
+
+Use a secure email access flow:
+
+User enters their email.
+VisaPrep sends a short-lived secure sign-in link or one-time verification code.
+The user verifies control of the email.
+VisaPrep displays the applications associated with that verified email.
+
+Do not grant access based only on typing an email address.
+
+Do not use security questions.
+
+The access token or code must:
+
+expire after a short period;
+be single-use;
+be stored securely;
+not expose application IDs before verification.
+11. My Preparations page
+
+After email verification, show a simple page listing the user’s applications.
+
+Example:
+
+My Preparations
+
+B1/B2 — Offshore Technology Conference
+Application ID: VP-20260721-A8K3P7
+Premium Unlocked
+Practice: 2 of 5 sessions used
+Practice access ends: October 19, 2026
+[Continue Preparation]
+
+F-1 — Data Analytics
+Free Application Insights
+[View Insights] [Unlock Full Preparation]
+
+For each application, display only safe summary information:
+
+visa category;
+application title or purpose;
+analysis date;
+premium status;
+practice sessions remaining;
+practice expiry date;
+relevant action button.
+
+Do not display sensitive DS-160 details on the listing page.
+
+12. Expired practice state
+
+When the 90-day practice period has expired, the user must still be able to access saved content.
+
+Show:
+
+Your included AI practice period has ended.
+
+Supporting copy:
+
+You can still review your saved assessment, preparation roadmap, questions, and previous feedback at any time.
+
+Then show:
+
+Extend Practice for 30 Days — ₦5,000
+
+Supporting text:
+
+Includes 3 additional personalized interview-practice sessions for this application.
+
+Do not block access to the saved premium report.
+
+13. Exhausted-session state
+
+If the user has used all sessions before the expiry date, show:
+
+You have used all your included practice sessions.
+
+Then offer the same ₦5,000 extension.
+
+The extension should add both:
+
+3 sessions;
+30 days according to the expiry rules above.
+14. Premium content generation
+
+Generate the premium assessment and initial personalized question bank once per paid application and save them.
+
+On repeat access:
+
+load the saved materials;
+do not regenerate them automatically;
+do not charge the user again;
+do not consume new AI usage.
+
+Only regenerate when an authorized product feature explicitly requires it.
+
+A new or materially revised DS-160 must create a new application and require a new premium purchase.
+
+15. Access checks
+
+Create a reusable server-side authorization function such as:
+
+canAccessPremium(analysisId, verifiedEmail)
+canStartPractice(analysisId, verifiedEmail)
+
+canAccessPremium should confirm:
+
+verified email owns the application;
+the application is paid.
+
+canStartPractice should additionally confirm:
+
+current time is before practiceExpiresAt;
+practiceSessionsUsed < practiceSessionLimit.
+
+Do not rely on UI-only checks.
+
+All premium and practice API routes must enforce the rules server-side.
+
+16. Privacy and security
+
+Because DS-160 applications contain sensitive personal information:
+
+never expose one user’s applications to another user;
+never permit enumeration of analysis IDs;
+use unpredictable IDs or secure public tokens;
+normalize email addresses safely;
+protect retrieval endpoints with verified email sessions;
+avoid logging DS-160 contents, premium reports, or full personal data unnecessarily;
+ensure payment references cannot be reused;
+do not place sensitive report content in query-string parameters.
+
+Preserve the existing security note and privacy approach.
+
+17. UI copy
+Returning-user link
+
+Access My Preparation
+
+Initial premium entitlement
+
+Your purchase unlocks the complete preparation package for this application, permanent access to your saved materials, and five personalized interview-practice sessions available for 90 days.
+
+Extension offer
+
+30-day Practice Extension — ₦5,000
+
+Continue preparing with three additional personalized interview-practice sessions for this application.
+
+Application-specific notice
+
+Your premium access is linked to this application. A new or materially revised DS-160 requires a separate analysis and purchase.
+
+Use plain English and avoid technical language such as “API allowance,” “token usage,” or “application fingerprint” in user-facing copy.
+
+18. Preserve existing product boundaries
+
+Do not change:
+
+the ₦20,000 initial premium price;
+Application Insights architecture;
+AI Constitution;
+analysis prompts;
+homepage hero;
+upload flow;
+Paystack provider;
+existing free/paid content boundary;
+current visual language.
+
+Only add the application-linked payment, retrieval, entitlement, and extension architecture.
+
+19. Migration and compatibility
+
+Existing successful payments must not be accidentally discarded.
+
+Inspect the current payment implementation and determine whether previous payment records can be linked safely to their original analyses.
+
+Where that is not possible:
+
+do not fabricate associations;
+document the limitation;
+preserve existing access where technically safe;
+include the recommended migration approach in the completion report.
+
+Bump any required database or session schema versions carefully.
+
+20. Validation scenarios
+
+Test all of the following:
+
+Initial purchase
+User uploads an application.
+Receives free Application Insights.
+Pays ₦20,000.
+Payment is verified server-side.
+Only that analysisId becomes premium.
+Premium assessment loads.
+Five practice sessions are available.
+Expiry is 90 days from payment.
+Same email, second application
+User uploads a different DS-160 using the same email.
+First application remains premium.
+Second application remains free until separately purchased.
+Returning access
+User leaves the site.
+Uses Access My Preparation.
+Verifies the payment email.
+Sees all applications linked to that email.
+Opens the paid application without paying again.
+Unauthorized access
+A different unverified email cannot access the application.
+Guessing an analysisId does not expose a report.
+Practice use
+Starting a valid new session consumes one allowance.
+Refreshing does not consume another.
+Saved content remains accessible.
+Sixth session is blocked when the initial allowance is exhausted.
+Expiry
+After 90 days, saved reports remain visible.
+New AI practice is blocked.
+Extension offer appears.
+Extension
+User pays ₦5,000.
+Payment is verified server-side.
+Three sessions are added.
+Thirty days are added correctly.
+Extension applies only to that application.
+The same Paystack reference cannot be reused.
+Failed payment
+Failed or abandoned payment does not unlock anything.
+Completion report requirements
+
+After implementation, provide:
+
+database schema changes;
+analysis ID and fingerprint implementation;
+payment metadata and server-verification flow;
+email verification approach;
+retrieval-page implementation;
+premium access rules;
+practice counting rules;
+extension rules;
+security controls;
+migration handling;
+tests completed;
+TypeScript result;
+production build result;
+commit hash and push confirmation.
+Success criterion
+
+A user can pay once for one DS-160 application, return through their verified email whenever needed, and permanently access all saved preparation materials without paying again.
+
+VisaPrep must permit useful ongoing preparation while keeping new AI generation controlled through:
+
+five initial practice sessions;
+a 90-day practice period;
+optional 30-day, three-session extensions at ₦5,000 each.
+
+This must be enforced server-side and linked permanently to the correct application.
