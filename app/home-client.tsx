@@ -206,6 +206,13 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
   const [accessError, setAccessError] = useState("");
   const [accessSubmitting, setAccessSubmitting] = useState(false);
 
+  // ── Practice extension payment state ─────────────────────────────────────
+  const [showExtensionModal, setShowExtensionModal] = useState(false);
+  const [extensionAnalysisId, setExtensionAnalysisId] = useState<string | null>(null);
+  const [extEmail, setExtEmail] = useState("");
+  const [extError, setExtError] = useState("");
+  const [extSubmitting, setExtSubmitting] = useState(false);
+
   // ── Restore session + saved analysis on mount ─────────────────────────────
   useEffect(() => {
     // Restore sessionStorage
@@ -234,6 +241,13 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
 
     if (shouldSignIn) {
       setShowAccessModal(true);
+    }
+
+    // Extension purchase flow: ?extend=VP-XXX (from my-preparations "30-day Extension" link)
+    const extId = params.get("extend");
+    if (extId) {
+      setExtensionAnalysisId(extId);
+      setShowExtensionModal(true);
     }
 
     // Load analysis by URL param (e.g. returning from my-preparations)
@@ -382,6 +396,37 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
       setAccessError("Network error. Please check your connection and try again.");
     } finally {
       setAccessSubmitting(false);
+    }
+  }
+
+  async function handleExtensionPayment() {
+    const trimmed = extEmail.trim();
+    if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setExtError("Please enter a valid email address.");
+      return;
+    }
+    if (!extensionAnalysisId) {
+      setExtError("Application not found. Please return to My Preparations.");
+      return;
+    }
+    setExtError("");
+    setExtSubmitting(true);
+    try {
+      const res = await fetch("/api/payment/extension", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed, analysisId: extensionAnalysisId }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        setExtError(data.error ?? "Could not start payment. Please try again.");
+        setExtSubmitting(false);
+        return;
+      }
+      window.location.href = data.authorization_url;
+    } catch {
+      setExtError("Network error. Please check your connection and try again.");
+      setExtSubmitting(false);
     }
   }
 
@@ -971,6 +1016,79 @@ export default function HomeClient({ testMode = false }: { testMode?: boolean })
         </div>
       )}
       </main>
+
+      {/* ── Practice Extension Modal ─────────────────────────────────────── */}
+      {showExtensionModal && extensionAnalysisId && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => { if (!extSubmitting) setShowExtensionModal(false); }}
+        >
+          <div
+            className="bg-white rounded-t-2xl sm:rounded-2xl shadow-xl mx-0 sm:mx-4 max-w-sm w-full flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between px-6 pt-5 pb-3">
+              <h2 className="text-base font-semibold text-gray-900 pr-4">30-Day Practice Extension</h2>
+              {!extSubmitting && (
+                <button
+                  onClick={() => setShowExtensionModal(false)}
+                  className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            <div className="px-6 pb-6 flex flex-col gap-4">
+              <ul className="flex flex-col gap-2">
+                {[
+                  "3 additional personalised interview-practice sessions",
+                  "30-day access extension from today",
+                  "All previously completed sessions and feedback are preserved",
+                ].map((item) => (
+                  <li key={item} className="flex gap-2 items-start text-sm text-gray-700">
+                    <span className="text-green-500 shrink-0 mt-0.5">✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="border-t border-gray-100" />
+              <div className="flex items-baseline gap-2">
+                <p className="text-2xl font-bold text-gray-900">₦5,000</p>
+                <p className="text-sm text-gray-400">one-time</p>
+              </div>
+              <p className="text-xs text-gray-400 font-mono">{extensionAnalysisId}</p>
+              <div className="flex flex-col gap-1">
+                <label htmlFor="ext-email" className="text-xs font-medium text-gray-700">
+                  Email address (must match the one used at purchase)
+                </label>
+                <input
+                  id="ext-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={extEmail}
+                  onChange={(e) => { setExtEmail(e.target.value); setExtError(""); }}
+                  disabled={extSubmitting}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleExtensionPayment(); }}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
+                />
+                {extError && <p className="text-xs text-red-600">{extError}</p>}
+              </div>
+              <button
+                disabled={extSubmitting}
+                onClick={handleExtensionPayment}
+                className="w-full py-3 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-sm font-semibold rounded-xl transition-colors duration-150 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {extSubmitting ? "Redirecting to payment…" : "Continue to Payment — ₦5,000"}
+              </button>
+              <p className="text-xs text-gray-400 text-center leading-relaxed">
+                Payment is processed securely by Paystack. VisaPrep does not store your card details.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Access My Preparation Modal ───────────────────────────────────── */}
       {showAccessModal && (
