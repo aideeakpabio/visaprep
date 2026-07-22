@@ -139,7 +139,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Record pending payment in DB (idempotent — reference is unique)
+    // Record pending payment in DB (idempotent — reference is unique).
+    // We do NOT pre-bind the email to applications here — that only happens
+    // after Paystack confirms the charge in /api/payment/verify. Pre-binding
+    // would let any caller with a valid analysisId permanently claim ownership
+    // before they have actually paid.
     try {
       const paymentId = `pay_${crypto.randomBytes(8).toString("hex")}`;
       await query(
@@ -147,12 +151,6 @@ export async function POST(req: NextRequest) {
          VALUES ($1, $2, $3, 'premium_application', $4, $5, $6, 'pending')
          ON CONFLICT (paystack_reference) DO NOTHING`,
         [paymentId, analysisId.trim(), normalisedEmail, reference, AMOUNT, CURRENCY]
-      );
-
-      // Link email to application now so returning users can find it
-      await query(
-        `UPDATE applications SET email = COALESCE(email, $1), updated_at = NOW() WHERE analysis_id = $2`,
-        [normalisedEmail, analysisId.trim()]
       );
     } catch (dbErr) {
       console.error("[payment/initialize] DB error (non-fatal):", dbErr);

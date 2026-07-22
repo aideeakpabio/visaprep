@@ -8,16 +8,26 @@
  *      a. UPSERT the payment row (status='successful') — ON CONFLICT DO UPDATE
  *         acquires a row-level lock that serializes concurrent requests on the
  *         same paystack_reference.
- *      b. Re-read application_synced from the locked row. If it is already TRUE
- *         (a concurrent request committed first), we ROLLBACK and return
- *         already_processed without touching the application row.
- *      c. Otherwise we apply the application update and set application_synced=TRUE
- *         in the same commit.
- * 3. If the process crashes after COMMIT, both payment.status='successful' and
- *    application_synced=TRUE are durable. Retries see the consistent state and
- *    short-circuit to already_processed.
- * 4. If a crash occurs before COMMIT the transaction is rolled back, leaving the
- *    payment row in its pre-attempt state. Retries run the full path again.
+ *      b. Lock the application row with SELECT … FOR UPDATE so concurrent
+ *         extension verifications (with distinct references) cannot base expiry
+ *         calculations on stale pre-transaction snapshots.
+ *      c. Re-read application_synced from the locked payment row. If it is
+ *         already TRUE (a concurrent request committed first) we ROLLBACK and
+ *         return already_processed without touching the application row.
+ *      d. Otherwise we apply the application update and set application_synced=TRUE
+ *         in the same COMMIT.
+ * 3. If the process crashes after COMMIT both writes are durable. Retries see
+ *    application_synced=TRUE and short-circuit to already_processed.
+ * 4. If a crash occurs before COMMIT the transaction rolls back. Retries run the
+ *    full path again.
+ *
+ * EMAIL OWNERSHIP
+ * ───────────────
+ * applications.email is NEVER set during payment initialization (that would allow
+ * any caller with a valid analysisId to pre-claim ownership before paying).
+ * It is set unconditionally — not via COALESCE — inside the verify transaction,
+ * from the Paystack-verified metadata email. This ensures the correct payer's
+ * email is always authoritative.
  */
 
 import crypto from "crypto";
@@ -75,8 +85,9 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
   }
 
   // ── OPTIMIZATION: Fast-path for fully completed payments ──────────────────
-  // This is a stale read (no lock) — it is safe as an optimisation only.
-  // Correctness is enforced inside the transaction below.
+  // This is a stale read (outside any transaction) — correctness is enforced
+  // inside the transaction below. It is used only to avoid unnecessary Paystack
+  // API calls when the payment is already fully processed.
   const fastCheck = await queryOne<PaymentRow>(
     "SELECT * FROM payments WHERE paystack_reference = $1",
     [reference]
@@ -91,11 +102,6 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
   }
 
   // ── PAYSTACK VERIFICATION (outside transaction — safe idempotent read) ─────
-  // We always call Paystack unless we already have a committed successful row.
-  // For the repair case (status='successful', application_synced=FALSE), we
-  // could skip the Paystack call, but calling it again is safe and keeps the
-  // code path uniform.
-
   let paystackStatus: string;
   let paystackAmount: number;
   let paystackCurrency: string;
@@ -104,11 +110,10 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
   let metaPaymentType: PaymentType;
   let metaEmail: string;
 
-  // If a successful row exists but is unsynced, reuse its stored data for
-  // the application update (Paystack call is still attempted but metadata
-  // comes from DB to guard against metadata tampering on re-submission).
+  // Repair path: payment row exists as successful but application_synced=FALSE.
+  // Reuse stored metadata and skip the Paystack call.
   if (fastCheck?.status === "successful" && !fastCheck.application_synced) {
-    paystackStatus = "success"; // we already know it succeeded
+    paystackStatus = "success";
     paystackAmount = fastCheck.amount;
     paystackCurrency = fastCheck.currency;
     paystackPaidAt = fastCheck.paid_at ?? undefined;
@@ -158,23 +163,17 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
       return { status: "network", detail: String(err) };
     }
 
-    // ── Status checks ──────────────────────────────────────────────────────
     if (paystackStatus === "abandoned") return { status: "cancelled" };
     if (paystackStatus === "pending") return { status: "pending" };
     if (paystackStatus !== "success") return { status: "failed" };
 
-    // ── Metadata validation ────────────────────────────────────────────────
     if (!metaAnalysisId) {
       return { status: "invalid_metadata", detail: "No analysisId in transaction metadata." };
     }
     if (metaPaymentType !== "premium_application" && metaPaymentType !== "practice_extension") {
-      return {
-        status: "invalid_metadata",
-        detail: `Unknown paymentType: ${metaPaymentType}`,
-      };
+      return { status: "invalid_metadata", detail: `Unknown paymentType: ${metaPaymentType}` };
     }
 
-    // ── Amount validation ──────────────────────────────────────────────────
     const expected =
       metaPaymentType === "premium_application" ? PREMIUM_AMOUNT_KOBO : EXTENSION_AMOUNT_KOBO;
     if (paystackAmount !== expected || paystackCurrency !== CURRENCY) {
@@ -194,28 +193,28 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
   const paidAt = paystackPaidAt ? new Date(paystackPaidAt) : new Date();
   const newPaymentId = `pay_${crypto.randomBytes(8).toString("hex")}`;
 
-  // ── Look up the application ───────────────────────────────────────────────
-  const app = await queryOne<ApplicationRow>(
-    "SELECT * FROM applications WHERE analysis_id = $1",
-    [analysisId]
-  );
-  if (!app) return { status: "application_not_found" };
-
-  if (paymentType === "practice_extension" && !app.premium_unlocked) {
-    return { status: "not_paid", detail: "Application must be paid before extending practice." };
+  // Pre-transaction check: verify extension eligibility using a non-locking read.
+  // The authoritative check happens inside the transaction on the locked row.
+  if (paymentType === "practice_extension") {
+    const preCheck = await queryOne<{ premium_unlocked: boolean }>(
+      "SELECT premium_unlocked FROM applications WHERE analysis_id = $1",
+      [analysisId]
+    );
+    if (!preCheck) return { status: "application_not_found" };
+    if (!preCheck.premium_unlocked) {
+      return { status: "not_paid", detail: "Application must be paid before extending practice." };
+    }
   }
 
-  // ── ATOMIC TRANSACTION WITH ROW-LEVEL LOCK ────────────────────────────────
-  // ON CONFLICT (paystack_reference) DO UPDATE acquires a row-level lock on the
-  // conflicting row. Concurrent requests block here until the first one commits
-  // or rolls back, serializing all processing for the same reference.
+  // ── ATOMIC TRANSACTION WITH ROW-LEVEL LOCKS ───────────────────────────────
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-    // Upsert the payment row — creates it (locked) or updates + locks existing row.
-    // Sets application_synced=FALSE on INSERT; does NOT overwrite it on UPDATE
-    // (so an already-synced row preserves TRUE).
+    // 1. Upsert the payment row.
+    //    ON CONFLICT (paystack_reference) DO UPDATE acquires a row-level lock
+    //    that serializes concurrent requests for the same reference.
+    //    application_synced is NOT overwritten on UPDATE so a TRUE value is preserved.
     const upsertResult = await client.query<PaymentRow>(
       `INSERT INTO payments
          (payment_id, analysis_id, email, payment_type, paystack_reference,
@@ -237,35 +236,48 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
       ]
     );
 
-    const lockedRow = upsertResult.rows[0];
+    const lockedPayment = upsertResult.rows[0];
 
-    // Re-check application_synced after acquiring the lock.
-    // A concurrent request may have committed between our fast-path read
-    // and now — if so, skip the application update.
-    if (lockedRow.application_synced) {
+    // 2. Re-check application_synced after acquiring the payment row lock.
+    //    A concurrent request may have committed between the fast-path read
+    //    above and now — if so, skip the application update.
+    if (lockedPayment.application_synced) {
       await client.query("ROLLBACK");
       return { status: "already_processed", paymentType, analysisId };
     }
 
-    // ── Apply the application update ────────────────────────────────────────
-    // We hold the row lock — exactly one request will reach this block.
+    // 3. Lock the application row so concurrent extension verifications (with
+    //    distinct payment references) cannot base expiry on a stale snapshot.
+    const appResult = await client.query<ApplicationRow>(
+      "SELECT * FROM applications WHERE analysis_id = $1 FOR UPDATE",
+      [analysisId]
+    );
+    const lockedApp = appResult.rows[0];
+    if (!lockedApp) {
+      await client.query("ROLLBACK");
+      return { status: "application_not_found" };
+    }
+
+    // 4. Apply the application update.
     if (paymentType === "premium_application") {
       const practiceExpiresAt = new Date(
         paidAt.getTime() + PRACTICE_DAYS * 24 * 60 * 60 * 1000
       );
+      // Use email = $1 (unconditional SET, not COALESCE) so the verified payer's
+      // email is always authoritative and any pre-claimed stale email is corrected.
       await client.query(
         `UPDATE applications SET
-           email = COALESCE(email, $1),
-           premium_unlocked = TRUE,
-           payment_status = 'paid',
-           payment_reference = $2,
-           payment_amount = $3,
-           paid_at = $4,
-           practice_session_limit = $5,
-           practice_sessions_used = 0,
+           email                    = $1,
+           premium_unlocked         = TRUE,
+           payment_status           = 'paid',
+           payment_reference        = $2,
+           payment_amount           = $3,
+           paid_at                  = $4,
+           practice_session_limit   = $5,
+           practice_sessions_used   = 0,
            practice_access_started_at = $4,
-           practice_expires_at = $6,
-           updated_at = NOW()
+           practice_expires_at      = $6,
+           updated_at               = NOW()
          WHERE analysis_id = $7`,
         [
           email,
@@ -278,11 +290,11 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
         ]
       );
     } else {
-      // practice_extension — additive update is safe because the row lock
-      // guarantees exactly one request reaches this branch per reference.
+      // practice_extension: compute expiry from the LOCKED application row so
+      // concurrent extensions with different references accumulate correctly.
       const now = new Date();
-      const currentExpiry = app.practice_expires_at
-        ? new Date(app.practice_expires_at)
+      const currentExpiry = lockedApp.practice_expires_at
+        ? new Date(lockedApp.practice_expires_at)
         : now;
       const base = currentExpiry > now ? currentExpiry : now;
       const newExpiry = new Date(
@@ -292,16 +304,15 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
       await client.query(
         `UPDATE applications SET
            practice_session_limit = practice_session_limit + $1,
-           practice_expires_at = $2,
-           updated_at = NOW()
+           practice_expires_at    = $2,
+           updated_at             = NOW()
          WHERE analysis_id = $3`,
         [EXTENSION_SESSION_ADD, newExpiry.toISOString(), analysisId]
       );
     }
 
-    // Mark payment as application-synced in the same transaction.
-    // On COMMIT both the application update and application_synced=TRUE become
-    // durable atomically.
+    // 5. Mark payment as application-synced in the same COMMIT so both writes
+    //    become durable atomically.
     await client.query(
       "UPDATE payments SET application_synced = TRUE WHERE paystack_reference = $1",
       [reference]
@@ -315,10 +326,7 @@ export async function verifyAndUnlockPayment(reference: string): Promise<VerifyR
   } catch (txErr) {
     await client.query("ROLLBACK");
     console.error("[payment/verify] Transaction rolled back:", txErr);
-    return {
-      status: "network",
-      detail: "Could not apply payment unlock; please retry.",
-    };
+    return { status: "network", detail: "Could not apply payment unlock; please retry." };
   } finally {
     client.release();
   }
