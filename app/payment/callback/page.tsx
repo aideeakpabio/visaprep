@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { verifyAndUnlockPayment } from "@/lib/payment";
-import { queryOne } from "@/lib/db";
-import { createSessionCookie, COOKIE_NAME, SESSION_DURATION_DAYS } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Payment — VisaPrep" };
 export const dynamic = "force-dynamic";
@@ -84,32 +81,11 @@ export default async function PaymentCallbackPage({
   // ── Success ───────────────────────────────────────────────────────────────
   if (result.status === "success" || result.status === "already_processed") {
     // Set session cookie so the user can access their preparation immediately
-    // Only issue a session cookie for premium_application purchases.
-    // Extension payments require an existing authenticated session (enforced in
-    // /api/payment/extension), so we never derive identity from extension metadata.
-    // Issuing a cookie from body-controlled extension metadata would allow session
-    // issuance for arbitrary emails.
-    if (result.paymentType === "premium_application") {
-      try {
-        const payRow = await queryOne<{ email: string }>(
-          "SELECT email FROM payments WHERE paystack_reference = $1 AND payment_type = 'premium_application' LIMIT 1",
-          [reference]
-        );
-        if (payRow?.email) {
-          const token = await createSessionCookie(payRow.email);
-          const cookieStore = await cookies();
-          cookieStore.set(COOKIE_NAME, token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60,
-            path: "/",
-          });
-        }
-      } catch (e) {
-        console.error("[callback] Could not set session cookie:", e);
-      }
-    }
+    // No session cookie is issued here. The payment reference is a replayable URL
+    // parameter — anyone who obtains it could hit this page and be logged in as the
+    // purchaser. Session access to premium content is gated exclusively behind the
+    // OTP sign-in flow (/api/auth/request-code + verify-code), which proves email
+    // ownership cryptographically before granting a vp_session cookie.
 
     const alreadyDone = result.status === "already_processed";
     const isPremium = result.paymentType === "premium_application";
